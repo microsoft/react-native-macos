@@ -10,6 +10,7 @@
 #import <React/RCTDefines.h>
 #import <React/RCTJSStackFrame.h>
 #import <React/RCTReloadCommand.h>
+#import <React/RCTUIKit.h> // [macOS]
 #import <React/RCTUtils.h>
 
 #import <objc/runtime.h>
@@ -72,12 +73,20 @@
 
 @end
 
+@protocol RCTRedBoxControllerActionDelegate <NSObject>
+
+- (void)redBoxController:(RCTRedBoxController *)redBoxController openStackFrameInEditor:(RCTJSStackFrame *)stackFrame;
+- (void)reloadFromRedBoxController:(RCTRedBoxController *)redBoxController;
+- (void)loadExtraDataViewController;
+
+@end
+
+@interface RCTRedBoxController : RCTPlatformViewController <RCTUITableViewDelegate, RCTUITableViewDataSource> // [macOS]
+@property (nonatomic, weak) id<RCTRedBoxControllerActionDelegate> actionDelegate;
+@end
+
 @implementation RCTRedBoxController {
-#if !TARGET_OS_OSX // [macOS]
-  UITableView *_stackTraceTableView;
-#else // [macOS
-  NSTableView *_stackTraceTableView;
-#endif //  macOS]
+  RCTUITableView *_stackTraceTableView; // [macOS]
   NSString *_lastErrorMessage;
   NSArray<RCTJSStackFrame *> *_lastStackTrace;
   NSArray<NSString *> *_customButtonTitles;
@@ -112,41 +121,21 @@
   CGRect detailsFrame = self.view.bounds;
   detailsFrame.size.height -= buttonHeight + (double)[self bottomSafeViewHeight];
 
-#if !TARGET_OS_OSX // [macOS]
-  _stackTraceTableView = [[UITableView alloc] initWithFrame:detailsFrame style:UITableViewStylePlain];
+  _stackTraceTableView = [[RCTUITableView alloc] initWithFrame:detailsFrame style:RCTUITableViewStylePlain]; // [macOS]
   _stackTraceTableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   _stackTraceTableView.delegate = self;
   _stackTraceTableView.dataSource = self;
-  _stackTraceTableView.backgroundColor = [UIColor clearColor];
+  _stackTraceTableView.backgroundColor = [RCTPlatformColor clearColor]; // [macOS]
+#if !TARGET_OS_OSX // [macOS]
 #if !TARGET_OS_TV
   _stackTraceTableView.separatorColor = [UIColor colorWithWhite:1 alpha:0.3];
   _stackTraceTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 #endif
   _stackTraceTableView.indicatorStyle = UIScrollViewIndicatorStyleWhite;
-  [self.view addSubview:_stackTraceTableView];
 #else // [macOS
-  NSScrollView *scrollView = [[NSScrollView alloc] initWithFrame:NSZeroRect];
-  scrollView.translatesAutoresizingMaskIntoConstraints = NO;
-  scrollView.autoresizesSubviews = YES;
-  scrollView.drawsBackground = NO;
-
-  _stackTraceTableView = [[NSTableView alloc] initWithFrame:NSZeroRect];
   _stackTraceTableView.translatesAutoresizingMaskIntoConstraints = NO;
-  _stackTraceTableView.dataSource = self;
-  _stackTraceTableView.delegate = self;
-  _stackTraceTableView.headerView = nil;
-  _stackTraceTableView.allowsColumnReordering = NO;
-  _stackTraceTableView.allowsColumnResizing = NO;
-  _stackTraceTableView.columnAutoresizingStyle = NSTableViewFirstColumnOnlyAutoresizingStyle;
-  _stackTraceTableView.backgroundColor = [NSColor clearColor];
-  _stackTraceTableView.allowsTypeSelect = NO;
-
-  NSTableColumn *tableColumn = [[NSTableColumn alloc] initWithIdentifier:@"info"];
-  [_stackTraceTableView addTableColumn:tableColumn];
-
-  scrollView.documentView = _stackTraceTableView;
-  [self.view addSubview:scrollView];
 #endif // macOS]
+  [self.view addSubview:_stackTraceTableView];
 
 #if TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST || TARGET_OS_OSX // [macOS]
   NSString *reloadText = @"Reload\n(\u2318R)";
@@ -247,7 +236,7 @@
                                  selector:nil
                                     block:_customButtonHandlers[i]];
 #else // [macOS
-  NSButton *button = [self redBoxButton:_customButtonTitles[i]
+    NSButton *button = [self redBoxButton:_customButtonTitles[i]
                   accessibilityIdentifier:@""
                                  selector:nil
                                     block:_customButtonHandlers[i]];
@@ -276,10 +265,10 @@
 
 #if TARGET_OS_OSX // [macOS
   [NSLayoutConstraint activateConstraints:@[
-    [[scrollView leadingAnchor] constraintEqualToAnchor:[[self view] leadingAnchor]],
-    [[scrollView topAnchor] constraintEqualToAnchor:[[self view] topAnchor]],
-    [[scrollView trailingAnchor] constraintEqualToAnchor:[[self view] trailingAnchor]],
-    [[scrollView bottomAnchor] constraintEqualToAnchor:[topBorder topAnchor]],
+    [[_stackTraceTableView leadingAnchor] constraintEqualToAnchor:[[self view] leadingAnchor]],
+    [[_stackTraceTableView topAnchor] constraintEqualToAnchor:[[self view] topAnchor]],
+    [[_stackTraceTableView trailingAnchor] constraintEqualToAnchor:[[self view] trailingAnchor]],
+    [[_stackTraceTableView bottomAnchor] constraintEqualToAnchor:[topBorder topAnchor]],
   ]];
 #endif // macOS]
 }
@@ -316,7 +305,7 @@
 {
   NSButton *button = [[NSButton alloc] initWithFrame:NSZeroRect];
   button.translatesAutoresizingMaskIntoConstraints = NO;
-  button.accessibilityIdentifier = @"accessibilityIdentifier";
+  button.accessibilityIdentifier = accessibilityIdentifier;
   button.bordered = NO;
   NSAttributedString *attributedTitle = [[NSAttributedString alloc]
                                          initWithString:title
@@ -378,14 +367,15 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     [_stackTraceTableView reloadData];
 
     if (!isRootViewControllerPresented) {
+      if (_lastErrorMessage != nil) { // [macOS
+        [_stackTraceTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
+                                    atScrollPosition:RCTUITableViewScrollPositionTop
+                                            animated:NO];
+      } // macOS]
 #if !TARGET_OS_OSX // [macOS]
-      [_stackTraceTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]
-                                  atScrollPosition:UITableViewScrollPositionTop
-                                          animated:NO];
       [RCTKeyWindow().rootViewController presentViewController:self animated:YES completion:nil];
 #else // [macOS
-	  [_stackTraceTableView scrollRowToVisible:0];
-    [[RCTKeyWindow() contentViewController] presentViewControllerAsSheet:self];
+      [[RCTKeyWindow() contentViewController] presentViewControllerAsSheet:self];
 #endif // macOS]
     }
   }
@@ -458,57 +448,35 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
 #pragma mark - TableView
 
-#if !TARGET_OS_OSX // [macOS]
-- (NSInteger)numberOfSectionsInTableView:(__unused UITableView *)tableView
+- (NSInteger)numberOfSectionsInTableView:(__unused RCTUITableView *)tableView // [macOS]
 {
   return 2;
 }
 
-- (NSInteger)tableView:(__unused UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+- (NSInteger)tableView:(__unused RCTUITableView *)tableView numberOfRowsInSection:(NSInteger)section // [macOS]
 {
-  return section == 0 ? 1 : _lastStackTrace.count;
+  return section == 0 ? (_lastErrorMessage != nil) : _lastStackTrace.count; // [macOS]
 }
-#else // [macOS
-- (NSInteger)numberOfRowsInTableView:(__unused NSTableView *)tableView
-{
-  return (_lastErrorMessage != nil) + _lastStackTrace.count;
-}
-#endif // macOS]
 
-#if !TARGET_OS_OSX // [macOS]
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+- (RCTUITableViewCell *)tableView:(RCTUITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath // [macOS]
 {
   if (indexPath.section == 0) {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"msg-cell"];
+    RCTUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"msg-cell"]; // [macOS]
     return [self reuseCell:cell forErrorMessage:_lastErrorMessage];
   }
-  UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"];
+  RCTUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell"]; // [macOS]
   NSUInteger index = indexPath.row;
   RCTJSStackFrame *stackFrame = _lastStackTrace[index];
   return [self reuseCell:cell forStackFrame:stackFrame];
 }
-#else // [macOS
-- (nullable NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(nullable NSTableColumn *)tableColumn row:(NSInteger)row
-{
-  if (row == 0) {
-    NSTableCellView *cell = [tableView makeViewWithIdentifier:@"msg-cell" owner:nil];
-    return [self reuseCell:cell forErrorMessage:_lastErrorMessage];
-  }
-  NSTableCellView *cell = [tableView makeViewWithIdentifier:@"cell" owner:nil];
-  NSUInteger index = row - 1;
-  RCTJSStackFrame *stackFrame = _lastStackTrace[index];
-  return [self reuseCell:cell forStackFrame:stackFrame];
 
-}
-#endif // macOS]
-
-#if !TARGET_OS_OSX // [macOS]
-- (UITableViewCell *)reuseCell:(UITableViewCell *)cell forErrorMessage:(NSString *)message
+- (RCTUITableViewCell *)reuseCell:(RCTUITableViewCell *)cell forErrorMessage:(NSString *)message // [macOS]
 {
   if (!cell) {
-    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"msg-cell"];
+    cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleDefault
+                                     reuseIdentifier:@"msg-cell"]; // [macOS]
     cell.textLabel.accessibilityIdentifier = @"redbox-error";
-    cell.textLabel.textColor = [UIColor whiteColor];
+    cell.textLabel.textColor = [RCTPlatformColor whiteColor]; // [macOS]
 
     // Prefer a monofont for formatting messages that were designed
     // to be displayed in a terminal.
@@ -516,80 +484,58 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
     cell.textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     cell.textLabel.numberOfLines = 0;
-    cell.detailTextLabel.textColor = [UIColor whiteColor];
+    cell.detailTextLabel.textColor = [RCTPlatformColor whiteColor]; // [macOS]
+#if !TARGET_OS_OSX // [macOS]
     cell.backgroundColor = [UIColor colorWithRed:0.82 green:0.10 blue:0.15 alpha:1.0];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
-  }
-
-  cell.textLabel.text = message;
-
-  return cell;
-}
 #else // [macOS
-- (NSTableCellView *)reuseCell:(NSTableCellView *)cell forErrorMessage:(NSString *)message
-{
-  if (!cell) {
-    cell = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
-    cell.rowSizeStyle = NSTableViewRowSizeStyleCustom;
-    cell.textField.accessibilityIdentifier = @"red box-error";
-
-    NSTextField *label = [[NSTextField alloc] initWithFrame:NSZeroRect];
-    label.translatesAutoresizingMaskIntoConstraints = NO;
-    label.drawsBackground = NO;
-    label.bezeled = NO;
-    label.editable = NO;
-
-    [cell addSubview:label];
-    cell.textField = label;
-
-    [NSLayoutConstraint activateConstraints:@[
-      [[label leadingAnchor] constraintEqualToAnchor:[cell leadingAnchor] constant:5],
-      [[label topAnchor] constraintEqualToAnchor:[cell topAnchor] constant:5],
-      [[label trailingAnchor] constraintEqualToAnchor:[cell trailingAnchor] constant:-5],
-      [[label bottomAnchor] constraintEqualToAnchor:[cell bottomAnchor] constant:-5],
-    ]];
-
-    // Prefer a monofont for formatting messages that were designed
-    // to be displayed in a terminal.
-    cell.textField.font = [NSFont monospacedSystemFontOfSize:14 weight:NSFontWeightBold];
-
-    cell.textField.lineBreakMode = NSLineBreakByWordWrapping;
-    cell.textField.maximumNumberOfLines = 0;
-    cell.wantsLayer = true;
+    cell.wantsLayer = YES;
+    cell.layer.backgroundColor = [NSColor colorWithRed:0.82 green:0.10 blue:0.15 alpha:1.0].CGColor;
     cell.layer.cornerRadius = 8.0;
     cell.layer.cornerCurve = kCACornerCurveContinuous;
-
-    cell.layer.backgroundColor = [NSColor colorWithRed:0.82 green:0.10 blue:0.15 alpha:1.0].CGColor;
+    cell.textLabel.selectable = YES;
+#endif // macOS]
   }
 
+#if !TARGET_OS_OSX // [macOS]
+  cell.textLabel.text = message;
+#else // [macOS
+  // RCTUITableViewCell's -prepareForReuse clamps a default-style cell back to one line, so restore
+  // the unlimited line count on every row.
+  cell.textLabel.numberOfLines = 0;
   NSDictionary<NSString *, id> *attributes = @{
     NSForegroundColorAttributeName : [NSColor whiteColor],
     NSFontAttributeName : [NSFont systemFontOfSize:16],
   };
   NSAttributedString *title = [[NSAttributedString alloc] initWithString:message attributes:attributes];
-
-  cell.textField.attributedStringValue = title;
+  cell.textLabel.attributedStringValue = title;
+#endif // macOS]
 
   return cell;
 }
-#endif // macOS]
-
-#if !TARGET_OS_OSX // [macOS]
-- (UITableViewCell *)reuseCell:(UITableViewCell *)cell forStackFrame:(RCTJSStackFrame *)stackFrame
+- (RCTUITableViewCell *)reuseCell:(RCTUITableViewCell *)cell forStackFrame:(RCTJSStackFrame *)stackFrame // [macOS]
 {
   if (!cell) {
-    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"cell"];
+    cell = [[RCTUITableViewCell alloc] initWithStyle:RCTUITableViewCellStyleSubtitle
+                                     reuseIdentifier:@"cell"]; // [macOS]
     cell.textLabel.font = [UIFont fontWithName:@"Menlo-Regular" size:14];
     cell.textLabel.lineBreakMode = NSLineBreakByCharWrapping;
     cell.textLabel.numberOfLines = 2;
-    cell.detailTextLabel.textColor = [UIColor colorWithRed:0.70 green:0.70 blue:0.70 alpha:1.0];
+    cell.detailTextLabel.textColor = [RCTPlatformColor colorWithRed:0.70 green:0.70 blue:0.70 alpha:1.0]; // [macOS]
     cell.detailTextLabel.font = [UIFont fontWithName:@"Menlo-Regular" size:11];
     cell.detailTextLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
-    cell.backgroundColor = [UIColor clearColor];
+    cell.backgroundColor = [RCTPlatformColor clearColor]; // [macOS]
+#if !TARGET_OS_OSX // [macOS]
     cell.selectedBackgroundView = [UIView new];
     cell.selectedBackgroundView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.2];
+#else // [macOS
+    [cell.detailTextLabel removeFromSuperview];
+    [cell.textLabel.bottomAnchor constraintEqualToAnchor:cell.contentView.bottomAnchor constant:-5].active = YES;
+    cell.textLabel.selectable = YES;
+#endif // macOS]
   }
 
+#if !TARGET_OS_OSX // [macOS]
   cell.textLabel.text = stackFrame.methodName ?: @"(unnamed method)";
   if (stackFrame.file) {
     cell.detailTextLabel.text = [self formatFrameSource:stackFrame];
@@ -599,33 +545,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   cell.textLabel.textColor = stackFrame.collapse ? [UIColor lightGrayColor] : [UIColor whiteColor];
   cell.detailTextLabel.textColor = stackFrame.collapse ? [UIColor colorWithRed:0.50 green:0.50 blue:0.50 alpha:1.0]
                                                        : [UIColor colorWithRed:0.70 green:0.70 blue:0.70 alpha:1.0];
-  return cell;
-}
 #else // [macOS
-- (NSTableCellView *)reuseCell:(NSTableCellView *)cell forStackFrame:(RCTJSStackFrame *)stackFrame
-{
-  if (!cell) {
-    cell = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
-
-    NSTextField *label = [[NSTextField alloc] initWithFrame:NSZeroRect];
-    label.translatesAutoresizingMaskIntoConstraints = NO;
-    label.backgroundColor = [NSColor clearColor];
-    label.bezeled = NO;
-    label.editable = NO;
-
-    label.maximumNumberOfLines = 2;
-
-    [cell addSubview:label];
-    cell.textField = label;
-
-    [NSLayoutConstraint activateConstraints:@[
-      [[label leadingAnchor] constraintEqualToAnchor:[cell leadingAnchor] constant:5],
-      [[label topAnchor] constraintEqualToAnchor:[cell topAnchor]],
-      [[label trailingAnchor] constraintEqualToAnchor:[cell trailingAnchor] constant:-5],
-      [[label bottomAnchor] constraintEqualToAnchor:[cell bottomAnchor]],
-    ]];
-  }
-
   NSString *text = stackFrame.methodName ?: @"(unnamed method)";
 
   NSMutableParagraphStyle *textParagraphStyle = [NSMutableParagraphStyle new];
@@ -638,15 +558,12 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   };
 
   NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:text attributes:textAttributes];
-
-
   NSMutableAttributedString *title = [attributedText mutableCopy];
 
   // NSTableCellView doesn't contain a subtitle text field. Rather than define our own custom row view,
   // let's append the detail text with a new line if it is needed.
+  cell.textLabel.maximumNumberOfLines = stackFrame.file ? 3 : 2;
   if (stackFrame.file) {
-    cell.textField.maximumNumberOfLines = 3;
-
     NSString *detailText = [self formatFrameSource:stackFrame];
 
     NSMutableParagraphStyle *detailTextParagraphStyle = [NSMutableParagraphStyle new];
@@ -664,46 +581,38 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     [title appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n"]];
     [title appendAttributedString:attributedDetailText];
   }
-
-  cell.textField.attributedStringValue = title;
+  cell.textLabel.attributedStringValue = title;
+#endif // macOS]
 
   return cell;
 }
-#endif // macOS]
 
-#if !TARGET_OS_OSX // [macOS]
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-#else // [macOS
-- (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
-#endif // macOS]
+- (CGFloat)tableView:(RCTUITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath // [macOS]
 {
-#if !TARGET_OS_OSX // [macOS]
   if (indexPath.section == 0) {
-#else // [macOS
-  if (row == 0) {
-#endif // macOS]
     NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
 
-    NSDictionary *attributes =
-#if !TARGET_OS_OSX // [macOS]
-        @{NSFontAttributeName : [UIFont boldSystemFontOfSize:16], NSParagraphStyleAttributeName : paragraphStyle};
-#else // [macOS
-        @{NSFontAttributeName : [NSFont boldSystemFontOfSize:16], NSParagraphStyleAttributeName : paragraphStyle};
+    NSDictionary *attributes = @{
+      NSFontAttributeName : [UIFont boldSystemFontOfSize:16],
+      NSParagraphStyleAttributeName : paragraphStyle
+    }; // [macOS]
+    CGFloat tableWidth = tableView.frame.size.width; // [macOS]
+#if TARGET_OS_OSX // [macOS
+    tableWidth = tableView.contentSize.width;
 #endif // macOS]
     CGRect boundingRect =
-        [_lastErrorMessage boundingRectWithSize:CGSizeMake(tableView.frame.size.width - 30, CGFLOAT_MAX)
+        [_lastErrorMessage boundingRectWithSize:CGSizeMake(tableWidth - 30, CGFLOAT_MAX)
                                         options:NSStringDrawingUsesLineFragmentOrigin
                                      attributes:attributes
-                                        context:nil];
+                                        context:nil]; // [macOS]
     return ceil(boundingRect.size.height) + 40;
   } else {
     return 50;
   }
 }
 
-#if !TARGET_OS_OSX // [macOS]
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+- (void)tableView:(RCTUITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath // [macOS]
 {
   if (indexPath.section == 1) {
     NSUInteger row = indexPath.row;
@@ -712,17 +621,6 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
-#else // [macOS
-- (BOOL)tableView:(__unused NSTableView *)tableView shouldSelectRow:(__unused NSInteger)row
-{
-  if (row != 0) {
-    NSUInteger index = row - 1;
-    RCTJSStackFrame *stackFrame = _lastStackTrace[index];
-    [_actionDelegate redBoxController:self openStackFrameInEditor:stackFrame];
-  }
-  return NO;
-}
-#endif // macOS]
 
 #pragma mark - Key commands
 
