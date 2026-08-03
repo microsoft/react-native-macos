@@ -186,6 +186,7 @@ RCT_EXPORT_MODULE()
       [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
       [self->_window.contentView addSubview:self->_container];
       self->_container.layer.cornerRadius = NSHeight(self->_window.contentView.bounds) / 2;
+      self->_container.layer.cornerCurve = kCACornerCurveContinuous;
     }
 
     // Container constraints
