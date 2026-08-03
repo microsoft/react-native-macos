@@ -7,8 +7,6 @@
 
 #import <React/RCTDevLoadingView.h>
 
-#import <QuartzCore/QuartzCore.h>
-
 #import <FBReactNativeSpec/FBReactNativeSpec.h>
 #import <React/RCTAppearance.h>
 #import <React/RCTBridge.h>
@@ -170,19 +168,18 @@ RCT_EXPORT_MODULE()
     if (!self->_container) {
       self->_container = [[RCTUIView alloc] init]; // [macOS]
       self->_container.translatesAutoresizingMaskIntoConstraints = NO;
-      self->_container.wantsLayer = YES;
-      self->_container.layer.cornerRadius = 4;
-      self->_container.layer.cornerCurve = kCACornerCurveContinuous;
-      self->_container.layer.masksToBounds = YES;
       [self->_container addSubview:self->_label];
     }
     self->_container.backgroundColor = backgroundColor;
 
     if (!self->_window) {
       self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
-                                                styleMask:NSWindowStyleMaskBorderless
+                                                styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskFullSizeContentView
                                                   backing:NSBackingStoreBuffered
                                                     defer:YES];
+      self->_window.titleVisibility = NSWindowTitleHidden;
+      self->_window.titlebarAppearsTransparent = YES;
+      self->_window.movable = NO;
       self->_window.backgroundColor = [NSColor clearColor];
       self->_window.opaque = NO;
       [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
