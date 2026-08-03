@@ -191,17 +191,23 @@ RCT_EXPORT_MODULE()
     if (!self->_container) {
       self->_container = [[RCTUIView alloc] init]; // [macOS]
       self->_container.translatesAutoresizingMaskIntoConstraints = NO;
+      self->_container.wantsLayer = YES;
+      self->_container.layer.masksToBounds = YES;
       [self->_container addSubview:self->_label];
     }
     self->_container.backgroundColor = backgroundColor;
 
     if (!self->_window) {
       self->_window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 375, 20)
-                                                styleMask:NSWindowStyleMaskBorderless | NSWindowStyleMaskFullSizeContentView
+                                                styleMask:NSWindowStyleMaskBorderless
                                                   backing:NSBackingStoreBuffered
                                                     defer:YES];
+      self->_window.backgroundColor = [NSColor clearColor];
+      self->_window.opaque = NO;
       [self->_window setIdentifier:sRCTDevLoadingViewWindowIdentifier];
       [self->_window.contentView addSubview:self->_container];
+      self->_container.layer.cornerRadius = NSHeight(self->_window.contentView.bounds) / 2;
+      self->_container.layer.cornerCurve = kCACornerCurveContinuous;
     }
 
     // Container constraints
@@ -218,10 +224,14 @@ RCT_EXPORT_MODULE()
       [self->_label.trailingAnchor constraintLessThanOrEqualToAnchor:self->_container.trailingAnchor constant:-10],
     ]];
 
-    if (![[RCTKeyWindow() sheets] doesContain:self->_window]) {
-      [RCTKeyWindow() beginSheet:self->_window completionHandler:^(NSModalResponse returnCode) {
-        [self->_window orderOut:self];
-      }];
+    NSWindow *parentWindow = RCTKeyWindow();
+    if (![[parentWindow childWindows] doesContain:self->_window]) {
+      NSRect parentFrame = parentWindow.frame;
+      NSRect loadingFrame = self->_window.frame;
+      [self->_window setFrameOrigin:NSMakePoint(
+                                        NSMidX(parentFrame) - NSWidth(loadingFrame) / 2,
+                                        NSMidY(parentFrame) - NSHeight(loadingFrame) / 2)];
+      [parentWindow addChildWindow:self->_window ordered:NSWindowAbove];
     }
 #endif // macOS]
   });
@@ -263,9 +273,10 @@ RCT_EXPORT_METHOD(hide)
           self->_hiding = false;
         }];
 #else // [macOS]
-    for (NSWindow *window in [RCTKeyWindow() sheets]) {
+    for (NSWindow *window in NSApp.windows) {
       if ([[window identifier] isEqualToString:sRCTDevLoadingViewWindowIdentifier]) {
-        [RCTKeyWindow() endSheet:window];
+        [window.parentWindow removeChildWindow:window];
+        [window orderOut:self];
       }
     }
     self->_window = nil;
