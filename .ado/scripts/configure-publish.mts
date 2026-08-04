@@ -2,7 +2,8 @@
 import { $, argv, echo, fs } from 'zx';
 import { resolve } from 'node:path';
 
-const NPM_DEFAULT_REGISTRY = 'https://registry.npmjs.org/';
+const isGitHubActions = process.env['GITHUB_ACTIONS'] === 'true';
+
 const NPM_TAG_NEXT = 'next';
 
 export type ReleaseState = 'STABLE_IS_LATEST' | 'STABLE_IS_NEW' | 'STABLE_IS_OLD';
@@ -23,15 +24,10 @@ export interface TagInfo {
 
 interface Options {
   'mock-branch'?: string;
-  'skip-auth'?: boolean;
   tag?: string;
   verbose?: boolean;
 }
 
-/**
- * Exports a variable, `publish_react_native_macos`, to signal that we want to
- * enable publishing on Azure Pipelines.
- */
 function enablePublishingOnAzurePipelines() {
   setAzurePipelineVariable('publish_react_native_macos', '1');
 }
@@ -54,6 +50,12 @@ export function getAzurePipelineVariableCommands(
 function setAzurePipelineVariable(name: string, value: string) {
   for (const command of getAzurePipelineVariableCommands(name, value)) {
     echo(command);
+  }
+}
+
+function enablePublishingOnGitHubActions() {
+  if (process.env['GITHUB_OUTPUT']) {
+    fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publish_react_native_macos=1\n`);
   }
 }
 
@@ -179,38 +181,21 @@ export function getPublishTags(
   }
 }
 
-async function verifyNpmAuth(registry = NPM_DEFAULT_REGISTRY) {
-  const whoami = await $`npm whoami --registry ${registry}`.nothrow();
-  if (whoami.exitCode !== 0) {
-    const errText = whoami.stderr;
-    const m = errText.match(/npm error code (\w+)/);
-    const errorCode = m && m[1];
-    switch (errorCode) {
-      case 'EINVALIDNPMTOKEN':
-        throw new Error(`Invalid auth token for npm registry: ${registry}`);
-      case 'ENEEDAUTH':
-        throw new Error(`Missing auth token for npm registry: ${registry}`);
-      default:
-        throw new Error(errText);
-    }
-  }
-}
-
 async function enablePublishing(tagInfo: TagInfo, options: Options) {
   setAzurePipelineVariable('publishTag', tagInfo.npmTag);
   if (process.env['GITHUB_OUTPUT']) {
     fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publishTag=${tagInfo.npmTag}\n`);
   }
 
-  if (options['skip-auth']) {
-    echo('ℹ️ Skipped npm auth validation');
-  } else {
-    await verifyNpmAuth();
-  }
-
   // Don't enable publishing in PRs
   if (!getTargetBranch()) {
-    enablePublishingOnAzurePipelines();
+    if (isGitHubActions) {
+      enablePublishingOnGitHubActions();
+    } else if (process.env['TF_BUILD'] === 'True') {
+      enablePublishingOnAzurePipelines();
+    } else {
+      echo('ℹ️ Local run — publishing not enabled');
+    }
   }
 }
 
@@ -222,7 +207,6 @@ if (isDirectRun) {
   // Parse CLI args using zx's argv (minimist)
   const options: Options = {
     'mock-branch': argv['mock-branch'] as string | undefined,
-    'skip-auth': Boolean(argv['skip-auth']),
     tag: typeof argv['tag'] === 'string' ? argv['tag'] : NPM_TAG_NEXT,
     verbose: Boolean(argv['verbose']),
   };

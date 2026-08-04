@@ -41,7 +41,7 @@
   "devDependencies": {
     "@react-native/debugger-shell": "workspace:*",
     "selfsigned": "^2.4.1",
-    "undici": "^6.24.0",
+    "undici": "^6.28.0",
     "wait-for-expect": "^3.0.2"
   }
 }

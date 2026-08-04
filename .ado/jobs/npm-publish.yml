@@ -35,7 +35,7 @@ jobs:
       - script: yarn workspaces foreach --all --topological --no-private run build
         displayName: Build publishable workspaces
 
-      - script: node .ado/scripts/configure-publish.mts --verbose --skip-auth
+      - script: node .ado/scripts/configure-publish.mts --verbose
         # Reference name for dependencies.NpmPack.outputs['config.*'] in NpmEsrpRelease
         name: config
         displayName: Verify release config

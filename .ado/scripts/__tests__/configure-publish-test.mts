@@ -64,7 +64,6 @@ describe('configure-publish', () => {
       script,
       '--mock-branch',
       'main',
-      '--skip-auth',
     ]);
 
     assert.match(stdout, /nightly publishing is currently disabled/);
