@@ -33,7 +33,13 @@
 
 - (NSRect)titleRectForBounds:(NSRect)rect
 {
-  return UIEdgeInsetsInsetRect([super titleRectForBounds:rect], self.textContainerInset);
+  NSRect titleRect = UIEdgeInsetsInsetRect([super titleRectForBounds:rect], self.textContainerInset);
+  CGFloat contentHeight = self.cellSize.height;
+  if (contentHeight < titleRect.size.height) {
+    titleRect.origin.y += (titleRect.size.height - contentHeight) / 2;
+    titleRect.size.height = contentHeight;
+  }
+  return titleRect;
 }
 
 - (void)editWithFrame:(NSRect)rect inView:(NSView *)controlView editor:(NSText *)textObj delegate:(id)delegate event:(NSEvent *)event
