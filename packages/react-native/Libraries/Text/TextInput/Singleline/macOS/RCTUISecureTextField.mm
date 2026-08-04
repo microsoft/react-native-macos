@@ -31,6 +31,7 @@
 - (NSRect)titleRectForBounds:(NSRect)rect
 {
   NSRect titleRect = UIEdgeInsetsInsetRect([super titleRectForBounds:rect], self.textContainerInset);
+  // Center the intrinsic text height within the padded control bounds.
   CGFloat contentHeight = self.cellSize.height;
   if (contentHeight < titleRect.size.height) {
     titleRect.origin.y += (titleRect.size.height - contentHeight) / 2;
