@@ -4575,7 +4575,7 @@ __metadata:
     open: "npm:^7.0.3"
     selfsigned: "npm:^2.4.1"
     serve-static: "npm:^1.16.2"
-    undici: "npm:^6.24.0"
+    undici: "npm:^6.28.0"
     wait-for-expect: "npm:^3.0.2"
     ws: "npm:^7.5.10"
   languageName: unknown
@@ -16158,10 +16158,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^6.24.0":
-  version: 6.24.1
-  resolution: "undici@npm:6.24.1"
-  checksum: 10c0/53fdbaa357139a2c12deed34f67d67fc6ad269630ba85a1507e7717f53ad2d3a02c95fbd17d3ab321e34c60b6f0a716cdc2f7e2eca1e07178702dc89cc3a73c4
+"undici@npm:^6.28.0":
+  version: 6.28.0
+  resolution: "undici@npm:6.28.0"
+  checksum: 10c0/3029a70df06b38b5b2f30732932a1e92544c753cd82c8abdf0d35afad48e0ba91612e79fe3a442dbbb9434d6a9eba2b714d5ea28984c903dda2b5d5444f38354
   languageName: node
   linkType: hard
 
