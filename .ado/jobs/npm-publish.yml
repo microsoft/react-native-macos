@@ -88,5 +88,5 @@ jobs:
           contenttype: npm
           folderlocation: $(Pipeline.Workspace)/npm-packed-tarballs
           productstate: $(publishTag)
-          owners: 'vmorozov@microsoft.com'
-          approvers: 'khosany@microsoft.com'
+          owners: 'sanajmi@microsoft.com'
+          approvers: 'jasonmo@microsoft.com'
