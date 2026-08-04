@@ -36,6 +36,7 @@ jobs:
         displayName: Build publishable workspaces
 
       - script: node .ado/scripts/configure-publish.mts --verbose --skip-auth
+        # Reference name for dependencies.NpmPack.outputs['config.*'] in NpmEsrpRelease
         name: config
         displayName: Verify release config
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import {execFile as execFileCallback} from 'node:child_process';
-import {mkdir, readFile, readdir, rm} from 'node:fs/promises';
+import {mkdirSync, readFileSync, readdirSync, rmSync} from 'node:fs';
 import {join, resolve} from 'node:path';
 import {parseArgs, promisify} from 'node:util';
 
@@ -28,7 +28,7 @@ export async function getPublishableWorkspaces(
   const workspaces = [];
   for (const line of stdout.split(/\r?\n/).filter(Boolean)) {
     const {location} = JSON.parse(line) as {location: string};
-    const manifest = JSON.parse(await readFile(join(root, location, 'package.json'), 'utf8')) as {
+    const manifest = JSON.parse(readFileSync(join(root, location, 'package.json'), 'utf8')) as {
       name?: string;
       private?: boolean;
       version?: string;
@@ -47,7 +47,7 @@ export async function packWorkspaces(
   output: string,
   run: CommandRunner = runCommand,
 ): Promise<void> {
-  await mkdir(output, {recursive: true});
+  mkdirSync(output, {recursive: true});
   for (const workspace of await getPublishableWorkspaces(root, run)) {
     const tarball = join(output, safeTarballName(workspace.name, workspace.version));
     await run('yarn', ['workspace', workspace.name, 'pack', '--out', tarball], {cwd: root});
@@ -88,13 +88,13 @@ export async function filterPublishedTarballs(
   run: CommandRunner = runCommand,
 ): Promise<string[]> {
   const remaining = [];
-  for (const file of (await readdir(output)).filter(name => name.endsWith('.tgz')).sort()) {
+  for (const file of readdirSync(output).filter(name => name.endsWith('.tgz')).sort()) {
     const tarball = join(output, file);
     const {stdout} = await run('tar', ['-xOf', tarball, 'package/package.json']);
     const {name, version} = JSON.parse(stdout) as {name?: string; version?: string};
     if (!name || !version) throw new Error(`Invalid package metadata in ${tarball}`);
     if ((await getRegistryStatus(name, version, run)) === 'published') {
-      await rm(tarball);
+      rmSync(tarball);
       console.log(`Removed already-published ${name}@${version}`);
     } else {
       remaining.push(tarball);
@@ -132,8 +132,8 @@ if (isDirectRun) {
   });
   if (positionals.length !== 1) throw new Error('Expected one output directory');
   const output = resolve(positionals[0]);
-  if (values.clean) await rm(output, {recursive: true, force: true});
-  await mkdir(output, {recursive: true});
+  if (values.clean) rmSync(output, {recursive: true, force: true});
+  mkdirSync(output, {recursive: true});
   if (!values['no-pack']) await packWorkspaces(process.cwd(), output);
   if (values['check-npm']) {
     await checkPublishedTarballs(output);
