@@ -11,9 +11,23 @@
 'use strict';
 
 const {create} = require('../../../jest/renderer');
+const ScrollView = require('../../Components/ScrollView/ScrollView').default;
 const FlatList = require('../FlatList').default;
 const React = require('react');
 const {createRef} = require('react');
+const {act} = require('react-test-renderer');
+
+function createKeyEvent(key: string, altKey: boolean = false) {
+  let defaultPrevented = false;
+  return {
+    defaultPrevented,
+    isDefaultPrevented: () => defaultPrevented,
+    nativeEvent: {altKey, key},
+    preventDefault: () => {
+      defaultPrevented = true;
+    },
+  };
+}
 
 describe('FlatList', () => {
   it('renders simple list', async () => {
@@ -59,6 +73,147 @@ describe('FlatList', () => {
       />,
     );
     expect(component).toMatchSnapshot();
+  });
+
+  it('owns keyboard row selection state', async () => {
+    const listRef = createRef<React.ElementRef<typeof FlatList>>();
+    const onSelectionChanged = jest.fn();
+    const onSelectionEntered = jest.fn();
+    const component = await create(
+      <FlatList
+        data={[{key: 'i1'}, {key: 'i2'}, {key: 'i3'}]}
+        enableSelectionOnKeyPress={true}
+        initialSelectedIndex={0}
+        onSelectionChanged={onSelectionChanged}
+        onSelectionEntered={onSelectionEntered}
+        ref={listRef}
+        renderItem={({isSelected, item}) => (
+          <item isSelected={isSelected} value={item.key} />
+        )}
+      />,
+    );
+
+    expect(
+      component.root.findAllByType('item').map(item => item.props.isSelected),
+    ).toEqual([true, false, false]);
+
+    const scrollView = component.root.findByType(ScrollView);
+    expect(scrollView.props.keyDownEvents).toContainEqual({key: 'Enter'});
+
+    await act(async () => {
+      scrollView.props.onKeyDown(createKeyEvent('ArrowDown'));
+    });
+
+    expect(
+      component.root.findAllByType('item').map(item => item.props.isSelected),
+    ).toEqual([false, true, false]);
+    expect(onSelectionChanged).toHaveBeenCalledWith({
+      item: {key: 'i2'},
+      newSelection: 1,
+      previousSelection: 0,
+    });
+
+    await act(async () => {
+      scrollView.props.onKeyDown(createKeyEvent('ArrowDown', true));
+    });
+    expect(
+      component.root.findAllByType('item').map(item => item.props.isSelected),
+    ).toEqual([false, false, true]);
+    expect(onSelectionChanged).toHaveBeenLastCalledWith({
+      item: {key: 'i3'},
+      newSelection: 2,
+      previousSelection: 1,
+    });
+
+    scrollView.props.onKeyDown(createKeyEvent('Enter'));
+    expect(onSelectionEntered).toHaveBeenCalledWith({key: 'i3'});
+
+    await act(async () => {
+      listRef.current?.selectRowAtIndex(0);
+    });
+    expect(onSelectionChanged).toHaveBeenLastCalledWith({
+      item: {key: 'i1'},
+      newSelection: 0,
+      previousSelection: 2,
+    });
+  });
+
+  it('lets consumers prevent keyboard selection', async () => {
+    const onKeyDown = jest.fn(event => event.preventDefault());
+    const onSelectionChanged = jest.fn();
+    const component = await create(
+      <FlatList
+        data={[{key: 'i1'}, {key: 'i2'}]}
+        enableSelectionOnKeyPress={true}
+        initialSelectedIndex={0}
+        onKeyDown={onKeyDown}
+        onSelectionChanged={onSelectionChanged}
+        renderItem={({item}) => <item value={item.key} />}
+      />,
+    );
+
+    component.root
+      .findByType(ScrollView)
+      .props.onKeyDown(createKeyEvent('ArrowDown'));
+
+    expect(onKeyDown).toHaveBeenCalledTimes(1);
+    expect(onSelectionChanged).not.toHaveBeenCalled();
+  });
+
+  it('rejects selecting a row outside the data', async () => {
+    const listRef = createRef<React.ElementRef<typeof FlatList>>();
+    await create(
+      <FlatList
+        data={[{key: 'i1'}]}
+        ref={listRef}
+        renderItem={({item}) => <item value={item.key} />}
+      />,
+    );
+
+    expect(() => listRef.current?.selectRowAtIndex(1)).toThrow(
+      'selectRowAtIndex out of range',
+    );
+  });
+
+  it('keeps visible selections still and preserves scroll failure handling', async () => {
+    const listRef = createRef<React.ElementRef<typeof FlatList>>();
+    const onScrollToIndexFailed = jest.fn();
+    await create(
+      <FlatList
+        data={[{key: 'i1'}, {key: 'i2'}, {key: 'i3'}]}
+        getItemLayout={(_, index) => ({
+          index,
+          length: 10,
+          offset: index * 10,
+        })}
+        onScrollToIndexFailed={onScrollToIndexFailed}
+        ref={listRef}
+        renderItem={({item}) => <item value={item.key} />}
+      />,
+    );
+    const list = listRef.current;
+    if (list == null) {
+      throw new Error('FlatList ref was not set');
+    }
+    // $FlowFixMe[prop-missing] Verify selection scrolling on the owned list.
+    const virtualizedList = list._listRef;
+    if (virtualizedList == null) {
+      throw new Error('VirtualizedList ref was not set');
+    }
+    const scrollToOffset = jest.spyOn(virtualizedList, 'scrollToOffset');
+
+    await act(async () => {
+      virtualizedList._onLayout({
+        nativeEvent: {layout: {height: 100, width: 100}, zoomScale: 1},
+      });
+      virtualizedList._onContentSizeChange(100, 30);
+      list.selectRowAtIndex(1);
+    });
+
+    expect(scrollToOffset).not.toHaveBeenCalled();
+    expect(virtualizedList.props.onScrollToIndexFailed).toBe(
+      onScrollToIndexFailed,
+    );
   });
   it('renders empty list', async () => {
     const component = await create(
