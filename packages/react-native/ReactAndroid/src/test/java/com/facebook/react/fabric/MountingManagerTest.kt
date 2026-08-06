@@ -75,7 +75,7 @@ class MountingManagerTest {
     val rootReactTag = nextRootTag++
 
     // As above this is also a SoftException.
-    // See https://github.com/facebook/react-native/pull/34785 for more context.
+    // See https://github.com/react/react-native/pull/34785 for more context.
     mountingManager.startSurface(rootReactTag, themedReactContext, reactRootView)
   }
 }

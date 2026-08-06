@@ -8,7 +8,7 @@
  * @format
  */
 
-const {REPO_ROOT} = require('./consts');
+const {REACT_NATIVE_PACKAGE_DIR, REPO_ROOT} = require('./consts');
 const {promises: fs} = require('fs');
 const glob = require('glob');
 const path = require('path');
@@ -37,6 +37,9 @@ export type PackageInfo = {
 
   // The absolute path to the package
   path: string,
+
+  // The package version
+  version: string,
 
   // The parsed package.json contents
   packageJson: PackageJson,
@@ -86,6 +89,16 @@ async function getWorkspaceRoot() /*: Promise<PackageInfo> */ {
   return packageInfo;
 }
 
+/**
+ * Get the parsed package metadata for the main react-native package.
+ */
+async function getReactNativePackage() /*: Promise<PackageInfo> */ {
+  const [, packageInfo] = await parsePackageInfo(
+    path.join(REACT_NATIVE_PACKAGE_DIR, 'package.json'),
+  );
+  return packageInfo;
+}
+
 async function parsePackageInfo(
   packageJsonPath /*: string */,
 ) /*: Promise<[string, PackageInfo]> */ {
@@ -99,6 +112,7 @@ async function parsePackageInfo(
     {
       name: packageJson.name,
       path: packagePath,
+      version: packageJson.version,
       packageJson,
     },
   ];
@@ -154,4 +168,5 @@ module.exports = {
   getPackages,
   getWorkspaceRoot,
   updatePackageJson,
+  getReactNativePackage,
 };

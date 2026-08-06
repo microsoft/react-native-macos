@@ -414,7 +414,7 @@ public open class ReactTextInputManager public constructor() :
       return
     }
 
-    // Based on https://github.com/facebook/react-native/pull/31007
+    // Based on https://github.com/react/react-native/pull/31007
     if (Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
       return
     }
@@ -770,7 +770,7 @@ public open class ReactTextInputManager public constructor() :
       // crash happens when focusing on a email EditText, during which a prompt will be triggered
       // but
       // the system fail to locate it properly. Here is an example post discussing about this
-      // issue: https://github.com/facebook/react-native/issues/27204
+      // issue: https://github.com/react/react-native/issues/27204
       if (shouldHideCursorForEmailTextInput()) {
         view.isCursorVisible = false
       }

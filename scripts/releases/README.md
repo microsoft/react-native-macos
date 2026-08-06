@@ -1,6 +1,6 @@
 # scripts/releases
 
-Scripts related to creating a React Native release. These are the lower level entry points used by [**scripts/releases-ci**](https://github.com/facebook/react-native/tree/main/scripts/releases-ci).
+Scripts related to creating a React Native release. These are the lower level entry points used by [**scripts/releases-ci**](https://github.com/react/react-native/tree/main/scripts/releases-ci).
 
 ## Commands
 

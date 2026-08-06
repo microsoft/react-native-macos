@@ -31,7 +31,7 @@ import {cloneElement, useMemo} from 'react';
 type AnimatedScrollViewInstance = React.ElementRef<typeof ScrollView>;
 
 /**
- * @see https://github.com/facebook/react-native/commit/b8c8562
+ * @see https://github.com/react/react-native/commit/b8c8562
  */
 const AnimatedScrollView: AnimatedComponentType<
   ScrollViewProps,

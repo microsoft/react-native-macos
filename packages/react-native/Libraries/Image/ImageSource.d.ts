@@ -8,7 +8,7 @@
  */
 
 /*
- * @see https://github.com/facebook/react-native/blob/master/Libraries/Image/ImageSource.js
+ * @see https://github.com/react/react-native/blob/master/Libraries/Image/ImageSource.js
  */
 export interface ImageURISource {
   /**

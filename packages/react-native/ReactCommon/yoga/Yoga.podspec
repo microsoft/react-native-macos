@@ -6,7 +6,7 @@
 package = JSON.parse(File.read(File.expand_path('../../package.json', __dir__)))
 version = package['version']
 
-source = { :git => ENV['INSTALL_YOGA_FROM_LOCATION'] || 'https://github.com/facebook/react-native.git' }
+source = { :git => ENV['INSTALL_YOGA_FROM_LOCATION'] || 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = `git rev-parse HEAD`.strip if system("git rev-parse --git-dir > /dev/null 2>&1")
@@ -61,6 +61,6 @@ Pod::Spec.new do |spec|
   # Fabric must be able to access private headers (which should not be included in the umbrella header)
   all_header_files = 'yoga/**/*.h'
   all_header_files = File.join('ReactCommon/yoga', all_header_files) if ENV['INSTALL_YOGA_WITHOUT_PATH_OPTION']
-  spec.private_header_files = Dir.glob(all_header_files) - Dir.glob(public_header_files)
+  spec.private_header_files = Dir.glob(all_header_files).sort - Dir.glob(public_header_files).sort
   spec.preserve_paths = [all_header_files]
 end

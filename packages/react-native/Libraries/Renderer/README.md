@@ -3,7 +3,7 @@
 This page describes how React and React Native versions interact each other.
 The version alignment between the two frameworks relies on two synchronization points:
 
-1. The versions in the `package.json` of the new app template. For example [for React Native 0.68.1](https://github.com/facebook/react-native/blob/0.68-stable/template/package.json#L12-L15) the versions are aligned as follows:
+1. The versions in the `package.json` of the new app template. For example [for React Native 0.68.1](https://github.com/react/react-native/blob/0.68-stable/template/package.json#L12-L15) the versions are aligned as follows:
 
 ```
   "dependencies": {
@@ -12,7 +12,7 @@ The version alignment between the two frameworks relies on two synchronization p
   },
 ```
 
-1. The React renderers **shipped** with React Native inside this folder, the [./Libraries/Renderer](https://github.com/facebook/react-native/tree/main/Libraries/Renderer) folder, of React Native.
+1. The React renderers **shipped** with React Native inside this folder, the [./Libraries/Renderer](https://github.com/react/react-native/tree/main/Libraries/Renderer) folder, of React Native.
 
 This practically means that you **can't bump** the version of React in your `package.json` to a later version,
 as you will still be using the older renderer from the folder mentioned above. Bumping the react version in your `package.json` will lead to unexpected behaviors.
