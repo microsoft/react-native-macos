@@ -680,7 +680,23 @@ RCTPlatformWindow *__nullable RCTKeyWindow(void) // [macOS]
 
   return nil;
 #else // [macOS
-  return [NSApp keyWindow];
+  NSWindow *keyWindow = [NSApp keyWindow];
+  if (keyWindow != nil) {
+    return keyWindow;
+  }
+  // [macOS] With multiple windows open, or while the app is inactive, AppKit may report no key
+  // window at all. Fall back to the main window and then to any visible, focusable window so that
+  // callers (e.g. RCTDeviceInfo's `Dimensions`) never observe a zero-sized window.
+  NSWindow *mainWindow = [NSApp mainWindow];
+  if (mainWindow != nil) {
+    return mainWindow;
+  }
+  for (NSWindow *window in [NSApp windows]) {
+    if (window.isVisible && window.canBecomeKeyWindow) {
+      return window;
+    }
+  }
+  return nil;
 #endif // macOS]
 }
 

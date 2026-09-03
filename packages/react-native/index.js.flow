@@ -468,4 +468,12 @@ export {
 } from './src/private/components/virtualview/VirtualView';
 export type {ModeChangeEvent} from './src/private/components/virtualview/VirtualView';
 
+// [macOS
+export {default as WindowManagerMacOS} from './Libraries/WindowManager/WindowManagerMacOS';
+export type {
+  WindowOptions,
+  WindowInfo,
+} from './Libraries/WindowManager/WindowManagerMacOS';
+// macOS]
+
 // #endregion
