@@ -9,7 +9,7 @@
 
 import type * as React from 'react';
 import type {
-  ListRenderItem,
+  ListRenderItemInfo,
   ViewToken,
   VirtualizedListProps,
   ViewabilityConfig,
@@ -19,7 +19,20 @@ import type {StyleProp} from '../StyleSheet/StyleSheet';
 import type {ViewStyle} from '../StyleSheet/StyleSheetTypes';
 import type {View} from '../Components/View/View';
 
-export interface FlatListProps<ItemT> extends VirtualizedListProps<ItemT> {
+export interface FlatListRenderItemInfo<ItemT>
+  extends ListRenderItemInfo<ItemT> {
+  isSelected: boolean;
+}
+
+export type FlatListRenderItem<ItemT> = (
+  info: FlatListRenderItemInfo<ItemT>,
+) => React.ReactNode;
+
+export interface FlatListProps<ItemT>
+  extends Omit<
+    VirtualizedListProps<ItemT>,
+    'ListItemComponent' | 'renderItem'
+  > {
   /**
    * Optional custom style for multi-item rows generated when numColumns > 1
    */
@@ -88,6 +101,44 @@ export interface FlatListProps<ItemT> extends VirtualizedListProps<ItemT> {
   initialScrollIndex?: number | null | undefined;
 
   /**
+   * Allows rows to be selected with the keyboard.
+   *
+   * @platform macos
+   */
+  enableSelectionOnKeyPress?: boolean | null | undefined;
+
+  /**
+   * The initially selected row.
+   *
+   * @platform macos
+   */
+  initialSelectedIndex?: number | null | undefined;
+
+  /**
+   * Called when the selected row changes.
+   *
+   * @platform macos
+   */
+  onSelectionChanged?:
+    | ((info: {
+        previousSelection: number;
+        newSelection: number;
+        item: ItemT | ReadonlyArray<ItemT> | null | undefined;
+      }) => void)
+    | null
+    | undefined;
+
+  /**
+   * Called when Enter is pressed on the selected row.
+   *
+   * @platform macos
+   */
+  onSelectionEntered?:
+    | ((item: ItemT | ReadonlyArray<ItemT> | null | undefined) => void)
+    | null
+    | undefined;
+
+  /**
    * Used to extract a unique key for a given item at the specified index. Key is used for caching
    * and as the react key to track item re-ordering. The default extractor checks `item.key`, then
    * falls back to using the index, like React does.
@@ -140,7 +191,13 @@ export interface FlatListProps<ItemT> extends VirtualizedListProps<ItemT> {
    * ```
    * Provides additional metadata like `index` if you need it.
    */
-  renderItem: ListRenderItem<ItemT> | null | undefined;
+  renderItem: FlatListRenderItem<ItemT> | null | undefined;
+
+  ListItemComponent?:
+    | React.ComponentType<FlatListRenderItemInfo<ItemT>>
+    | React.ReactElement
+    | null
+    | undefined;
 
   /**
    * See `ViewabilityHelper` for flow type and further documentation.
@@ -222,6 +279,13 @@ export abstract class FlatListComponent<
    * Displays the scroll indicators momentarily.
    */
   flashScrollIndicators: () => void;
+
+  /**
+   * Moves selection to the specified row.
+   *
+   * @platform macos
+   */
+  selectRowAtIndex: (index: number) => void;
 
   /**
    * Provides a handle to the underlying scroll responder.
