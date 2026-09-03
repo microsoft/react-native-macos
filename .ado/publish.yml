@@ -52,4 +52,4 @@ extends:
       - stage: NPM
         dependsOn: []
         jobs:
-         - template: /.ado/jobs/npm-publish.yml@self
+          - template: /.ado/jobs/npm-publish.yml@self
