@@ -27,7 +27,7 @@ jobs:
       cache-hit: ${{ steps.cache.outputs.cache-hit }}
       recomposed: ${{ steps.recompose.outputs.recomposed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
           fetch-depth: 0
@@ -62,7 +62,7 @@ jobs:
       # Upload recomposed artifacts — the prebuild-macos-core workflow downloads these
       - name: Upload recomposed Hermes artifacts
         if: steps.recompose.outputs.recomposed == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hermes-artifacts
           path: hermes-destroot
@@ -78,14 +78,14 @@ jobs:
       - name: Restore Hermes cache
         if: steps.recompose.outputs.recomposed != 'true'
         id: cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           key: hermes-v1-${{ steps.resolve.outputs.hermes-commit }}-Debug
           path: hermes-destroot
 
       - name: Upload cached Hermes artifacts
         if: steps.recompose.outputs.recomposed != 'true' && steps.cache.outputs.cache-hit == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hermes-artifacts
           path: hermes-destroot
@@ -102,7 +102,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
 
@@ -113,7 +113,7 @@ jobs:
           cache-npm-dependencies: ''
 
       - name: Clone Hermes
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: facebook/hermes
           ref: ${{ needs.resolve-hermes.outputs.hermes-commit }}
@@ -130,7 +130,7 @@ jobs:
           build_host_hermesc
 
       - name: Upload hermesc artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hermesc
           path: hermes/build_host_hermesc
@@ -158,7 +158,7 @@ jobs:
           - slice: xrsimulator
             platform: visionos
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
 
@@ -169,14 +169,14 @@ jobs:
           cache-npm-dependencies: ''
 
       - name: Clone Hermes
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: facebook/hermes
           ref: ${{ needs.resolve-hermes.outputs.hermes-commit }}
           path: hermes
 
       - name: Download hermesc
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: hermesc
           path: hermes/build_host_hermesc
@@ -198,7 +198,7 @@ jobs:
           bash $GITHUB_WORKSPACE/packages/react-native/sdks/hermes-engine/utils/build-ios-framework.sh "${{ matrix.slice }}"
 
       - name: Upload slice artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hermes-slice-${{ matrix.slice }}
           path: hermes/destroot
@@ -211,12 +211,12 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
 
       - name: Download all slice artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: hermes-slice-*
           path: /tmp/slices
@@ -248,13 +248,13 @@ jobs:
           create_universal_framework "iphoneos" "iphonesimulator" "macosx" "xros" "xrsimulator"
 
       - name: Save Hermes cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           key: hermes-v1-${{ needs.resolve-hermes.outputs.hermes-commit }}-Debug
           path: hermes/destroot
 
       - name: Upload Hermes artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hermes-artifacts
           path: hermes/destroot

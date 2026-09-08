@@ -16,7 +16,7 @@ jobs:
     permissions: {}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
           fetch-depth: 0
@@ -45,7 +45,7 @@ jobs:
     permissions: {}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
           fetch-depth: 0
@@ -72,7 +72,7 @@ jobs:
       ${{ endsWith(github.base_ref, '-stable')
           && !startsWith(github.head_ref, 'changeset-release/') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
           fetch-depth: 0
@@ -90,7 +90,7 @@ jobs:
     permissions: {}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
           fetch-depth: 0
@@ -108,7 +108,7 @@ jobs:
     permissions: {}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
           fetch-depth: 0

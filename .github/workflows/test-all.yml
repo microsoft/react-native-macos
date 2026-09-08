@@ -51,7 +51,7 @@ jobs:
       [prebuild_apple_dependencies, prebuild_react_native_core]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Run it
         uses: ./.github/actions/test-ios-rntester
         with:
@@ -70,7 +70,7 @@ jobs:
         frameworks: [StaticLibraries, DynamicFrameworks]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Run it
         uses: ./.github/actions/test-ios-rntester
         with:
@@ -87,11 +87,11 @@ jobs:
         flavor: [Debug, Release]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
       - name: Download App
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: RNTesterApp-NewArch-${{ matrix.flavor }}
           path: /tmp/RNTesterBuild/RNTester.app
@@ -118,7 +118,7 @@ jobs:
         flavor: [Debug, Release]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup xcode
         uses: ./.github/actions/setup-xcode
         with:
@@ -128,18 +128,18 @@ jobs:
       - name: Run yarn
         uses: ./.github/actions/yarn-install
       - name: Setup ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
           ruby-version: 2.6.10
       - name: Download React Native Package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: react-native-package
           path: /tmp/react-native-tmp
       - name: Print /tmp folder
         run: ls -lR /tmp/react-native-tmp
       - name: Download ReactNativeDependencies
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
           path: /tmp/third-party
@@ -147,7 +147,7 @@ jobs:
         shell: bash
         run: ls -lR /tmp/third-party
       - name: Download React Native Prebuilds
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: ReactCore${{ matrix.flavor }}.xcframework.tar.gz
           path: /tmp/ReactCore
@@ -207,23 +207,23 @@ jobs:
         flavor: [debug, release]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup node.js
         uses: ./.github/actions/setup-node
       - name: Run yarn
         uses: ./.github/actions/yarn-install
       - name: Set up JDK 17
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@215b7e5f829ab9cac114c149667e57dc1b70b4bc # v2.5.2
         with:
           java-version: '17'
           distribution: 'zulu'
       - name: Download Maven Local
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: maven-local
           path: /tmp/react-native-tmp/maven-local
       - name: Download React Native Package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: react-native-package
           path: /tmp/react-native-tmp
@@ -278,7 +278,7 @@ jobs:
         ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Build and Test Fantom
         uses: ./.github/actions/run-fantom-tests
         with:
@@ -297,7 +297,7 @@ jobs:
         ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Build Android
         uses: ./.github/actions/build-android
         with:
@@ -313,13 +313,13 @@ jobs:
         flavor: [debug, release]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup node.js
         uses: ./.github/actions/setup-node
       - name: Install node dependencies
         uses: ./.github/actions/yarn-install
       - name: Download APK
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: rntester-${{ matrix.flavor }}
           path: ./packages/rn-tester/android/app/build/outputs/apk/${{ matrix.flavor }}/
@@ -350,7 +350,7 @@ jobs:
         GRADLE_OPTS: "-Dorg.gradle.daemon=false"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Build NPM Package
         uses: ./.github/actions/build-npm-package
         with:
@@ -377,16 +377,16 @@ jobs:
         flavor: [Debug, Release]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Setup git safe folders
         run: git config --global --add safe.directory '*'
       - name: Download npm package artifact
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: react-native-package
           path: build
       - name: Download maven-local artifact
-        uses: actions/download-artifact@v4.1.3
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: maven-local
           path: /tmp/maven-local
@@ -415,7 +415,7 @@ jobs:
           fi
           yarn build android "${args[@]}" -P reactNativeArchitectures="$TARGET_ARCHITECTURE" -P react.internal.mavenLocalRepo="/tmp/maven-local"
       - name: Upload artifact
-        uses: actions/upload-artifact@v4.3.4
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           name: helloworld-apk-${{ matrix.flavor }}-NewArch-hermes
           path: ./private/helloworld/android/app/build/outputs/apk/
@@ -429,7 +429,7 @@ jobs:
       YARN_ENABLE_IMMUTABLE_INSTALLS: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: ./.github/actions/test-ios-helloworld
         with:
           ruby-version: 3.2.0
@@ -451,7 +451,7 @@ jobs:
       YARN_ENABLE_IMMUTABLE_INSTALLS: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: ./.github/actions/test-ios-helloworld
         with:
           flavor: ${{ matrix.flavor }}
@@ -466,7 +466,7 @@ jobs:
         node-version: ["24.4.1", "22", "20.19.4"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Test JS
         uses: ./.github/actions/test-js
         with:
@@ -479,7 +479,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Run all the linters
         uses: ./.github/actions/lint
         with:
@@ -500,7 +500,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && always() }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Rerun failed jobs in the current workflow
         env:
           GH_TOKEN: ${{ github.token }}
