@@ -11,8 +11,6 @@
 #import <React/RCTNetworking.h>
 #import <React/RCTUtils.h>
 
-extern BOOL RCTIsGzippedData(NSData *data);
-
 @interface RCTNetworking (Private)
 
 - (void)buildRequest:(NSDictionary<NSString *, id> *)query completionBlock:(void (^)(NSURLRequest *request))block;
