@@ -5,6 +5,7 @@ import {join} from 'node:path';
 
 const require = createRequire(import.meta.url);
 const semver = require('semver');
+const micromatch = require('micromatch');
 
 export const registry = 'https://registry.npmjs.org';
 
@@ -20,15 +21,19 @@ export function isStableBranch(branch) {
   return /^(0|[1-9]\d*)\.(0|[1-9]\d*)-stable$/.test(branch);
 }
 
-export function readWorkspaces(root = process.cwd(), run = execFileSync) {
+function readWorkspaceEntries(root, run) {
   const output = run('yarn', ['workspaces', 'list', '--json'], {
     cwd: root,
     encoding: 'utf8',
   });
   return output.trim().split('\n').map(line => {
     const {location} = JSON.parse(line);
-    return JSON.parse(readFileSync(join(root, location, 'package.json'), 'utf8'));
+    return {location, pkg: JSON.parse(readFileSync(join(root, location, 'package.json'), 'utf8'))};
   });
+}
+
+export function readWorkspaces(root = process.cwd(), run = execFileSync) {
+  return readWorkspaceEntries(root, run).map(({pkg}) => pkg);
 }
 
 // The init CLI has its own version and release process. Never include all public
@@ -94,10 +99,9 @@ export function validateRelease(workspaces, branch) {
   return packages;
 }
 
-export async function readChangesetStatus(root = process.cwd()) {
+export async function readChangesetStatus(root = process.cwd(), getReleasePlan = require('@changesets/get-release-plan').default) {
   // Unlike `changeset status`, this API does not default to config.baseBranch.
   // Omit sinceRef to inspect ALL pending Changesets, including empty changesets.
-  const getReleasePlan = require('@changesets/get-release-plan').default;
   // Explicit registry dependencies on private upstream workspaces are external
   // releases. Only workspace: links participate in dependency bump propagation.
   const status = await getReleasePlan(root, undefined, {bumpVersionsWithWorkspaceProtocolOnly: true});
@@ -105,6 +109,90 @@ export async function readChangesetStatus(root = process.cwd()) {
     throw new Error('Invalid Changesets status');
   }
   return status;
+}
+
+function changelogSection(changelog, version) {
+  const headings = [...changelog.matchAll(/^#{1,2} .+$/gm)];
+  const matches = headings.filter(heading => heading[0].trim() === `## ${version}`);
+  if (matches.length > 1) throw new Error(`Duplicate changelog section: ${version}`);
+  if (!matches.length) return undefined;
+  const heading = matches[0];
+  const next = headings[headings.indexOf(heading) + 1];
+  return changelog.slice(heading.index + heading[0].length, next?.index)
+    .replace(/<!--[^]*?-->/g, '').replace(/^#{1,6} .+$/gm, '').trim();
+}
+
+// A consumed Changeset is valid only when the PR contains the complete release
+// evidence. Head branch names are not evidence and never grant an exemption.
+export async function validatePreparedVersionPR({
+  baseBranch,
+  branch = baseBranch.split('/').at(-1),
+  root = process.cwd(),
+  run = execFileSync,
+  getStatus = readChangesetStatus,
+}) {
+  const status = await getStatus(root);
+  if (!Array.isArray(status.changesets) || !Array.isArray(status.releases)) {
+    throw new Error('Invalid Changesets status');
+  }
+  // Keep the normal check for pending releases, including empty Changesets.
+  if (status.changesets.length || status.releases.length || !isStableBranch(branch)) return false;
+
+  const git = args => run('git', args, {cwd: root, encoding: 'utf8'});
+  const mergeBase = git(['merge-base', baseBranch, 'HEAD']).trim();
+  const changed = git(['diff', '--name-only', '--no-renames', '-z', mergeBase, 'HEAD']).split('\0').filter(Boolean);
+  const entries = readWorkspaceEntries(root, run);
+  const baseFiles = new Set(git(['ls-tree', '-r', '--name-only', '-z', mergeBase]).split('\0'));
+  const baseRoot = JSON.parse(git(['show', `${mergeBase}:package.json`]));
+  const patterns = Array.isArray(baseRoot.workspaces) ? baseRoot.workspaces : baseRoot.workspaces?.packages ?? [];
+  const baseLocations = micromatch([...baseFiles]
+    .filter(path => path.endsWith('/package.json'))
+    .map(path => path.slice(0, -'/package.json'.length)), patterns, {
+    dot: true, ignore: ['**/node_modules/**', '**/.git/**', '**/.yarn/**'],
+  });
+  const byLocation = new Map(entries.map(({location, pkg}) => [location, pkg]));
+  // Current Yarn metadata cannot report a deleted workspace. Use the base root's
+  // workspace patterns, not arbitrary fixture manifests, to check lost packages.
+  for (const location of ['.', ...baseLocations]) {
+    const previous = location === '.' ? baseRoot : JSON.parse(git(['show', `${mergeBase}:${location}/package.json`]));
+    if (!previous.private && byLocation.get(location)?.name !== previous.name) {
+      throw new Error(`Deleted or moved public workspace: ${previous.name} (${location})`);
+    }
+  }
+  // Use current visibility: a private-to-public workspace needs release evidence.
+  const publicChanges = entries.filter(({location, pkg}) => !pkg.private && changed.some(path =>
+    location === '.' || path.startsWith(`${location}/`)));
+  if (!publicChanges.length) return false;
+
+  const selected = new Set(validateRelease(entries.map(({pkg}) => pkg), branch).map(pkg => pkg.name));
+  for (const {location, pkg} of publicChanges) {
+    if (!selected.has(pkg.name)) {
+      throw new Error(`Changed public package is outside the release group: ${pkg.name}`);
+    }
+    const manifest = join(location, 'package.json');
+    const changelog = join(location, 'CHANGELOG.md');
+    if (!baseFiles.has(manifest)) {
+      throw new Error(`Missing merge-base version for ${pkg.name}`);
+    }
+    const previous = JSON.parse(git(['show', `${mergeBase}:${manifest}`]));
+    const current = JSON.parse(git(['show', `HEAD:${manifest}`]));
+    if (current.version !== pkg.version || current.name !== pkg.name || current.private) {
+      throw new Error(`Workspace differs from HEAD: ${pkg.name}`);
+    }
+    const bootstrap = previous.version === '1000.0.0' && pkg.version === `0.${parseVersion(pkg.version).minor}.0`;
+    if (!bootstrap) {
+      parseVersion(previous.version);
+      if (!semver.gt(pkg.version, previous.version)) {
+        throw new Error(`Version must increase for ${pkg.name}: ${previous.version} -> ${pkg.version}`);
+      }
+    }
+    const before = baseFiles.has(changelog) ? git(['show', `${mergeBase}:${changelog}`]) : '';
+    if (changelogSection(before, pkg.version) !== undefined ||
+        !changed.includes(changelog) || !changelogSection(git(['show', `HEAD:${changelog}`]), pkg.version)) {
+      throw new Error(`Missing nonempty new changelog section for ${pkg.name}@${pkg.version}`);
+    }
+  }
+  return true;
 }
 
 export async function publishedMetadata(name, fetchRegistry = fetch) {

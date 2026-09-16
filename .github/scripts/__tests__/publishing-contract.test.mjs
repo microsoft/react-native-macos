@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
-import {mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -14,10 +14,12 @@ import {
   readChangesetStatus,
   readWorkspaces,
   validateRelease,
+  validatePreparedVersionPR,
   canAdvanceTag,
 } from '../publishing-contract.mjs';
 import {releaseAlignmentChangeset, versionWithPostbump, withReleaseConfig} from '../changeset-version-with-postbump.mts';
 import {isCurrentHead} from '../check-version-head.mjs';
+import {runCheck} from '../change.mts';
 
 const core = 'react-native-macos';
 const lists = '@react-native-macos/virtualized-lists';
@@ -416,4 +418,322 @@ test('stale-head check accepts only the event SHA on the same stable branch and 
   assert.equal(isCurrentHead(env, () => `${'b'.repeat(40)}\t${env.GITHUB_REF}`), false);
   assert.equal(isCurrentHead({...env, GITHUB_REF: 'refs/heads/main'}, () => assert.fail()), false);
   assert.throws(() => isCurrentHead(env, () => {throw new Error('network');}), /network/);
+});
+
+function preparedFixture(t, {
+  oldVersion = '0.83.1', version = '0.83.2', target = branch,
+  privateLists = false, head = 'arbitrary-release-name',
+  editBase = () => {}, editHead = () => {},
+} = {}) {
+  const {root} = releaseFixture(t);
+  const git = args => execFileSync('git', args, {
+    cwd: root, encoding: 'utf8',
+    env: {...process.env, GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.com',
+      GIT_COMMITTER_NAME: 'Fixture', GIT_COMMITTER_EMAIL: 'fixture@example.com'},
+  });
+  const writePackage = (index, pkg) => writeFileSync(join(root, `packages/p${index}/package.json`), JSON.stringify(pkg));
+  const writeChangelog = (index, text) => writeFileSync(join(root, `packages/p${index}/CHANGELOG.md`), text);
+  const old = graph(oldVersion);
+  old[1].private = privateLists;
+  old.forEach((pkg, index) => writePackage(index, pkg));
+  for (const index of [0, 1]) writeChangelog(index, `# Changelog\n\n## ${oldVersion}\n\nOld release.\n`);
+  writeFileSync(join(root, '.changeset/bootstrap.md'), `---\n"${core}": patch\n---\n\nPrepare release.\n`);
+  editBase({root, workspaces: old, writePackage, writeChangelog});
+  git(['init', '-q', '-b', target]);
+  const commit = () => {
+    git(['add', '.']);
+    git(['-c', 'core.hooksPath=/dev/null', 'commit', '-qm', 'Fixture state']);
+  };
+  commit();
+  const base = git(['rev-parse', 'HEAD']).trim();
+  git(['switch', '-qc', head]);
+  const workspaces = graph(version);
+  const locations = workspaces.map((pkg, index) => `packages/p${index}`);
+  workspaces.forEach((pkg, index) => writePackage(index, pkg));
+  for (const index of [0, 1]) {
+    writeChangelog(index, `# Changelog\n\n## ${version}\n\n### Patch Changes\n\n- Prepare release.\n\n## ${oldVersion}\n\nOld release.\n`);
+  }
+  rmSync(join(root, '.changeset/bootstrap.md'));
+  editHead({root, workspaces, locations, writePackage, writeChangelog});
+  commit();
+  const run = (command, args, options) => {
+    if (command === 'git') return execFileSync(command, args, options);
+    assert.equal(command, 'yarn');
+    assert.deepEqual(args, ['workspaces', 'list', '--json']);
+    assert.equal(options.cwd, root);
+    return locations.map(location => JSON.stringify({location})).join('\n');
+  };
+  const validate = (overrides = {}) => validatePreparedVersionPR({root, baseBranch: target, run, ...overrides});
+  return {root, git, commit, base, validate, run, writePackage, writeChangelog};
+}
+
+test('prepared bootstrap accepts every current public package, including private-to-public lists, on matching stable lines', async t => {
+  for (const minor of [81, 83, 84]) {
+    const fixture = preparedFixture(t, {oldVersion: '1000.0.0', version: `0.${minor}.0`,
+      target: `0.${minor}-stable`, privateLists: true});
+    assert.equal(await fixture.validate(), true);
+  }
+});
+
+test('prepared patch validates real merge-base evidence when the target advances independently', async t => {
+  const fixture = preparedFixture(t);
+  fixture.git(['switch', '-q', branch]);
+  for (const index of [0, 1]) {
+    fixture.writePackage(index, graph('0.83.9')[index]);
+    fixture.writeChangelog(index, '# Changelog\n\n## 0.83.2\n\nUnrelated target history.\n');
+  }
+  fixture.commit();
+  fixture.git(['switch', '-q', 'arbitrary-release-name']);
+  assert.equal(fixture.git(['merge-base', branch, 'HEAD']).trim(), fixture.base);
+  assert.equal(await fixture.validate(), true);
+});
+
+test('prepared transitions require an increase or the exact bootstrap version', async t => {
+  for (const [oldVersion, version, target] of [
+    ['0.83.2', '0.83.2', branch],
+    ['0.83.3', '0.83.2', branch],
+    ['0.83.2+build.1', '0.83.2+build.2', branch],
+    ['1000.0.0', '0.83.1', branch],
+    ['1000.0.0', '0.83.0-rc.1', branch],
+    ['1000.0.0', '0.83.0+build.1', branch],
+    ['1000.0.1', '0.83.0', branch],
+    ['1000.0.0-rc.1', '0.83.0', branch],
+    ['1000.0.0', '1.0.0', '1.0-stable'],
+    ['1000.0.0', '0.84.0', branch],
+  ]) {
+    const fixture = preparedFixture(t, {oldVersion, version, target});
+    await assert.rejects(fixture.validate(), /Version must increase|Invalid release version|does not match/);
+  }
+  const fixture = preparedFixture(t, {oldVersion: '0.83.2-rc.1', version: '0.83.2'});
+  assert.equal(await fixture.validate(), true);
+});
+
+test('every changed public package needs its own new nonempty version section', async t => {
+  for (const index of [0, 1]) {
+    for (const text of [
+      undefined,
+      '# Changelog\n\n## 0.83.1\n\nOld release.\n',
+      '# Changelog\n\n## 0.83.2\n\n### Patch Changes\n\n<!-- no release text -->\n\n## 0.83.1\n\nOld release.\n',
+      '# Changelog\n\n## 0.83.2\n\nOne.\n\n## 0.83.2\n\nTwo.\n',
+    ]) {
+      const fixture = preparedFixture(t, {editHead: ({root, writeChangelog}) => {
+        if (text === undefined) rmSync(join(root, `packages/p${index}/CHANGELOG.md`));
+        else writeChangelog(index, text);
+      }});
+      await assert.rejects(fixture.validate(), /changelog section|CHANGELOG\.md/i);
+    }
+    const fixture = preparedFixture(t, {editBase: ({writeChangelog}) => {
+      writeChangelog(index, '# Changelog\n\n## 0.83.2\n\nExisting release.\n');
+    }});
+    await assert.rejects(fixture.validate(), /new changelog section/);
+  }
+});
+
+test('a new changelog file is valid, but an absent base manifest is not a version transition', async t => {
+  const fixture = preparedFixture(t, {editBase: ({root}) => {
+    for (const index of [0, 1]) rmSync(join(root, `packages/p${index}/CHANGELOG.md`));
+  }});
+  assert.equal(await fixture.validate(), true);
+  const missing = preparedFixture(t, {editBase: ({root}) => {
+    rmSync(join(root, 'packages/p1/package.json'));
+  }});
+  await assert.rejects(missing.validate(), /Missing merge-base version/);
+});
+
+test('private-to-public lists cannot reuse the old version or omit their release notes', async t => {
+  for (const mode of ['same-version', 'missing-notes']) {
+    const fixture = preparedFixture(t, {privateLists: true, editHead: ({writePackage, writeChangelog}) => {
+      if (mode === 'same-version') writePackage(1, graph('0.83.1')[1]);
+      else writeChangelog(1, '# Changelog\n');
+    }});
+    await assert.rejects(fixture.validate(), /does not match|new changelog section/);
+  }
+  const fixture = preparedFixture(t, {privateLists: true, editBase: ({writePackage}) => {
+    writePackage(1, {...graph('0.83.2')[1], private: true});
+  }});
+  await assert.rejects(fixture.validate(), /Version must increase for @react-native-macos\/virtualized-lists/);
+});
+
+test('prepared PR rejects mismatched releases and invalid private or out-of-scope runtime links', async t => {
+  for (const edit of [
+    pkg => {pkg.version = '0.83.3';},
+    pkg => {pkg.private = true;},
+    pkg => {pkg.dependencies = {'@react-native/codegen': 'workspace:*'};},
+    pkg => {pkg.optionalDependencies = {'@react-native-macos/internal': '0.83.2'};},
+    pkg => {pkg.peerDependencies = {'react-native-macos-init': 'workspace:*'};},
+  ]) {
+    const fixture = preparedFixture(t, {editHead: ({workspaces, writePackage}) => {
+      edit(workspaces[0]);
+      writePackage(0, workspaces[0]);
+    }});
+    await assert.rejects(fixture.validate(), /does not match|Missing public|runtime/);
+  }
+});
+
+test('all changed public packages must belong to the release group, including source-only changes', async t => {
+  for (const index of [4, 5]) {
+    const fixture = preparedFixture(t, {editHead: ({root}) => {
+      writeFileSync(join(root, `packages/p${index}/source.js`), 'export const changed = true;\n');
+    }});
+    await assert.rejects(fixture.validate(), /outside the release group/);
+  }
+  const fixture = preparedFixture(t, {editHead: ({root}) => {
+    writeFileSync(join(root, 'packages/p3/source.js'), 'export const privateChange = true;\n');
+  }});
+  assert.equal(await fixture.validate(), true);
+});
+
+test('source-only public changes cannot use a prepared-looking head name as an exemption', async t => {
+  const fixture = preparedFixture(t, {head: 'changeset-release/0.83-stable', editHead: ({root, writePackage, writeChangelog}) => {
+    for (const index of [0, 1]) {
+      writePackage(index, {...graph('0.83.1')[index], ...(index === 1 ? {private: false} : {})});
+      writeChangelog(index, '# Changelog\n\n## 0.83.1\n\nOld release.\n');
+    }
+    writeFileSync(join(root, 'packages/p0/source.js'), 'export const changed = true;\n');
+  }});
+  await assert.rejects(fixture.validate(), /Version must increase/);
+  assert.equal(await fixture.validate({branch: 'main'}), false);
+});
+
+test('pending API state always uses the normal check, including empty Changesets and release-only state', async t => {
+  const fixture = preparedFixture(t);
+  for (const status of [
+    {changesets: [{id: 'pending', releases: [{name: core, type: 'patch'}]}], releases: []},
+    {changesets: [{id: 'empty', releases: []}], releases: []},
+    {changesets: [], releases: [{name: core, type: 'patch'}]},
+  ]) {
+    let normalChecks = 0;
+    await runCheck(branch, {
+      validatePrepared: () => fixture.validate({
+        run: () => assert.fail('Inspected Git or packages with pending Changesets'),
+        getStatus: root => readChangesetStatus(root, async (actualRoot, sinceRef, config) => {
+          assert.equal(actualRoot, fixture.root);
+          assert.equal(sinceRef, undefined);
+          assert.deepEqual(config, {bumpVersionsWithWorkspaceProtocolOnly: true});
+          return status;
+        }),
+      }),
+      getStatus: async baseBranch => {
+        assert.equal(baseBranch, branch);
+        normalChecks++;
+        return {data: {releases: [], changesets: []}, exitCode: 0};
+      },
+    });
+    assert.equal(normalChecks, 1);
+  }
+  writeFileSync(join(fixture.root, '.changeset/empty.md'), '---\n{}\n---\n');
+  assert.equal(await fixture.validate(), false);
+});
+
+test('prepared check shares validation with the CLI and propagates API and Git errors', async t => {
+  const fixture = preparedFixture(t);
+  const getStatus = () => assert.fail('Ran normal check after prepared success or error');
+  await runCheck(branch, {validatePrepared: () => fixture.validate(), getStatus});
+  for (const overrides of [
+    {getStatus: () => {throw new Error('release API failed');}},
+    {getStatus: () => ({})},
+    {baseBranch: 'missing/0.83-stable'},
+    {run: () => {throw new Error('command failed');}},
+  ]) {
+    await assert.rejects(runCheck(branch, {validatePrepared: () => fixture.validate(overrides), getStatus}),
+      /release API failed|Invalid Changesets status|Not a valid object name|command failed/);
+  }
+  await assert.rejects(runCheck(branch, {validatePrepared: async () => false,
+    getStatus: async () => {throw new Error('normal check failed');}}), /normal check failed/);
+});
+
+test('normal check still rejects missing Changesets and major bumps', async t => {
+  t.mock.method(process, 'exit', code => {throw new Error(`Exit ${code}`);});
+  for (const result of [
+    {data: {releases: [], changesets: []}, exitCode: 1},
+    {data: {releases: [{name: core, type: 'major', changesets: ['breaking']}], changesets: ['breaking']}, exitCode: 0},
+  ]) {
+    await assert.rejects(runCheck(branch, {validatePrepared: async () => false,
+      getStatus: async () => result}), /Exit 1/);
+  }
+});
+
+test('no changed public package uses the normal check', async t => {
+  const fixture = preparedFixture(t, {editHead: ({writePackage, writeChangelog}) => {
+    for (const index of [0, 1]) {
+      writePackage(index, {...graph('0.83.1')[index], ...(index === 1 ? {private: false} : {})});
+      writeChangelog(index, '# Changelog\n\n## 0.83.1\n\nOld release.\n');
+    }
+  }});
+  assert.equal(await fixture.validate(), false);
+});
+
+test('a valid prepared bump cannot hide a deleted unrelated public workspace', async t => {
+  for (const index of [4, 5]) {
+    const fixture = preparedFixture(t, {editHead: ({root, locations}) => {
+      rmSync(join(root, `packages/p${index}`), {recursive: true});
+      locations.splice(index, 1);
+    }});
+    await assert.rejects(fixture.validate(), /Deleted or moved public workspace/);
+  }
+});
+
+test('a valid prepared bump cannot hide a public workspace moved into another workspace or to a new location', async t => {
+  for (const destination of ['packages/p0/fixtures/moved', 'packages/moved']) {
+    const fixture = preparedFixture(t, {editHead: ({root, locations}) => {
+      mkdirSync(join(root, 'packages/p0/fixtures'), {recursive: true});
+      renameSync(join(root, 'packages/p4'), join(root, destination));
+      if (destination === 'packages/moved') locations[4] = destination;
+      else locations.splice(4, 1);
+    }});
+    await assert.rejects(fixture.validate(), /Deleted or moved public workspace: react-native-macos-init/);
+  }
+});
+
+test('base workspace membership detects a public package excluded only at HEAD', async t => {
+  const fixture = preparedFixture(t, {editHead: ({root, locations}) => {
+    const path = join(root, 'package.json');
+    const pkg = JSON.parse(readFileSync(path, 'utf8'));
+    pkg.workspaces.push('!packages/p4');
+    writeFileSync(path, JSON.stringify(pkg));
+    locations.splice(4, 1);
+  }});
+  await assert.rejects(fixture.validate(), /Deleted or moved public workspace: react-native-macos-init/);
+});
+
+test('deleted private workspaces and non-workspace fixture manifests do not invalidate a prepared bump', async t => {
+  const extras = ['fixtures/public', 'packages/p0/fixtures/public', 'packages/p0/node_modules/public',
+    'packages/excluded', 'tools/node_modules/public'];
+  for (const objectConfig of [false, true]) {
+    const fixture = preparedFixture(t, {
+      editBase: ({root}) => {
+        const path = join(root, 'package.json');
+        const pkg = JSON.parse(readFileSync(path, 'utf8'));
+        const patterns = ['packages/*', 'tools/**', '!packages/excluded'];
+        pkg.workspaces = objectConfig ? {packages: patterns} : patterns;
+        writeFileSync(path, JSON.stringify(pkg));
+        for (const location of extras) {
+          mkdirSync(join(root, location), {recursive: true});
+          // Invalid JSON proves the validator does not read unrelated manifests.
+          writeFileSync(join(root, location, 'package.json'), 'not a workspace manifest');
+        }
+      },
+      editHead: ({root, locations}) => {
+        rmSync(join(root, 'packages/p3'), {recursive: true});
+        locations.splice(3, 1);
+        for (const location of extras) rmSync(join(root, location), {recursive: true});
+      },
+    });
+    assert.equal(await fixture.validate(), true);
+  }
+});
+
+test('base workspace manifest and tree command errors propagate', async t => {
+  const fixture = preparedFixture(t);
+  for (const fail of [
+    args => args[0] === 'ls-tree',
+    args => args[0] === 'show' && args[1] === `${fixture.base}:package.json`,
+    args => args[0] === 'show' && args[1] === `${fixture.base}:packages/p4/package.json`,
+  ]) {
+    const error = new Error('Base workspace Git failure');
+    await assert.rejects(fixture.validate({run: (command, args, options) => {
+      if (command === 'git' && fail(args)) throw error;
+      return fixture.run(command, args, options);
+    }}), actual => actual === error);
+  }
 });
