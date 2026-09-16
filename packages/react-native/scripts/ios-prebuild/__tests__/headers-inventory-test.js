@@ -10,13 +10,16 @@
 
 'use strict';
 
+const headers = require('../headers');
 const {
   NATURAL_PATH_SOURCE_PREFERENCES,
   PLATFORM_DISPATCH_AUXILIARY_HEADERS,
   PLATFORM_DISPATCH_IMPLEMENTATIONS,
+  buildInventory,
   computeInventory,
   scanHeader,
 } = require('../headers-inventory');
+const fs = require('fs');
 const path = require('path');
 
 describe('scanHeader include classification', () => {
@@ -130,7 +133,20 @@ describe('header source precedence', () => {
     const inventory = computeInventory(rnRoot);
 
     expect(inventory.collisions).toEqual([]);
-    for (const [naturalPath, source] of NATURAL_PATH_SOURCE_PREFERENCES) {
+    expect(Array.from(PLATFORM_DISPATCH_IMPLEMENTATIONS.keys())).toEqual(
+      [
+        'HostPlatformTouch.h',
+        'HostPlatformViewEventEmitter.h',
+        'HostPlatformViewProps.h',
+        'HostPlatformViewTraitsInitializer.h',
+        'KeyEvent.h',
+        'MouseEvent.h',
+      ].map(name => `react/renderer/components/view/${name}`),
+    );
+    for (const [
+      naturalPath,
+      {preferredSource: source},
+    ] of NATURAL_PATH_SOURCE_PREFERENCES) {
       const header = inventory.headers.find(
         candidate => candidate.naturalPath === naturalPath,
       );
@@ -156,19 +172,252 @@ describe('header source precedence', () => {
         source,
       ]);
     }
+    const expectedConsumers = [
+      'RCTText/RCTUITextField.h',
+      'RCTText/RCTUITextView.h',
+      'RCTText/RCTWrappedTextView.h',
+      'React/RCTUITextField.h',
+      'React/RCTUITextView.h',
+      'React/RCTUnimplementedNativeComponentView.h',
+      'React/RCTWrappedTextView.h',
+    ];
     const textUIKitConsumers = inventory.headers.filter(header =>
-      [
-        'RCTText/RCTUITextField.h',
-        'RCTText/RCTUITextView.h',
-        'RCTText/RCTWrappedTextView.h',
-        'React/RCTUITextField.h',
-        'React/RCTUITextView.h',
-        'React/RCTUnimplementedNativeComponentView.h',
-        'React/RCTWrappedTextView.h',
-      ].includes(header.naturalPath),
+      expectedConsumers.includes(header.naturalPath),
+    );
+    expect(textUIKitConsumers.map(header => header.naturalPath).sort()).toEqual(
+      expectedConsumers.sort(),
     );
     expect(
       textUIKitConsumers.flatMap(header => header.includes.quotedNotShipped),
     ).toEqual([]);
+    const byPath = new Map(inventory.headers.map(h => [h.naturalPath, h]));
+    for (const [wrapperPath, source] of PLATFORM_DISPATCH_IMPLEMENTATIONS) {
+      const wrapper = byPath.get(wrapperPath);
+      expect(wrapper).toBeDefined();
+      expect(wrapper?.includes.internal).toContainEqual({
+        naturalPath: source.slice('ReactCommon/'.length),
+        cxxGuarded: false,
+      });
+      if (NATURAL_PATH_SOURCE_PREFERENCES.has(wrapperPath)) {
+        const cxxPath = source.replace('/platform/macos/', '/platform/cxx/');
+        expect(byPath.has(cxxPath.slice('ReactCommon/'.length))).toBe(true);
+        expect(wrapper?.includes.internal).toContainEqual({
+          naturalPath: cxxPath.slice('ReactCommon/'.length),
+          cxxGuarded: false,
+        });
+      }
+    }
   });
+});
+
+describe('bounded source exceptions', () => {
+  const root = '/header-inventory-fixture';
+  const rules = Array.from(NATURAL_PATH_SOURCE_PREFERENCES);
+  const mockHeaders = (naturalPath, sources) => {
+    jest.spyOn(headers, 'getHeaderFilesFromPodspecs').mockReturnValue({
+      fixture: [
+        {
+          specName: 'React-Fabric',
+          headerDir: '',
+          headers: sources.map(source => ({
+            source: path.join(root, source),
+            target: naturalPath,
+          })),
+        },
+      ],
+    });
+    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+  };
+
+  afterEach(() => jest.restoreAllMocks());
+
+  test.each(rules)(
+    'resolves only the exact known pair for %s',
+    (naturalPath, rule) => {
+      mockHeaders(naturalPath, [rule.competingSource, rule.preferredSource]);
+      const result = buildInventory(root);
+      expect(result.collisions).toEqual([]);
+      expect(
+        result.entries.get(naturalPath)?.identities.map(i => i.source),
+      ).toEqual([rule.preferredSource]);
+      expect(
+        result.sourceToNatural.get(path.join(root, rule.competingSource)),
+      ).not.toContain(naturalPath);
+      if (rule.competingSource.includes('/platform/')) {
+        expect(
+          result.entries.has(rule.competingSource.slice('ReactCommon/'.length)),
+        ).toBe(true);
+      }
+    },
+  );
+
+  test.each(rules)(
+    'preserves an unexpected third source for %s',
+    (naturalPath, rule) => {
+      const sources = [
+        rule.preferredSource,
+        rule.competingSource,
+        'unexpected/Header.h',
+      ];
+      mockHeaders(naturalPath, sources);
+      const result = buildInventory(root);
+      expect(result.collisions).toEqual([
+        {naturalPath, sources: [...sources].sort()},
+      ]);
+      expect(
+        result.entries.get(naturalPath)?.identities.map(i => i.source),
+      ).toEqual(sources);
+      for (const source of sources) {
+        expect(result.sourceToNatural.get(path.join(root, source))).toContain(
+          naturalPath,
+        );
+      }
+    },
+  );
+
+  test.each(rules)(
+    'does not suppress a replacement competitor for %s',
+    (naturalPath, rule) => {
+      const sources = [rule.preferredSource, 'unexpected/Header.h'];
+      mockHeaders(naturalPath, sources);
+      expect(buildInventory(root).collisions).toEqual([
+        {naturalPath, sources: sources.sort()},
+      ]);
+    },
+  );
+
+  test.each(rules)(
+    'keeps an upstream-only source for %s',
+    (naturalPath, rule) => {
+      const source = naturalPath.includes('/view/')
+        ? rule.competingSource
+        : rule.preferredSource;
+      mockHeaders(naturalPath, [source]);
+      const result = buildInventory(root);
+      expect(result.collisions).toEqual([]);
+      expect(
+        result.entries.get(naturalPath)?.identities.map(i => i.source),
+      ).toEqual([source]);
+      expect(
+        Array.from(result.entries.keys()).some(p =>
+          p.includes('/platform/macos/'),
+        ),
+      ).toBe(false);
+    },
+  );
+
+  test.each(rules)(
+    'retains collisions when the preferred source is absent for %s',
+    (naturalPath, rule) => {
+      const sources = [rule.competingSource, 'unexpected/Header.h'];
+      mockHeaders(naturalPath, sources);
+      expect(buildInventory(root).collisions).toEqual([
+        {naturalPath, sources: sources.sort()},
+      ]);
+    },
+  );
+
+  test.each(Array.from(PLATFORM_DISPATCH_IMPLEMENTATIONS))(
+    'does not activate macOS additions for an unrelated source at %s',
+    (naturalPath, implementation) => {
+      mockHeaders(naturalPath, ['unexpected/Header.h']);
+      const result = buildInventory(root);
+      expect(
+        result.entries.has(implementation.slice('ReactCommon/'.length)),
+      ).toBe(false);
+      for (const source of PLATFORM_DISPATCH_AUXILIARY_HEADERS.keys()) {
+        expect(result.entries.has(source.slice('ReactCommon/'.length))).toBe(
+          false,
+        );
+      }
+    },
+  );
+});
+
+describe('packaged quoted include resolution', () => {
+  const root = '/header-inventory-fixture';
+  const classify = (token, targets, guarded = false) => {
+    jest.spyOn(headers, 'getHeaderFilesFromPodspecs').mockReturnValue({
+      fixture: [
+        {
+          specName: 'Fixture',
+          headerDir: '',
+          headers: [
+            {source: path.join(root, 'source/A.h'), target: 'ns/A.h'},
+            ...targets.map(([target, source]) => ({
+              source: path.join(root, source),
+              target,
+            })),
+          ],
+        },
+      ],
+    });
+    jest.spyOn(fs, 'readFileSync').mockImplementation(file => {
+      if (file !== path.join(root, 'source/A.h')) {
+        return '';
+      }
+      const include = `#include "${token}"\n`;
+      return guarded ? `#ifdef __cplusplus\n${include}#endif\n` : include;
+    });
+    return computeInventory(root).headers.find(h => h.naturalPath === 'ns/A.h')
+      ?.includes;
+  };
+
+  afterEach(() => jest.restoreAllMocks());
+
+  test.each(['sub/B.h', './sub/B.h', 'sub/../sub/B.h', '../ns/sub/B.h'])(
+    'normalizes the packaged sibling %s',
+    token => {
+      const includes = classify(token, [['ns/sub/B.h', 'elsewhere/B.h']]);
+      expect(includes?.internal).toEqual([
+        {naturalPath: 'ns/sub/B.h', cxxGuarded: false},
+      ]);
+      expect(includes?.quotedNotShipped).toEqual([]);
+    },
+  );
+
+  test('prefers the packaged sibling over root and physical-source matches', () => {
+    const includes = classify(
+      'sub/B.h',
+      [
+        ['ns/sub/B.h', 'elsewhere/B.h'],
+        ['sub/B.h', 'root/B.h'],
+        ['relocated/B.h', 'source/sub/B.h'],
+      ],
+      true,
+    );
+    expect(includes?.internal).toEqual([
+      {naturalPath: 'ns/sub/B.h', cxxGuarded: true},
+    ]);
+  });
+
+  test.each(['other/B.h', './other/B.h', 'other/sub/../B.h'])(
+    'falls back to the normalized include-root spelling %s',
+    token => {
+      expect(
+        classify(token, [['other/B.h', 'elsewhere/B.h']])?.internal,
+      ).toEqual([{naturalPath: 'other/B.h', cxxGuarded: false}]);
+    },
+  );
+
+  test('retains the source mapping for relocated pod headers', () => {
+    expect(
+      classify('B.h', [['relocated/B.h', 'source/B.h']])?.internal,
+    ).toEqual([{naturalPath: 'relocated/B.h', cxxGuarded: false}]);
+  });
+
+  test('resolves a bare name within the packaged namespace', () => {
+    expect(classify('B.h', [['ns/B.h', 'elsewhere/B.h']])?.internal).toEqual([
+      {naturalPath: 'ns/B.h', cxxGuarded: false},
+    ]);
+  });
+
+  test.each(['missing/B.h', '../../other/B.h', '/other/B.h'])(
+    'does not invent a packaged target for %s',
+    token => {
+      const includes = classify(token, [['other/B.h', 'elsewhere/B.h']]);
+      expect(includes?.internal).toEqual([]);
+      expect(includes?.quotedNotShipped).toEqual([`"${token}"`]);
+    },
+  );
 });

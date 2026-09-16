@@ -41,10 +41,20 @@ const path = require('path');
 // header explicitly. Legacy interop is the inverse: upstream's platform/ios
 // header is the guarded canonical implementation and already carries the macOS
 // type adaptations.
-const NATURAL_PATH_SOURCE_PREFERENCES /*: Map<string, string> */ = new Map([
+// Only these exact pairs are equivalent public spellings. An additional source
+// must remain a collision, even when the preferred source is present.
+const NATURAL_PATH_SOURCE_PREFERENCES /*: Map<string, {
+  preferredSource: string,
+  competingSource: string,
+}> */ = new Map([
   [
     'react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h',
-    'ReactCommon/react/renderer/components/legacyviewmanagerinterop/platform/ios/react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h',
+    {
+      preferredSource:
+        'ReactCommon/react/renderer/components/legacyviewmanagerinterop/platform/ios/react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h',
+      competingSource:
+        'ReactCommon/react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.h',
+    },
   ],
   ...[
     'HostPlatformTouch.h',
@@ -53,7 +63,10 @@ const NATURAL_PATH_SOURCE_PREFERENCES /*: Map<string, string> */ = new Map([
     'HostPlatformViewTraitsInitializer.h',
   ].map(name => [
     `react/renderer/components/view/${name}`,
-    `ReactCommon/react/renderer/components/view/${name}`,
+    {
+      preferredSource: `ReactCommon/react/renderer/components/view/${name}`,
+      competingSource: `ReactCommon/react/renderer/components/view/platform/cxx/react/renderer/components/view/${name}`,
+    },
   ]),
 ]);
 
@@ -460,18 +473,20 @@ function buildInventory(rootFolder /*: string */) /*: {
     implementationSource,
   ] of PLATFORM_DISPATCH_IMPLEMENTATIONS) {
     const wrapper = entries.get(wrapperPath);
+    const wrapperIdentity = wrapper?.identities.find(
+      identity => identity.source === `ReactCommon/${wrapperPath}`,
+    );
     const implementationPath = implementationSource.slice(
       'ReactCommon/'.length,
     );
     const implementationAbsSource = path.join(rootFolder, implementationSource);
     if (
-      wrapper == null ||
+      wrapperIdentity == null ||
       entries.has(implementationPath) ||
       !fs.existsSync(implementationAbsSource)
     ) {
       continue;
     }
-    const wrapperIdentity = wrapper.identities[0];
     addIdentity(
       implementationPath,
       {
@@ -488,18 +503,20 @@ function buildInventory(rootFolder /*: string */) /*: {
     wrapperPath,
   ] of PLATFORM_DISPATCH_AUXILIARY_HEADERS) {
     const wrapper = entries.get(wrapperPath);
+    const wrapperIdentity = wrapper?.identities.find(
+      identity => identity.source === `ReactCommon/${wrapperPath}`,
+    );
     const implementationPath = implementationSource.slice(
       'ReactCommon/'.length,
     );
     const implementationAbsSource = path.join(rootFolder, implementationSource);
     if (
-      wrapper == null ||
+      wrapperIdentity == null ||
       entries.has(implementationPath) ||
       !fs.existsSync(implementationAbsSource)
     ) {
       continue;
     }
-    const wrapperIdentity = wrapper.identities[0];
     addIdentity(
       implementationPath,
       {
@@ -513,14 +530,15 @@ function buildInventory(rootFolder /*: string */) /*: {
 
   for (const [
     naturalPath,
-    preferredSource,
+    {preferredSource, competingSource},
   ] of NATURAL_PATH_SOURCE_PREFERENCES) {
     const sources = naturalToSources.get(naturalPath);
     const preferredAbsSource = path.join(rootFolder, preferredSource);
     if (
       sources == null ||
-      sources.size < 2 ||
-      !sources.has(preferredAbsSource)
+      sources.size !== 2 ||
+      !sources.has(preferredAbsSource) ||
+      !sources.has(path.join(rootFolder, competingSource))
     ) {
       continue;
     }
@@ -599,13 +617,32 @@ function classifyEntries(
 
     for (const inc of scan.includes) {
       let token = inc.token;
-      // Quoted include: resolve against the source dir and map back to a
-      // natural path if the resolved file is itself a shipped header.
+      // Quoted includes search the packaged sibling first, then the include
+      // root. Normalize subdirectories and dot segments in both spellings.
       if (token.startsWith('"')) {
-        const resolved = path.resolve(
-          path.dirname(absSource),
-          token.slice(1, -1),
+        const quotedPath = token.slice(1, -1);
+        const packagedPaths = path.posix.isAbsolute(quotedPath)
+          ? []
+          : [
+              path.posix.join(
+                path.posix.dirname(entry.naturalPath),
+                quotedPath,
+              ),
+              path.posix.normalize(quotedPath),
+            ];
+        const packagedPath = packagedPaths.find(
+          candidate => !candidate.startsWith('../') && entries.has(candidate),
         );
+        if (packagedPath != null) {
+          entry.includes.internal.push({
+            naturalPath: packagedPath,
+            cxxGuarded: inc.cxxGuarded,
+          });
+          continue;
+        }
+        // Preserve the source-to-natural mapping for relocated pod headers
+        // when neither packaged spelling is present.
+        const resolved = path.resolve(path.dirname(absSource), quotedPath);
         const naturals = sourceToNatural.get(resolved);
         if (naturals && naturals.length > 0) {
           entry.includes.internal.push({
@@ -613,20 +650,6 @@ function classifyEntries(
             cxxGuarded: inc.cxxGuarded,
           });
         } else {
-          const quotedPath = token.slice(1, -1);
-          const packagedSibling = quotedPath.includes('/')
-            ? quotedPath
-            : path.posix.join(
-                path.posix.dirname(entry.naturalPath),
-                quotedPath,
-              );
-          if (entries.has(packagedSibling)) {
-            entry.includes.internal.push({
-              naturalPath: packagedSibling,
-              cxxGuarded: inc.cxxGuarded,
-            });
-            continue;
-          }
           // A quoted include in a SHIPPED header that doesn't land on another
           // shipped header: works in source builds (pod header maps / sibling
           // files) but has no resolution target in the packaged layout when a
