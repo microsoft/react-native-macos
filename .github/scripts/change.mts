@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // @ts-ignore
 import { parseArgs, styleText } from 'node:util';
+import { pathToFileURL } from 'node:url';
 
 import { $, echo, fs } from 'zx';
+import { validatePreparedVersionPR } from './publishing-contract.mjs';
 
 /**
  * Wrapper around `changeset add` (default) and `changeset status` validation (--check).
@@ -11,7 +13,7 @@ import { $, echo, fs } from 'zx';
  * auto-detected from package.json's repository URL, temporarily patched into config.json.
  *
  * With --check (CI mode): validates that all changed public packages have changesets and that
- * no major version bumps are introduced.
+ * no major version bumps are introduced, or validates a fully prepared version PR.
  */
 
 interface ChangesetStatusOutput {
@@ -79,10 +81,18 @@ function checkMajorBumps(releases: ChangesetStatusOutput['releases']): void {
 }
 
 /** Validate that all changed public packages have changesets and no major bumps are introduced. */
-async function runCheck(baseBranch: string): Promise<void> {
+export async function runCheck(baseBranch: string, {
+  validatePrepared = validatePreparedVersionPR,
+  getStatus = getChangesetStatus,
+} = {}): Promise<void> {
   log.info(`Validating changesets against ${baseBranch}...\n`);
 
-  const { data, exitCode } = await getChangesetStatus(baseBranch);
+  if (await validatePrepared({baseBranch})) {
+    log.success('All validations passed (prepared version PR)');
+    return;
+  }
+
+  const { data, exitCode } = await getStatus(baseBranch);
 
   if (exitCode !== 0) {
     log.error('Some packages have been changed but no changesets were found.');
@@ -101,12 +111,14 @@ async function runAdd(baseBranch: string): Promise<void> {
   await $({ stdio: 'inherit' })`yarn changeset --since ${baseBranch}`;
 }
 
-const { values: args } = parseArgs({ options: { check: { type: 'boolean', default: false } } });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const { values: args } = parseArgs({ options: { check: { type: 'boolean', default: false } } });
 
-const baseBranch = await getBaseBranch();
+  const baseBranch = await getBaseBranch();
 
-if (args.check) {
-  await runCheck(baseBranch);
-} else {
-  await runAdd(baseBranch);
+  if (args.check) {
+    await runCheck(baseBranch);
+  } else {
+    await runAdd(baseBranch);
+  }
 }
