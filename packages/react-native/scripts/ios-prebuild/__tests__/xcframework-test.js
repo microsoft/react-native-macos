@@ -10,7 +10,10 @@
 
 'use strict';
 
-const {resolveHermesHeaders} = require('../xcframework');
+const codegen = require('../../codegen/generate-artifacts-executor/generateFBReactNativeSpecIOS');
+const compose = require('../headers-compose');
+const {buildXCFrameworks, resolveHermesHeaders} = require('../xcframework');
+const childProcess = require('child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -67,4 +70,84 @@ describe('resolveHermesHeaders', () => {
       /ReactNativeHeaders[\s\S]*<hermes\/\.\.\.>[\s\S]*destroot\/include/,
     );
   });
+});
+
+describe('producer header slices', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  test.each(['macos', 'xros', 'unknown'])(
+    'derives the RN sidecar from the composed %s binary',
+    platform => {
+      jest
+        .spyOn(codegen, 'generateFBReactNativeSpecIOS')
+        .mockImplementation(() => {});
+      jest.spyOn(console, 'log').mockImplementation(() => {});
+      jest.spyOn(fs, 'rmSync').mockImplementation(() => {});
+      jest.spyOn(fs, 'readdirSync').mockReturnValue([]);
+      jest.spyOn(fs, 'existsSync').mockReturnValue(false);
+      const plan = {};
+      jest.spyOn(compose, 'computeSpecPlan').mockReturnValue(plan);
+      jest
+        .spyOn(compose, 'emitReactFrameworkHeaders')
+        .mockImplementation(() => {});
+      const emit = jest
+        .spyOn(compose, 'buildReactNativeHeadersXcframework')
+        .mockReturnValue(
+          '/build/output/xcframeworks/Debug/ReactNativeHeaders.xcframework',
+        );
+      const exec = jest
+        .spyOn(childProcess, 'execFileSync')
+        .mockImplementation(command => {
+          if (command === 'plutil') {
+            return Buffer.from(
+              JSON.stringify({
+                AvailableLibraries: [
+                  {
+                    SupportedPlatform: platform,
+                    SupportedArchitectures: ['arm64'],
+                  },
+                ],
+              }),
+            );
+          }
+          return Buffer.from('');
+        });
+      if (platform === 'unknown') {
+        expect(() =>
+          buildXCFrameworks('/root', '/build', [], 'Debug', null),
+        ).toThrow(/no stub recipe/);
+        expect(emit).not.toHaveBeenCalled();
+        expect(exec.mock.calls.some(([command]) => command === 'tar')).toBe(
+          false,
+        );
+        return;
+      }
+      buildXCFrameworks('/root', '/build', [], 'Debug', null);
+      expect(exec).toHaveBeenCalledWith('plutil', [
+        '-convert',
+        'json',
+        '-o',
+        '-',
+        '/build/output/xcframeworks/Debug/React.xcframework/Info.plist',
+      ]);
+      expect(emit).toHaveBeenCalledWith(
+        '/build/output/xcframeworks/Debug',
+        plan,
+        '/root',
+        [
+          {
+            name: platform,
+            sdk: platform === 'macos' ? 'macosx' : 'xros',
+            targets: [
+              platform === 'macos'
+                ? 'arm64-apple-macosx11.0'
+                : 'arm64-apple-xros1.0',
+            ],
+          },
+        ],
+        null,
+        null,
+      );
+    },
+  );
 });

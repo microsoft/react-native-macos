@@ -13,6 +13,7 @@
 const {
   generateFBReactNativeSpecIOS,
 } = require('../codegen/generate-artifacts-executor/generateFBReactNativeSpecIOS');
+const {stubSlicesFromXcframework} = require('./headers-xcframework');
 const utils = require('./utils');
 const childProcess = require('child_process');
 const fs = require('fs');
@@ -141,7 +142,7 @@ function buildXCFrameworks(
     path.dirname(outputPath),
     plan,
     rootFolder,
-    true, // include the mac-catalyst slice in the real compose
+    stubSlicesFromXcframework(outputPath),
     hermesHeaders,
     overlayDir,
   );

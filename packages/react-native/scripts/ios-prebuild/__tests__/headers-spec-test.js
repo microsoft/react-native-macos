@@ -146,7 +146,18 @@ describe('R10 per-namespace umbrella (React_RCTAppDelegate)', () => {
     expect(u.content).toContain('#import "RCTReactNativeFactory.h"');
     expect(u.content).toContain('#import "RCTRootViewFactory.h"');
     expect(u.content).toContain('#import "RCTAppDelegate.h"');
-    expect(u.content).toContain('#ifdef __OBJC__');
+    expect(u.content).toContain(
+      [
+        '#ifdef __OBJC__',
+        '#import <TargetConditionals.h>',
+        '#if TARGET_OS_OSX',
+        '#import <AppKit/AppKit.h>',
+        '#else',
+        '#import <UIKit/UIKit.h>',
+        '#endif',
+        '#endif',
+      ].join('\n'),
+    );
     // No CocoaPods version boilerplate.
     expect(u.content).not.toContain('FOUNDATION_EXPORT');
   });
