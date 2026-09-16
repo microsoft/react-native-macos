@@ -14,6 +14,67 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+// The package and product names React Native's own generated manifests use. A
+// dependency whose Swift name lands on one of them surfaces as a duplicate-name
+// error from inside SPM's resolution, far from the react-native.config.js that
+// caused it, so the autolinker rejects the collision up front instead.
+//
+// These cover the emitters in this directory and the collision guard. Adding a
+// React Native SPM product also touches, depending on what the product is:
+//   - scripts/codegen/templates/Package.swift.spm-template — if the per-app
+//     codegen package must depend on it (a static Swift file, patched by
+//     string replacement, not generated from these constants)
+//   - flavored-frameworks.js INVARIANT_BINARY_TARGETS — if it is
+//     xcframework-backed
+//   - download-spm-artifacts.js REQUIRED_ARTIFACTS — if it ships as its own
+//     downloadable artifact (that list names ARTIFACTS, which overlap with
+//     product names without being the same set)
+const REACT_NATIVE_PACKAGE_NAME /*: string */ = 'ReactNative';
+const REACT_CODEGEN_PACKAGE_NAME /*: string */ = 'React-GeneratedCode';
+// The autolinking aggregator package, whose single product shares its name.
+const AUTOLINKED_PACKAGE_NAME /*: string */ = 'Autolinked';
+// React Native's products by KIND, so no consumer has to infer the kind from a
+// position in a flat list. The umbrella is a Clang target over the staged
+// headers that re-exports the pure-RN namespaces; the rest are each backed by
+// an xcframework of the same name.
+const REACT_NATIVE_UMBRELLA_PRODUCT /*: string */ = 'ReactHeaders';
+const REACT_NATIVE_HEADERS_PRODUCT /*: string */ = 'ReactNativeHeaders';
+const REACT_NATIVE_DEPENDENCIES_HEADERS_PRODUCT /*: string */ =
+  'ReactNativeDependenciesHeaders';
+const REACT_NATIVE_XCFRAMEWORK_PRODUCTS /*: ReadonlyArray<string> */ =
+  Object.freeze([
+    REACT_NATIVE_HEADERS_PRODUCT,
+    REACT_NATIVE_DEPENDENCIES_HEADERS_PRODUCT,
+  ]);
+// Derived, so a new product cannot be added without choosing a kind above.
+const REACT_NATIVE_PRODUCTS /*: ReadonlyArray<string> */ = Object.freeze([
+  REACT_NATIVE_UMBRELLA_PRODUCT,
+  ...REACT_NATIVE_XCFRAMEWORK_PRODUCTS,
+]);
+// The codegen package product every autolinked target depends on for the app's
+// generated headers.
+const REACT_CODEGEN_PRODUCTS /*: ReadonlyArray<string> */ = Object.freeze([
+  'ReactAppHeaders',
+]);
+// The codegen package products the APP target links, declared by the static
+// template rather than by any emitter here.
+const REACT_CODEGEN_APP_PRODUCTS /*: ReadonlyArray<string> */ = Object.freeze([
+  'ReactCodegen',
+  'ReactAppDependencyProvider',
+]);
+const REACT_HEADERS_TARGET_DIR /*: string */ = 'ReactHeadersTarget';
+// Target names only have to be unique within their own package, so
+// REACT_HEADERS_TARGET_DIR is deliberately absent: a dependency named after it
+// collides with nothing.
+const RESERVED_SWIFT_NAMES /*: ReadonlyArray<string> */ = Object.freeze([
+  REACT_NATIVE_PACKAGE_NAME,
+  REACT_CODEGEN_PACKAGE_NAME,
+  AUTOLINKED_PACKAGE_NAME,
+  ...REACT_NATIVE_PRODUCTS,
+  ...REACT_CODEGEN_PRODUCTS,
+  ...REACT_CODEGEN_APP_PRODUCTS,
+]);
+
 /**
  * Creates a logger trio {log, warn, die} that prefixes messages with [name].
  *   log  – green prefix, writes to stdout
@@ -582,10 +643,10 @@ function installSpmCodegenTemplate(
   if (remote != null) {
     content = content
       .replace(
-        '.package(name: "ReactNative", path: "../../xcframeworks"),',
+        `.package(name: "${REACT_NATIVE_PACKAGE_NAME}", path: "../../xcframeworks"),`,
         `.package(url: "${remote.url}", exact: "${remote.version}"),`,
       )
-      .split('package: "ReactNative")')
+      .split(`package: "${REACT_NATIVE_PACKAGE_NAME}")`)
       .join(`package: "${remote.identity}")`);
   }
   fs.writeFileSync(codegenPkgSwift, content, 'utf8');
@@ -624,7 +685,59 @@ function runCodegenAndInstallTemplate(
   }
 }
 
+// ---------------------------------------------------------------------------
+// Autolinking-plugin script phases — the shared validation rules. Two gates
+// apply them with different POLICIES (invokePlugins throws, the injector's
+// sidecar reader skips the entry), so only the rules live here. See
+// __doc__/spm-autolinking-plugins.md for the reasoning.
+// ---------------------------------------------------------------------------
+
+// `@` and `/` are admitted so a package can use its own scoped npm name
+// (`@expo/log-box`). `:` is not: the id is hashed into the UUID seed as
+// `plugin:<id>`, and keeping the separator out of the id keeps that seed
+// unambiguous.
+const SCRIPT_PHASE_ID_PATTERN = /^[@A-Za-z0-9_./-]+$/;
+
+// `ledger.__proto__ = uuid` sets the prototype instead of an own property, so a
+// phase with one of these ids would look recorded, vanish through
+// JSON.stringify, and never be removable by `deinit`.
+const RESERVED_SCRIPT_PHASE_IDS = new Set([
+  '__proto__',
+  'constructor',
+  'prototype',
+]);
+
+function isValidScriptPhaseId(value /*: unknown */) /*: boolean */ {
+  return (
+    typeof value === 'string' &&
+    SCRIPT_PHASE_ID_PATTERN.test(value) &&
+    !RESERVED_SCRIPT_PHASE_IDS.has(value)
+  );
+}
+
+/**
+ * The name reaches the project file twice: verbatim in the escaped `name` field
+ * Xcode displays, and normalized (spm-pbxproj's commentSafe) in the cosmetic
+ * `/* … *​/` comments. Both are safe for any single-line string, so the only
+ * thing left to refuse is a line break — which no Xcode phase display name can
+ * carry anyway.
+ */
+function isValidScriptPhaseName(value /*: unknown */) /*: boolean */ {
+  return typeof value === 'string' && value.length > 0 && !/[\r\n]/.test(value);
+}
+
 module.exports = {
+  REACT_NATIVE_PACKAGE_NAME,
+  REACT_CODEGEN_PACKAGE_NAME,
+  AUTOLINKED_PACKAGE_NAME,
+  REACT_NATIVE_UMBRELLA_PRODUCT,
+  REACT_NATIVE_HEADERS_PRODUCT,
+  REACT_NATIVE_XCFRAMEWORK_PRODUCTS,
+  REACT_NATIVE_PRODUCTS,
+  REACT_CODEGEN_PRODUCTS,
+  REACT_CODEGEN_APP_PRODUCTS,
+  REACT_HEADERS_TARGET_DIR,
+  RESERVED_SWIFT_NAMES,
   makeLogger,
   displayPath,
   sharedCacheDir,
@@ -641,5 +754,7 @@ module.exports = {
   RemoteVersionError,
   installSpmCodegenTemplate,
   runCodegenAndInstallTemplate,
+  isValidScriptPhaseId,
+  isValidScriptPhaseName,
   SCAFFOLDER_MARKER,
 };

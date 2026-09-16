@@ -36,6 +36,7 @@ import type {
  */
 
 const {
+  SpmNameCollisionError,
   defaultReadConfig,
   defaultResolveDep,
   expandSpmDependencies,
@@ -43,6 +44,10 @@ const {
 const {expandSpmSourceGlobs} = require('./generate-spm-autolinking');
 const {readPodspec} = require('./read-podspec');
 const {
+  REACT_CODEGEN_PACKAGE_NAME,
+  REACT_CODEGEN_PRODUCTS,
+  REACT_NATIVE_PACKAGE_NAME,
+  REACT_NATIVE_PRODUCTS,
   SCAFFOLDER_MARKER,
   makeLogger,
   remotePackageConfig,
@@ -197,7 +202,7 @@ function collectSubdirs(
   ]);
   const out /*: Array<string> */ = [];
   const walk = (absDir /*: string */, relDir /*: string */) => {
-    let entries: Array<{name: string, isDirectory(): boolean}>;
+    let entries /*: Array<{name: string, isDirectory(): boolean}> */ = [];
     try {
       // $FlowFixMe[incompatible-type] Dirent typing
       entries = fs.readdirSync(absDir, {withFileTypes: true});
@@ -235,14 +240,18 @@ function translatePodspecToSpmTarget(
   // `s.dependency "RNWorklets"` — a pod-style name the `react-native-*`
   // heuristic can't recognize — to the right sibling package. Empty by default.
   podToNpm /*: Map<string, string> */ = new Map(),
+  // npm name → resolved Swift name for every autolinked dep, so a sibling
+  // reference honors that sibling's `spm.name` instead of re-deriving it.
+  swiftNameByNpm /*: Map<string, string> */ = new Map(),
 ) /*: SpmScaffoldSpec */ {
   const warnings = [...model.warnings];
 
-  // Swift target name: ALWAYS toSwiftName(npm-name). The autolinker
-  // registers each autolinked dep under that name in its aggregator (and in
-  // any sibling spm.dependencies refs), so the scaffolded Package.swift's
-  // product/library name must match — otherwise SPM resolution fails with
-  // a name mismatch on `.product(name: "X", package: "X")`.
+  // Swift target name: whatever the autolinker resolved for this dep — its
+  // `spm.name` override when set, else toSwiftName(npm-name). The autolinker
+  // registers the dep under that name in its aggregator (and in any sibling
+  // spm.dependencies refs), so the scaffolded Package.swift's product/library
+  // name must match it exactly — otherwise SPM resolution fails with a name
+  // mismatch on `.product(name: "X", package: "X")`.
   //
   // The podspec's `header_dir` is captured separately: when it changes the
   // include surface (e.g. `<reanimated/...>` instead of `<ReactNativeReanimated/...>`),
@@ -251,10 +260,8 @@ function translatePodspecToSpmTarget(
   // `<react/renderer/components/safeareacontext/...>` resolve through
   // `-I common/cpp/`). Module-style includes that NEED the target name to
   // match (e.g. reanimated's `<reanimated/X.h>` via SwiftPM's auto-generated
-  // module map) require an explicit `spm.name` override in
-  // react-native.config.js — handled by the existing autolinker flow, not
-  // here.
-  const swiftName = toSwiftName(dep.name);
+  // module map) are what `spm.name` is for.
+  const swiftName = dep.swiftName ?? toSwiftName(dep.name);
 
   // Header search paths — substitute Xcode build-setting tokens against the
   // dep root. Anything we can't substitute is dropped + warned (avoids
@@ -512,6 +519,14 @@ function translatePodspecToSpmTarget(
     );
   }
 
+  const siblingSwiftNames /*: {[npmName: string]: string} */ = {};
+  for (const npmName of siblingNames) {
+    const resolved = swiftNameByNpm.get(npmName);
+    if (resolved != null) {
+      siblingSwiftNames[npmName] = resolved;
+    }
+  }
+
   return {
     swiftName,
     sources: expandedSources,
@@ -520,6 +535,7 @@ function translatePodspecToSpmTarget(
     needsObjCPrefix,
     coreReactNative,
     siblingNames,
+    siblingSwiftNames,
     extraFrameworks: model.frameworks,
     weakFrameworks: model.weakFrameworks,
     compilerFlags: model.compilerFlags,
@@ -652,7 +668,8 @@ function emitScaffoldedPackageSwift(
     // the app by definition, so it stays a path reference — relative,
     // computed at scaffold time.
     const remote = ctx.remote;
-    const rnLabel = remote != null ? remote.identity : 'ReactNative';
+    const rnLabel =
+      remote != null ? remote.identity : REACT_NATIVE_PACKAGE_NAME;
     const codegenDir = ctx.codegenPackageDir;
     if (codegenDir == null) {
       throw new Error(
@@ -670,24 +687,25 @@ function emitScaffoldedPackageSwift(
           'emitScaffoldedPackageSwift: localXcfwPackageDir is required when no remote package is configured.',
         );
       }
-      packageDeps.push(`.package(name: "ReactNative", path: "${xcfwDir}")`);
+      packageDeps.push(
+        `.package(name: "${REACT_NATIVE_PACKAGE_NAME}", path: "${xcfwDir}")`,
+      );
     }
     packageDeps.push(
-      `.package(name: "React-GeneratedCode", path: "${codegenDir}")`,
+      `.package(name: "${REACT_CODEGEN_PACKAGE_NAME}", path: "${codegenDir}")`,
     );
-    targetDeps.push(`.product(name: "ReactHeaders", package: "${rnLabel}")`);
-    targetDeps.push(
-      `.product(name: "ReactNativeHeaders", package: "${rnLabel}")`,
-    );
-    targetDeps.push(
-      `.product(name: "ReactNativeDependenciesHeaders", package: "${rnLabel}")`,
-    );
-    targetDeps.push(
-      '.product(name: "ReactAppHeaders", package: "React-GeneratedCode")',
-    );
+    for (const product of REACT_NATIVE_PRODUCTS) {
+      targetDeps.push(`.product(name: "${product}", package: "${rnLabel}")`);
+    }
+    for (const product of REACT_CODEGEN_PRODUCTS) {
+      targetDeps.push(
+        `.product(name: "${product}", package: "${REACT_CODEGEN_PACKAGE_NAME}")`,
+      );
+    }
   }
   for (const siblingName of spec.siblingNames) {
-    const swiftSibling = toSwiftName(siblingName);
+    const swiftSibling =
+      spec.siblingSwiftNames?.[siblingName] ?? toSwiftName(siblingName);
     // The autolinker references each self-managed (scaffolded) dep through a
     // `libs/<SwiftName>` symlink, and SPM resolves a manifest's relative
     // package paths against that symlink location — so a sibling lives at
@@ -787,6 +805,10 @@ type ScaffoldContext = {
   // podspec-name → npm-name index over all autolinked deps, so pod-style
   // `s.dependency` names (e.g. "RNWorklets") wire to the right sibling.
   podToNpm?: Map<string, string>,
+  // npm-name → resolved Swift name over all autolinked deps, so sibling
+  // references honor each sibling's `spm.name`.
+  swiftNameByNpm?: Map<string, string>,
+  remote: ?{url: string, version: string, identity: string},
 };
 */
 
@@ -930,7 +952,7 @@ function scaffoldPackageSwiftForDep(
     };
   }
 
-  let model: PodspecModel;
+  let model;
   try {
     model = readPodspec(podspecPath);
   } catch (e) {
@@ -945,6 +967,7 @@ function scaffoldPackageSwiftForDep(
     model,
     dep,
     ctx.podToNpm ?? new Map(),
+    ctx.swiftNameByNpm ?? new Map(),
   );
 
   // Mixed-language fail-closed: SPM can't compile Swift + C-family in one
@@ -999,7 +1022,7 @@ function scaffoldPackageSwiftForDep(
       .join('/');
   const content = emitScaffoldedPackageSwift(spec, {
     cacheSlotLabel: ctx.cacheSlotLabel,
-    remote: remotePackageConfig(ctx.appRoot),
+    remote: ctx.remote,
     codegenPackageDir: relFromManifest('build', 'generated', 'ios'),
     localXcfwPackageDir: relFromManifest('build', 'xcframeworks'),
   });
@@ -1126,13 +1149,22 @@ function scaffoldAll(
     directDeps.push({name, root, platforms: {ios: iosPlatform}});
   }
 
-  let allDeps: Array<AutolinkedDep>;
+  // Outside the try: a malformed remote config (RemoteVersionError) is a
+  // misconfiguration to surface, not an expansion failure to degrade past.
+  const remote = remotePackageConfig(appRoot);
+
+  let allDeps /*: Array<AutolinkedDep> */ = [];
   try {
     allDeps = expandSpmDependencies(directDeps, {
       readConfig: defaultReadConfig,
       resolveDep: defaultResolveDep,
+      extraReservedNames: remote != null ? [remote.identity] : undefined,
+      log,
     });
   } catch (e) {
+    if (e instanceof SpmNameCollisionError) {
+      throw e;
+    }
     // A transitive-resolution failure shouldn't abort the whole scaffold pass;
     // fall back to the direct deps so at least those get manifests.
     log(`Transitive spm.dependencies expansion failed: ${e.message}`);
@@ -1167,6 +1199,13 @@ function scaffoldAll(
     }
   }
 
+  const swiftNameByNpm /*: Map<string, string> */ = new Map();
+  for (const dep of allDeps) {
+    if (dep.swiftName != null) {
+      swiftNameByNpm.set(dep.name, dep.swiftName);
+    }
+  }
+
   const ctx /*: ScaffoldContext */ = {
     appRoot,
     projectRoot,
@@ -1175,6 +1214,8 @@ function scaffoldAll(
     dryRun: opts.dryRun === true,
     cacheSlotLabel: opts.cacheSlotLabel ?? null,
     podToNpm,
+    swiftNameByNpm,
+    remote,
   };
   const skipSet /*: Set<string> */ = new Set(opts.skipDeps ?? []);
 

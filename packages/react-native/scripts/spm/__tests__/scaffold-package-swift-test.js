@@ -18,6 +18,7 @@ const {
   scaffoldPackageSwiftForDep,
   translatePodspecToSpmTarget,
 } = require('../scaffold-package-swift');
+const {RemoteVersionError} = require('../spm-utils');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -138,6 +139,37 @@ describe('translatePodspecToSpmTarget', () => {
     // RNWorklets → sibling; React-jsi → collapses into ReactNative core.
     expect(spec.siblingNames).toContain('react-native-worklets');
     expect(spec.coreReactNative).toBe(true);
+  });
+
+  it('uses the resolved swiftName (spm.name override) so the manifest matches what the autolinker registers', () => {
+    const model = podspec({name: 'react-native-worklets'});
+    const spec = translatePodspecToSpmTarget(
+      model,
+      autolinkedDep({name: 'react-native-worklets', swiftName: 'worklets'}),
+    );
+    expect(spec.swiftName).toBe('worklets');
+  });
+
+  it('falls back to toSwiftName when the dep carries no resolved name', () => {
+    const spec = translatePodspecToSpmTarget(
+      podspec(),
+      autolinkedDep({name: 'react-native-foo'}),
+    );
+    expect(spec.swiftName).toBe('ReactNativeFoo');
+  });
+
+  it('resolves each sibling through the same overrides, not through toSwiftName', () => {
+    const model = podspec({dependencies: ['RNWorklets']});
+    const spec = translatePodspecToSpmTarget(
+      model,
+      autolinkedDep({name: 'react-native-reanimated', swiftName: 'reanimated'}),
+      new Map([['RNWorklets', 'react-native-worklets']]),
+      new Map([['react-native-worklets', 'worklets']]),
+    );
+    expect(spec.siblingNames).toEqual(['react-native-worklets']);
+    expect(spec.siblingSwiftNames).toEqual({
+      'react-native-worklets': 'worklets',
+    });
   });
 
   it('does not self-wire when a pod dependency maps back to the dep itself', () => {
@@ -604,6 +636,18 @@ describe('emitScaffoldedPackageSwift', () => {
     );
   });
 
+  it('emits the sibling override name for both the package and the product', () => {
+    const out = emitScaffoldedPackageSwift(
+      baseSpec({
+        siblingNames: ['react-native-worklets'],
+        siblingSwiftNames: {'react-native-worklets': 'worklets'},
+      }),
+    );
+    expect(out).toContain('.package(name: "worklets", path: "../worklets")');
+    expect(out).toContain('.product(name: "worklets", package: "worklets")');
+    expect(out).not.toContain('ReactNativeWorklets');
+  });
+
   it('-includes the ObjC prefix header in c/cxx settings when needsObjCPrefix is set', () => {
     const withPrefix = emitScaffoldedPackageSwift(
       baseSpec({needsObjCPrefix: true}),
@@ -744,6 +788,21 @@ end
       ...overrides,
     };
   }
+
+  it('names the scaffolded package with the spm.name override the autolinker resolved', () => {
+    makePodspec();
+    const result = scaffoldPackageSwiftForDep(
+      makeDep({swiftName: 'foo'}),
+      makeCtx(),
+    );
+    expect(result.status).toBe('written');
+    const content = fs.readFileSync(
+      path.join(depRoot, 'Package.swift'),
+      'utf8',
+    );
+    expect(content).toContain('name: "foo"');
+    expect(content).not.toContain('ReactNativeFoo');
+  });
 
   it('writes Package.swift into the dep root on the happy path', () => {
     makePodspec();
@@ -1016,6 +1075,130 @@ describe('scaffoldAll', () => {
     expect(results.find(r => r.depName === 'react-native-a').status).toBe(
       'skipped-no-podspec',
     );
+  });
+
+  function writeAutolinkingJson(dependencies) {
+    const autolinkingDir = path.join(appRoot, 'build/generated/autolinking');
+    fs.mkdirSync(autolinkingDir, {recursive: true});
+    fs.writeFileSync(
+      path.join(autolinkingDir, 'autolinking.json'),
+      JSON.stringify({dependencies}),
+    );
+  }
+
+  it('propagates a Swift name collision instead of scaffolding anyway, plugin or not', () => {
+    // 'react-headers' derives the reserved 'ReactHeaders', with no scope to
+    // borrow. Degrading to the direct deps would scaffold manifests SPM rejects
+    // later, and a plugin buys no exemption — `spm scaffold` has no plugin code.
+    const depRoot = path.join(appRoot, 'node_modules', 'react-headers');
+    fs.mkdirSync(depRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(depRoot, 'react-native.config.js'),
+      "module.exports = {spm: {autolinkingPlugin: './spm-plugin.js'}};\n",
+    );
+    writeAutolinkingJson({
+      'react-headers': {root: depRoot, platforms: {ios: {}}},
+    });
+    expect(() =>
+      scaffoldAll({appRoot, projectRoot: appRoot, reactNativeRoot: appRoot}),
+    ).toThrow(/React Native reserves/);
+  });
+
+  it('still falls back to the direct deps when a transitive dep cannot be resolved', () => {
+    const depRoot = path.join(appRoot, 'node_modules', 'react-native-a');
+    fs.mkdirSync(depRoot, {recursive: true});
+    fs.writeFileSync(
+      path.join(depRoot, 'react-native.config.js'),
+      "module.exports = {spm: {dependencies: ['ghost-dep-that-is-not-installed']}};\n",
+    );
+    writeAutolinkingJson({
+      'react-native-a': {root: depRoot, platforms: {ios: {}}},
+    });
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const results = scaffoldAll({
+        appRoot,
+        projectRoot: appRoot,
+        reactNativeRoot: appRoot,
+      });
+      expect(results.map(r => r.depName)).toEqual(['react-native-a']);
+      expect(logSpy.mock.calls.map(call => call.join(' ')).join('\n')).toMatch(
+        /Transitive spm\.dependencies expansion failed/,
+      );
+    } finally {
+      logSpy.mockRestore();
+    }
+  });
+
+  it('emits the remote package reference for every dep it scaffolds', () => {
+    const depRoot = path.join(appRoot, 'node_modules', 'react-native-foo');
+    fs.mkdirSync(path.join(depRoot, 'ios'), {recursive: true});
+    fs.writeFileSync(path.join(depRoot, 'ios', 'Foo.mm'), '// native\n');
+    fs.writeFileSync(
+      path.join(depRoot, 'react-native-foo.podspec'),
+      'Pod::Spec.new do |s|\n' +
+        '  s.name = "react-native-foo"\n' +
+        '  s.version = "1.0"\n' +
+        '  s.source_files = "ios/**/*.{h,m,mm}"\n' +
+        '  s.dependency "React-Core"\n' +
+        'end\n',
+    );
+    writeAutolinkingJson({
+      'react-native-foo': {root: depRoot, platforms: {ios: {}}},
+    });
+    const prevUrl = process.env.RN_SPM_REMOTE_URL;
+    const prevVersion = process.env.RN_SPM_REMOTE_VERSION;
+    process.env.RN_SPM_REMOTE_URL = 'https://example.com/rn.git';
+    process.env.RN_SPM_REMOTE_VERSION = '9.9.9';
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const results = scaffoldAll({
+        appRoot,
+        projectRoot: appRoot,
+        reactNativeRoot: appRoot,
+      });
+      expect(results.map(r => r.status)).toEqual(['written']);
+      const manifest = fs.readFileSync(
+        path.join(depRoot, 'Package.swift'),
+        'utf8',
+      );
+      expect(manifest).toContain(
+        '.package(url: "https://example.com/rn.git", exact: "9.9.9")',
+      );
+      expect(manifest).not.toContain('.package(name: "ReactNative"');
+    } finally {
+      logSpy.mockRestore();
+      if (prevUrl == null) delete process.env.RN_SPM_REMOTE_URL;
+      else process.env.RN_SPM_REMOTE_URL = prevUrl;
+      if (prevVersion == null) delete process.env.RN_SPM_REMOTE_VERSION;
+      else process.env.RN_SPM_REMOTE_VERSION = prevVersion;
+    }
+  });
+
+  it('propagates a RemoteVersionError from the remote package config', () => {
+    writeAutolinkingJson({
+      'react-native-a': {root: '/no/such/a', platforms: {ios: {}}},
+    });
+    const prevUrl = process.env.RN_SPM_REMOTE_URL;
+    const prevVersion = process.env.RN_SPM_REMOTE_VERSION;
+    process.env.RN_SPM_REMOTE_URL = 'https://example.com/react-native-spm.git';
+    delete process.env.RN_SPM_REMOTE_VERSION;
+    try {
+      // No react-native under the temp appRoot, so no version resolves — the
+      // author must see that, not have it degraded into "expansion failed".
+      expect(() =>
+        scaffoldAll({appRoot, projectRoot: appRoot, reactNativeRoot: appRoot}),
+      ).toThrow(RemoteVersionError);
+    } finally {
+      if (prevUrl == null) {
+        delete process.env.RN_SPM_REMOTE_URL;
+      } else {
+        process.env.RN_SPM_REMOTE_URL = prevUrl;
+      }
+      if (prevVersion != null) {
+        process.env.RN_SPM_REMOTE_VERSION = prevVersion;
+      }
+    }
   });
 });
 
