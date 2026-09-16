@@ -157,14 +157,19 @@ test('registry adapter distinguishes missing packages from auth, network, and ma
   await assert.rejects(publishedMetadata(core, async () => {throw new Error('offline');}), /offline/);
 });
 
-function releaseFixture(t) {
+function releaseFixture(t, {versionPrivatePackages = false} = {}) {
   const root = mkdtempSync(join(tmpdir(), 'rnm-release-api-'));
   t.after(() => rmSync(root, {recursive: true, force: true}));
   mkdirSync(join(root, '.changeset'));
   writeFileSync(join(root, 'package.json'), JSON.stringify({name: 'release-fixture', private: true, workspaces: ['packages/*']}));
-  const config = JSON.parse(readFileSync(new URL('../../../.changeset/config.json', import.meta.url), 'utf8'));
-  config.baseBranch = 'origin/nonexistent';
-  config.changelog = require.resolve('@changesets/cli/changelog');
+  // Keep the synthetic graph independent of branch-specific release configuration.
+  const config = {
+    access: 'public', baseBranch: 'origin/nonexistent',
+    changelog: require.resolve('@changesets/cli/changelog'), commit: false,
+    fixed: [], linked: [], ignore: [],
+    bumpVersionsWithWorkspaceProtocolOnly: true,
+    privatePackages: {version: versionPrivatePackages, tag: false},
+  };
   writeFileSync(join(root, '.changeset/config.json'), JSON.stringify(config));
   const workspaces = graph();
   for (const [index, pkg] of workspaces.entries()) {
@@ -425,7 +430,9 @@ function preparedFixture(t, {
   privateLists = false, head = 'arbitrary-release-name',
   editBase = () => {}, editHead = () => {},
 } = {}) {
-  const {root} = releaseFixture(t);
+  // Let the real Changesets API inspect invalid private links without rejecting
+  // skipped dependencies first. The contract must still reject those links.
+  const {root} = releaseFixture(t, {versionPrivatePackages: true});
   const git = args => execFileSync('git', args, {
     cwd: root, encoding: 'utf8',
     env: {...process.env, GIT_AUTHOR_NAME: 'Fixture', GIT_AUTHOR_EMAIL: 'fixture@example.com',
@@ -555,18 +562,26 @@ test('private-to-public lists cannot reuse the old version or omit their release
 });
 
 test('prepared PR rejects mismatched releases and invalid private or out-of-scope runtime links', async t => {
-  for (const edit of [
-    pkg => {pkg.version = '0.83.3';},
-    pkg => {pkg.private = true;},
-    pkg => {pkg.dependencies = {'@react-native/codegen': 'workspace:*'};},
-    pkg => {pkg.optionalDependencies = {'@react-native-macos/internal': '0.83.2'};},
-    pkg => {pkg.peerDependencies = {'react-native-macos-init': 'workspace:*'};},
+  for (const [edit, message] of [
+    [pkg => {pkg.version = '0.83.3';},
+      `${lists}@0.83.2 does not match 0.83.3`],
+    [pkg => {pkg.private = true;},
+      'Missing public react-native-macos workspace'],
+    [pkg => {pkg.dependencies = {'@react-native/codegen': 'workspace:*'};},
+      `${core} has a private or out-of-scope runtime workspace dependency: @react-native/codegen`],
+    [pkg => {pkg.optionalDependencies = {'@react-native-macos/internal': '0.83.2'};},
+      `${core} has a private runtime dependency: @react-native-macos/internal`],
+    [pkg => {pkg.peerDependencies = {'react-native-macos-init': 'workspace:*'};},
+      `${core} has a private or out-of-scope runtime workspace dependency: react-native-macos-init`],
   ]) {
     const fixture = preparedFixture(t, {editHead: ({workspaces, writePackage}) => {
       edit(workspaces[0]);
       writePackage(0, workspaces[0]);
     }});
-    await assert.rejects(fixture.validate(), /does not match|Missing public|runtime/);
+    const status = await readChangesetStatus(fixture.root);
+    assert.deepEqual(status.changesets, []);
+    assert.deepEqual(status.releases, []);
+    await assert.rejects(fixture.validate(), {name: 'Error', message});
   }
 });
 
