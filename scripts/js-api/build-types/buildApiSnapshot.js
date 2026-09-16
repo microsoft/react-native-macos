@@ -37,7 +37,11 @@ const inputFilesPostTransforms: $ReadOnlyArray<PluginObj<mixed>> = [
 
 const postTransforms = (
   options: BuildApiSnapshotOptions,
+  packages: $ReadOnlyArray<{directory: string, name: string}>,
 ): $ReadOnlyArray<PluginObj<mixed>> => [
+  require('./transforms/typescript/canonicalizeLocalPackageImports')(
+    packages.map(pkg => pkg.name),
+  ),
   require('./transforms/typescript/simplifyTypes'),
   require('./transforms/typescript/sortProperties'),
   require('./transforms/typescript/sortUnions'),
@@ -85,7 +89,7 @@ async function buildAPISnapshot(options: BuildApiSnapshotOptions) {
 
   console.log(styleText('yellow', '  >') + ' Applying additional transforms');
   const apiSnapshot = apiSnapshotTemplate(
-    await getProcessedSnapshotResult(tempDirectory, options),
+    await getProcessedSnapshotResult(tempDirectory, options, packages),
   ) as string;
 
   console.log(styleText('yellow', '  >') + ' Removing temp dir');
@@ -242,6 +246,7 @@ async function rewriteLocalImports(
 async function getProcessedSnapshotResult(
   tempDirectory: string,
   options: BuildApiSnapshotOptions,
+  packages: $ReadOnlyArray<{directory: string, name: string}>,
 ): Promise<string> {
   const rollupPath = path.join(
     tempDirectory,
@@ -259,7 +264,7 @@ async function getProcessedSnapshotResult(
 
   const transformedRollup = await applyBabelTransformsSeq(
     cleanedRollup,
-    postTransforms(options),
+    postTransforms(options, packages),
   );
 
   return (

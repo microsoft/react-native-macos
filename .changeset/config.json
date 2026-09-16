@@ -4,6 +4,10 @@
   "baseBranch": "origin/0.83-stable",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "ignore": ["@react-native/tester"],
+  "ignore": [],
+  "privatePackages": {
+    "version": false,
+    "tag": false
+  },
   "linked": []
 }
