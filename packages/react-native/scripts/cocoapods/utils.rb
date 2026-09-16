@@ -76,7 +76,7 @@ class ReactNativePodsUtils
     end
 
     def self.turn_off_resource_bundle_react_core(installer)
-        # this is needed for Xcode 14, see more details here https://github.com/facebook/react-native/issues/34673
+        # this is needed for Xcode 14, see more details here https://github.com/react/react-native/issues/34673
         # we should be able to remove this once CocoaPods catches up to it, see more details here https://github.com/CocoaPods/CocoaPods/issues/11402
         installer.target_installation_results.pod_target_installation_results.each do |pod_name, target_installation_result|
             if pod_name.to_s == 'React-Core'
@@ -250,7 +250,7 @@ class ReactNativePodsUtils
             # When installing pods with a yarn alias, yarn creates a fake yarn and node executables
             # in a temporary folder.
             # Using `node --print "process.argv[0]";` we are able to retrieve the actual path from which node is running.
-            # see https://github.com/facebook/react-native/issues/43285 for more info. We've tweaked this slightly.
+            # see https://github.com/react/react-native/issues/43285 for more info. We've tweaked this slightly.
             node_binary = Shellwords.escape(`node --print "process.argv[0]"`.strip)
             system("echo 'export NODE_BINARY=#{node_binary}' > #{file_path}.local")
         end

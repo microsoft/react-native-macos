@@ -1,20 +1,20 @@
 {
   "name": "@react-native/metro-config",
-  "version": "0.86.0",
+  "version": "0.86.3",
   "description": "Metro configuration for React Native.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/metro-config"
   },
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/metro-config#readme",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/metro-config#readme",
   "keywords": [
     "metro",
     "config",
     "react-native"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
     "node": "^20.19.4 || ^22.13.0 || ^24.3.0 || >= 25.0.0"
   },

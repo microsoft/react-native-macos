@@ -4,6 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 require "json"
+require "pathname"
 require_relative "./hermes-utils.rb"
 
 # [macOS]
@@ -62,7 +63,7 @@ Pod::Spec.new do |spec|
       else
         # Hermes v1 is shipping a jsi/hermes.h header which is imported by the hermes.h header
         # and that file is not present in React Native's JSI
-        # (see https://github.com/facebook/react-native/tree/main/packages/react-native/ReactCommon/jsi/jsi/ where there is
+        # (see https://github.com/react/react-native/tree/main/packages/react-native/ReactCommon/jsi/jsi/ where there is
         # hermes-interface.h but not hermes.h)
         ss.source_files = ["destroot/include/hermes/**/*.h", "destroot/include/jsi/hermes.h"]
       end
@@ -79,9 +80,13 @@ Pod::Spec.new do |spec|
       hermes_compiler_path = File.dirname(Pod::Executable.execute_command('node', ['-p',
         "require.resolve(\"hermes-compiler\", {paths: [\"#{react_native_path}\"]})", __dir__]).strip
       )
+      hermesc_path = File.join(hermes_compiler_path, 'hermesc', 'osx-bin', 'hermesc')
+
+      pods_root = Pod::Config.instance.sandbox.root
+      relative_hermesc = Pathname.new(hermesc_path).relative_path_from(pods_root)
 
       spec.user_target_xcconfig = {
-        'HERMES_CLI_PATH' => "#{hermes_compiler_path}/hermesc/osx-bin/hermesc"
+        'HERMES_CLI_PATH' => "$(PODS_ROOT)/#{relative_hermesc}"
       }
     end
 

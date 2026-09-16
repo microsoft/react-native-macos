@@ -166,7 +166,7 @@ public class NetworkingModule(
 
   @Deprecated(
       """To be removed in a future release. See
-        https://github.com/facebook/react-native/pull/37798#pullrequestreview-1518338914"""
+        https://github.com/react/react-native/pull/37798#pullrequestreview-1518338914"""
   )
   public interface CustomClientBuilder : com.facebook.react.modules.network.CustomClientBuilder
 
@@ -480,7 +480,7 @@ public class NetworkingModule(
         } else {
           // Use getBytes() to convert the body into a byte[], preventing okhttp from
           // appending the character set to the Content-Type header when otherwise unspecified
-          // https://github.com/facebook/react-native/issues/8237
+          // https://github.com/react/react-native/issues/8237
           val charset =
               if (contentMediaType == null) {
                 StandardCharsets.UTF_8

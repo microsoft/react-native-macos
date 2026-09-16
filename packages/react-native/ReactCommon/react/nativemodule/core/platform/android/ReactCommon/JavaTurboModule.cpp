@@ -993,7 +993,7 @@ void JavaTurboModule::configureEventEmitterCallback() {
   args[0].l = callback.release();
 
   // CallVoidMethod is replaced with CallVoidMethodA as it's unsafe on 32bit and
-  // causes crashes https://github.com/facebook/react-native/issues/51628
+  // causes crashes https://github.com/react/react-native/issues/51628
   env->CallVoidMethodA(instance_.get(), cachedMethodId, args);
   FACEBOOK_JNI_THROW_PENDING_EXCEPTION();
 }

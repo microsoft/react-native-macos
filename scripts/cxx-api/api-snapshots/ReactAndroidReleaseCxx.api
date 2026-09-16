@@ -4641,6 +4641,7 @@ class facebook::react::ShadowNodeFamily : public facebook::jsi::NativeState {
   public facebook::react::Tag getTag() const;
   public facebook::react::_instance_handle::InstanceHandle::Shared getInstanceHandle() const;
   public facebook::react::_shadow_node_family::AncestorList getAncestors(const facebook::react::ShadowNode& ancestorShadowNode) const;
+  public mutable std::mutex nativePropsMutex;
   public std::shared_ptr<const facebook::react::State> getMostRecentState() const;
   public using AncestorList = std::vector<std::pair<std::reference_wrapper<const facebook::react::ShadowNode>, int>>;
   public using Shared = std::shared_ptr<facebook::react::_shadow_node_family::ShadowNodeFamily>;
@@ -12706,7 +12707,7 @@ void facebook::yoga::assertFatal(bool condition, const char* message);
 void facebook::yoga::assertFatalWithConfig(const facebook::yoga::Config* config, bool condition, const char* message);
 void facebook::yoga::assertFatalWithNode(const facebook::yoga::Node* node, bool condition, const char* message);
 void facebook::yoga::calculateLayout(facebook::yoga::Node* node, float ownerWidth, float ownerHeight, facebook::yoga::Direction ownerDirection);
-void facebook::yoga::cleanupContentsNodesRecursively(facebook::yoga::Node *const node);
+void facebook::yoga::cleanupContentsNodesRecursively(facebook::yoga::Node* node, bool didPerformLayout);
 void facebook::yoga::constrainMaxSizeForMode(const facebook::yoga::Node* node, facebook::yoga::Direction direction, facebook::yoga::FlexDirection axis, float ownerAxisSize, float ownerWidth, facebook::yoga::SizingMode* mode, float* size);
 void facebook::yoga::fatalWithMessage(const char* message);
 void facebook::yoga::layoutAbsoluteChild(const facebook::yoga::Node* containingNode, const facebook::yoga::Node* node, facebook::yoga::Node* child, float containingBlockWidth, float containingBlockHeight, facebook::yoga::SizingMode widthMode, facebook::yoga::Direction direction, facebook::yoga::_layout_data::LayoutData& layoutMarkerData, uint32_t depth, uint32_t generationCount);

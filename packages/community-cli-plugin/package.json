@@ -1,16 +1,16 @@
 {
   "name": "@react-native/community-cli-plugin",
-  "version": "0.86.0",
+  "version": "0.86.3",
   "description": "Core CLI commands for React Native",
   "keywords": [
     "react-native",
     "tools"
   ],
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/community-cli-plugin#readme",
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/community-cli-plugin#readme",
+  "bugs": "https://github.com/react/react-native/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/community-cli-plugin"
   },
   "license": "MIT",

@@ -1,17 +1,17 @@
 {
   "name": "@react-native/core-cli-utils",
-  "version": "0.86.0",
+  "version": "0.86.3",
   "description": "React Native CLI library for Frameworks to build on",
   "license": "MIT",
   "keywords": [
     "cli-utils",
     "react-native"
   ],
-  "homepage": "https://github.com/facebook/react-native/tree/HEAD/packages/core-cli-utils#readme",
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "homepage": "https://github.com/react/react-native/tree/HEAD/packages/core-cli-utils#readme",
+  "bugs": "https://github.com/react/react-native/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/core-cli-utils"
   },
   "main": "./src/index.flow.js",

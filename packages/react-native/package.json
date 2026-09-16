@@ -1,6 +1,6 @@
 {
   "name": "react-native-macos",
-  "version": "0.86.0-rc0",
+  "version": "0.86.0-rc.0",
   "description": "React Native for macOS",
   "license": "MIT",
   "repository": {
@@ -19,7 +19,7 @@
     "app-framework",
     "mobile-development"
   ],
-  "bugs": "https://github.com/facebook/react-native/issues",
+  "bugs": "https://github.com/react/react-native/issues",
   "engines": {
     "node": "^20.19.4 || ^22.13.0 || ^24.3.0 || >= 25.0.0"
   },
@@ -153,10 +153,10 @@
     "featureflags": "node ./scripts/featureflags/index.js"
   },
   "peerDependencies": {
-    "@react-native/jest-preset": "0.86.0",
+    "@react-native/jest-preset": "0.86.3",
     "@types/react": "^19.1.1",
     "react": "^19.2.3",
-    "react-native": "0.86.0"
+    "react-native": "0.86.3"
   },
   "peerDependenciesMeta": {
     "@react-native/jest-preset": {
@@ -167,13 +167,13 @@
     }
   },
   "dependencies": {
-    "@react-native-macos/virtualized-lists": "0.86.0-rc0",
-    "@react-native/assets-registry": "0.86.0",
-    "@react-native/codegen": "0.86.0",
-    "@react-native/community-cli-plugin": "0.86.0",
-    "@react-native/gradle-plugin": "0.86.0",
-    "@react-native/js-polyfills": "0.86.0",
-    "@react-native/normalize-colors": "0.86.0",
+    "@react-native-macos/virtualized-lists": "0.86.0-rc.0",
+    "@react-native/assets-registry": "0.86.3",
+    "@react-native/codegen": "0.86.3",
+    "@react-native/community-cli-plugin": "0.86.3",
+    "@react-native/gradle-plugin": "0.86.3",
+    "@react-native/js-polyfills": "0.86.3",
+    "@react-native/normalize-colors": "0.86.3",
     "abort-controller": "^3.0.0",
     "anser": "^1.4.9",
     "ansi-regex": "^5.0.0",
@@ -182,7 +182,7 @@
     "commander": "^12.0.0",
     "flow-enums-runtime": "^0.0.6",
     "glob": "^7.1.1",
-    "hermes-compiler": "250829098.0.14",
+    "hermes-compiler": "250829098.0.17",
     "invariant": "^2.2.4",
     "memoize-one": "^5.0.0",
     "metro": "^0.84.3",
