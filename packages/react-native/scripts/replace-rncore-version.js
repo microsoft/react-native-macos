@@ -18,6 +18,9 @@ const yargs = require('yargs');
 
 const LAST_BUILD_FILENAME = 'React-Core-prebuilt/.last_build_configuration';
 
+// Not a valid configuration, so finding it means the swap did not finish.
+const REPLACEMENT_IN_PROGRESS = 'in-progress';
+
 function validateBuildConfiguration(configuration /*: string */) {
   if (!['Debug', 'Release'].includes(configuration)) {
     throw new Error(`Invalid configuration ${configuration}`);
@@ -42,10 +45,12 @@ function shouldReplaceRnCoreConfiguration(configuration /*: string */) {
       );
       return false;
     }
+    return true;
   }
 
-  // Assumption: if there is no stored last build, we assume that it was build for debug.
-  if (!fileExists && configuration === 'Debug') {
+  // With no marker the on-disk flavor is Debug: the podspec installs the debug
+  // tarball (see resolve_podspec_source in scripts/cocoapods/rncore.rb).
+  if (configuration === 'Debug') {
     console.log(
       'No previous build detected, but Debug Configuration. No need to replace React-Core-prebuilt',
     );
@@ -130,6 +135,10 @@ function updateLastBuildConfiguration(configuration /*: string */) {
   fs.writeFileSync(LAST_BUILD_FILENAME, configuration);
 }
 
+function markReplacementInProgress() /*: void */ {
+  fs.writeFileSync(LAST_BUILD_FILENAME, REPLACEMENT_IN_PROGRESS);
+}
+
 function main(
   configuration /*: string */,
   version /*: string */,
@@ -139,9 +148,16 @@ function main(
   validateVersion(version);
 
   if (!shouldReplaceRnCoreConfiguration(configuration)) {
+    // A fresh install leaves no marker; record the flavor we skipped on.
+    if (!fs.existsSync(LAST_BUILD_FILENAME)) {
+      updateLastBuildConfiguration(configuration);
+    }
     return;
   }
 
+  // Invalidate before touching the framework so an interrupted swap is
+  // detectable on the next run.
+  markReplacementInProgress();
   replaceRNCoreConfiguration(configuration, version, podsRoot);
   updateLastBuildConfiguration(configuration);
   console.log('Done replacing React Native prebuilt');

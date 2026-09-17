@@ -18,6 +18,7 @@ const {
   flavorForBuildConfiguration,
   frameworkConditionalSettings,
   generateXcscheme,
+  readScriptPhasesManifest,
 } = require('../generate-spm-xcodeproj');
 const {execFileSync} = require('child_process');
 const fs = require('fs');
@@ -59,6 +60,55 @@ const FRAMEWORK = {
     },
   ],
 };
+
+// The pbxproj product references must follow the shared name constants: a
+// product added there has to reach the app target, or the app links against a
+// package product Xcode never references.
+describe('SPM product references derive from the shared name constants', () => {
+  // jest.doMock registers in the module registry beyond the isolateModules
+  // scope, so the mocked constants must be dropped before the next test.
+  afterEach(() => {
+    jest.dontMock('../spm-utils');
+    jest.resetModules();
+  });
+
+  it('includes a newly reserved React Native product', () => {
+    jest.isolateModules(() => {
+      jest.doMock('../spm-utils', () => {
+        const actual = jest.requireActual('../spm-utils');
+        return {
+          ...actual,
+          REACT_NATIVE_PRODUCTS: Object.freeze([
+            ...actual.REACT_NATIVE_PRODUCTS,
+            'ReactBrandNewHeaders',
+          ]),
+        };
+      });
+      const {buildSpmDependencyGraph} = require('../generate-spm-xcodeproj');
+      const graph = buildSpmDependencyGraph(
+        (section, id) => `${section}:${id}`,
+      );
+      expect(graph.products.map(p => p.product)).toContain(
+        'ReactBrandNewHeaders',
+      );
+    });
+  });
+
+  it('references every React Native, aggregator and codegen product exactly once', () => {
+    const {
+      AUTOLINKED_PACKAGE_NAME,
+      REACT_CODEGEN_APP_PRODUCTS,
+      REACT_NATIVE_PRODUCTS,
+    } = require('../spm-utils');
+    const {buildSpmDependencyGraph} = require('../generate-spm-xcodeproj');
+    const graph = buildSpmDependencyGraph((section, id) => `${section}:${id}`);
+    expect(graph.products.map(p => p.product)).toEqual([
+      ...REACT_NATIVE_PRODUCTS,
+      AUTOLINKED_PACKAGE_NAME,
+      ...REACT_CODEGEN_APP_PRODUCTS,
+    ]);
+  });
+});
 
 describe('scheme pre-action', () => {
   it('contains the sync script and target-scoped build environment', () => {
@@ -224,5 +274,170 @@ describe('embed framework phase script', () => {
     expect(script).not.toContain('curl');
     expect(script).not.toContain('ln -s');
     expect(script).not.toContain('SourcePackages');
+  });
+});
+
+describe('readScriptPhasesManifest', () => {
+  let appRoot;
+  let logSpy;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-script-phases-'));
+    logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    logSpy.mockRestore();
+    fs.rmSync(appRoot, {recursive: true, force: true});
+  });
+
+  const write = contents => {
+    const dir = path.join(appRoot, 'build', 'generated', 'autolinking');
+    fs.mkdirSync(dir, {recursive: true});
+    fs.writeFileSync(
+      path.join(dir, '.spm-plugin-script-phases.json'),
+      contents,
+      'utf8',
+    );
+  };
+
+  it('is [] when the manifest does not exist (first `spm add`)', () => {
+    expect(readScriptPhasesManifest(appRoot)).toEqual([]);
+  });
+
+  it('is [] for unparseable JSON, warning about it', () => {
+    write('{not json');
+    expect(readScriptPhasesManifest(appRoot)).toEqual([]);
+    expect(
+      logSpy.mock.calls.some(([msg]) =>
+        /could not parse .*\.spm-plugin-script-phases\.json/.test(msg),
+      ),
+    ).toBe(true);
+  });
+
+  it('is [] for a non-array payload', () => {
+    write('{"id": "x"}');
+    expect(readScriptPhasesManifest(appRoot)).toEqual([]);
+  });
+
+  it('parses valid entries and defaults position to end', () => {
+    write(
+      JSON.stringify([
+        {
+          id: 'expo-constants.generate-app-config',
+          name: 'Generate Expo App Config',
+          script: 'node ./write-app-config.js',
+          position: 'beforeCompile',
+          inputPaths: ['$(SRCROOT)/../app.config.js'],
+          outputPaths: ['$(DERIVED_FILE_DIR)/app.config'],
+          alwaysOutOfDate: true,
+        },
+        {id: 'b.stamp', name: 'Stamp', script: 'echo hi'},
+      ]),
+    );
+    expect(readScriptPhasesManifest(appRoot)).toEqual([
+      {
+        id: 'expo-constants.generate-app-config',
+        name: 'Generate Expo App Config',
+        script: 'node ./write-app-config.js',
+        position: 'beforeCompile',
+        inputPaths: ['$(SRCROOT)/../app.config.js'],
+        outputPaths: ['$(DERIVED_FILE_DIR)/app.config'],
+        alwaysOutOfDate: true,
+      },
+      {id: 'b.stamp', name: 'Stamp', script: 'echo hi', position: 'end'},
+    ]);
+  });
+
+  it('skips malformed entries and duplicate ids, keeping the valid ones', () => {
+    write(
+      JSON.stringify([
+        {name: 'No id', script: 'echo'},
+        {id: 'a', name: 'A', script: 'echo one'},
+        {id: 'a', name: 'A again', script: 'echo two'},
+        null,
+      ]),
+    );
+    expect(readScriptPhasesManifest(appRoot)).toEqual([
+      {id: 'a', name: 'A', script: 'echo one', position: 'end'},
+    ]);
+  });
+
+  // The same ids the plugin contract accepts: a scoped npm name is the natural
+  // stable key for a package-owned phase.
+  it.each([['@expo/log-box'], ['@expo/ui']])(
+    'keeps the scoped npm name %s as an id',
+    id => {
+      write(JSON.stringify([{id, name: 'X', script: 'echo'}]));
+      expect(readScriptPhasesManifest(appRoot)).toEqual([
+        {id, name: 'X', script: 'echo', position: 'end'},
+      ]);
+    },
+  );
+
+  it.each([
+    // `:` is excluded so the `plugin:<id>` UUID seed stays unambiguous.
+    ['an id with a colon', {id: 'a:b', name: 'X', script: 'echo'}],
+    ['an id with a space', {id: 'a b', name: 'X', script: 'echo'}],
+    ['the reserved id __proto__', {id: '__proto__', name: 'X', script: 'echo'}],
+    [
+      'the reserved id constructor',
+      {id: 'constructor', name: 'X', script: 'echo'},
+    ],
+    ['the reserved id prototype', {id: 'prototype', name: 'X', script: 'echo'}],
+    [
+      'an unknown position',
+      {id: 'a', name: 'X', script: 'echo', position: 'afterLink'},
+    ],
+    // A line break is the one thing no Xcode phase name can carry. This reader
+    // is the only gate on a stale or hand-edited sidecar.
+    ['a name with a newline', {id: 'a', name: 'L1\nL2', script: 'echo'}],
+    [
+      'a name with a carriage return',
+      {id: 'a', name: 'L1\rL2', script: 'echo'},
+    ],
+  ])('skips an entry with %s', (_label, entry) => {
+    write(JSON.stringify([entry, {id: 'keep', name: 'Keep', script: 'echo'}]));
+    expect(readScriptPhasesManifest(appRoot)).toEqual([
+      {id: 'keep', name: 'Keep', script: 'echo', position: 'end'},
+    ]);
+  });
+
+  // The injector normalizes the name for the `/* … */` comments and escapes it
+  // in the `name` field, so a pbxproj-hostile name needs no coercion here.
+  it.each([
+    ['needs pbxproj quoting', 'Bundle "app.config"'],
+    ['closes a comment', 'Bad */ = { x'],
+    ['opens a comment', 'Bad /* x'],
+  ])('keeps a name that %s', (_label, name) => {
+    write(JSON.stringify([{id: 'a', name, script: 'echo'}]));
+    expect(readScriptPhasesManifest(appRoot)).toEqual([
+      {id: 'a', name, script: 'echo', position: 'end'},
+    ]);
+  });
+
+  it('drops non-string and empty input/output path entries', () => {
+    write(
+      JSON.stringify([
+        {
+          id: 'a',
+          name: 'A',
+          script: 'echo',
+          inputPaths: ['$(SRCROOT)/in', '', 7, null, '$(SRCROOT)/in2'],
+          outputPaths: [{}, '$(DERIVED_FILE_DIR)/out'],
+        },
+        {id: 'b', name: 'B', script: 'echo', inputPaths: 'not-an-array'},
+      ]),
+    );
+    expect(readScriptPhasesManifest(appRoot)).toEqual([
+      {
+        id: 'a',
+        name: 'A',
+        script: 'echo',
+        position: 'end',
+        inputPaths: ['$(SRCROOT)/in', '$(SRCROOT)/in2'],
+        outputPaths: ['$(DERIVED_FILE_DIR)/out'],
+      },
+      {id: 'b', name: 'B', script: 'echo', position: 'end'},
+    ]);
   });
 });

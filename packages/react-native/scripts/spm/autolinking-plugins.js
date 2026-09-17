@@ -69,6 +69,14 @@
  *         // dir add/remove there re-triggers the sync. Relative/empty/non-string
  *         // entries are dropped with a warning; a non-array is ignored.
  *         watchPaths: ['/abs/path/Package.swift', '/abs/dir'],
+ *         // Build-time shell phases on the app target — SwiftPM has no
+ *         // `script_phase`. Only id/name/script are required; `id` is the
+ *         // ledger key and UUID seed, `position` defaults to 'end'. Recorded
+ *         // to `.spm-plugin-script-phases.json`, from which the `spm add`/
+ *         // `update` injector emits a PBXShellScriptBuildPhase per entry.
+ *         // Malformed entries and duplicate ids are fatal.
+ *         scriptPhases: [{id, name, script, position, inputPaths, outputPaths,
+ *           alwaysOutOfDate}],
  *       };
  *     };
  *
@@ -76,12 +84,14 @@
  * the merge, so regeneration stays deterministic and idempotent.
  */
 
+const {isValidScriptPhaseId, isValidScriptPhaseName} = require('./spm-utils');
 const path = require('path');
 
 /*:: import type {
   AutolinkedDep,
   PluginContext,
   PluginResult,
+  PluginScriptPhase,
   DiscoveredPlugin,
 } from './spm-types';
 */
@@ -149,6 +159,12 @@ function discoverPlugins(
   return found;
 }
 
+const isNonEmptyString = (value /*: unknown */) /*: boolean */ =>
+  typeof value === 'string' && value.length > 0;
+
+const isOptionalStringList = (value /*: unknown */) /*: boolean */ =>
+  value == null || (Array.isArray(value) && value.every(isNonEmptyString));
+
 /**
  * Invoke discovered plugins and merge their results. Each plugin gets the same
  * context. Fail-closed: a throwing plugin aborts (named), and a malformed
@@ -169,10 +185,12 @@ function invokePlugins(
   const flavoredFrameworks /*: Array<{id: string, frameworkName: string, linkage: 'dynamic', flavors: {debug: string, release: string}}> */ =
     [];
   const watchPaths /*: Array<string> */ = [];
+  const scriptPhases /*: Array<PluginScriptPhase> */ = [];
   const seenPackages /*: Set<string> */ = new Set();
   const seenProducts /*: Set<string> */ = new Set();
   const seenFrameworkIds /*: Set<string> */ = new Set();
   const seenFrameworkNames /*: Set<string> */ = new Set();
+  const seenScriptPhaseIds /*: Set<string> */ = new Set();
 
   for (const {depName, pluginPath, plugin} of plugins) {
     let result /*: unknown */ = null;
@@ -203,9 +221,16 @@ function invokePlugins(
     const rawFrameworks = result.flavoredFrameworks ?? [];
     // $FlowFixMe[incompatible-use]
     const rawWatch = result.watchPaths ?? [];
+    // $FlowFixMe[incompatible-use]
+    const rawScriptPhases = result.scriptPhases ?? [];
     if (!Array.isArray(rawFrameworks)) {
       throw new Error(
         `react-native spm: '${depName}' returned a non-array flavoredFrameworks.`,
+      );
+    }
+    if (!Array.isArray(rawScriptPhases)) {
+      throw new Error(
+        `react-native spm: '${depName}' returned a non-array scriptPhases.`,
       );
     }
     // Watch paths are best-effort staleness hints, so
@@ -314,6 +339,60 @@ function invokePlugins(
       }
       watchPaths.push(w);
     }
+    // Fatal like flavoredFrameworks, not dropped like watchPaths: a missing
+    // phase produces a GREEN build whose generated content was never written.
+    for (const phase of rawScriptPhases) {
+      if (
+        phase == null ||
+        !isValidScriptPhaseId(phase.id) ||
+        !isNonEmptyString(phase.script) ||
+        (phase.position != null &&
+          phase.position !== 'beforeCompile' &&
+          phase.position !== 'end') ||
+        !isOptionalStringList(phase.inputPaths) ||
+        !isOptionalStringList(phase.outputPaths) ||
+        (phase.alwaysOutOfDate != null &&
+          typeof phase.alwaysOutOfDate !== 'boolean')
+      ) {
+        const named = typeof phase?.id === 'string' ? ` '${phase.id}'` : '';
+        throw new Error(
+          `react-native spm: '${depName}' returned an invalid scriptPhase${named} ` +
+            '(need {id (matching /^[@A-Za-z0-9_./-]+$/, and not __proto__, ' +
+            'constructor or prototype), name, script} plus optional ' +
+            '{position: "beforeCompile" | "end", inputPaths, outputPaths, ' +
+            'alwaysOutOfDate}).',
+        );
+      }
+      if (!isValidScriptPhaseName(phase.name)) {
+        throw new Error(
+          `react-native spm: '${depName}' returned an invalid scriptPhase name for ` +
+            `'${phase.id}' (a name must be a non-empty single-line string — it is ` +
+            "the phase's display name in Xcode).",
+        );
+      }
+      if (seenScriptPhaseIds.has(phase.id)) {
+        throw new Error(
+          `react-native spm: duplicate script phase id '${phase.id}'.`,
+        );
+      }
+      seenScriptPhaseIds.add(phase.id);
+      const normalized /*: PluginScriptPhase */ = {
+        id: phase.id,
+        name: phase.name,
+        script: phase.script,
+        position: phase.position ?? 'end',
+      };
+      if (phase.inputPaths != null) {
+        normalized.inputPaths = [...phase.inputPaths];
+      }
+      if (phase.outputPaths != null) {
+        normalized.outputPaths = [...phase.outputPaths];
+      }
+      if (phase.alwaysOutOfDate != null) {
+        normalized.alwaysOutOfDate = phase.alwaysOutOfDate;
+      }
+      scriptPhases.push(normalized);
+    }
   }
 
   return {
@@ -322,6 +401,7 @@ function invokePlugins(
     generatedSources,
     flavoredFrameworks,
     watchPaths,
+    scriptPhases,
   };
 }
 

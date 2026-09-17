@@ -12,6 +12,7 @@
 
 const {
   detectStandardRnLayoutRedirect,
+  determineVersion,
   ensureBothArtifactFlavors,
   findInjectedXcodeproj,
   generateAutolinkingConfigOrFailClosed,
@@ -559,5 +560,93 @@ describe('shouldAutoDeintegrate', () => {
     // conversion only touches the pbxproj + Podfile, which stay clean.
     fs.writeFileSync(path.join(tempDir, 'package-lock.json'), '{}');
     expect(shouldAutoDeintegrate(tempDir, xcodeproj)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// determineVersion — which RN version the artifact slots are wired to:
+// explicit --version → the `artifactsVersionOverride` pinned in the injection
+// marker by a previous `--version` → node_modules/react-native/package.json.
+// ---------------------------------------------------------------------------
+
+describe('determineVersion', () => {
+  let appRoot;
+  let reactNativeRoot;
+  let logSpy;
+
+  beforeEach(() => {
+    appRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-version-app-'));
+    reactNativeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'spm-version-rn-'));
+    fs.writeFileSync(
+      path.join(reactNativeRoot, 'package.json'),
+      JSON.stringify({name: 'react-native', version: '1000.0.0'}),
+    );
+    logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    fs.rmSync(appRoot, {recursive: true, force: true});
+    fs.rmSync(reactNativeRoot, {recursive: true, force: true});
+  });
+
+  const logged = () => logSpy.mock.calls.map(c => c.join(' ')).join('\n');
+
+  it('prefers an explicit --version over a pinned override', () => {
+    mkInjectedXcodeproj(appRoot, 'MyApp.xcodeproj', {
+      artifactsVersionOverride: '0.80.0',
+    });
+
+    expect(
+      determineVersion({version: '0.81.0'}, reactNativeRoot, appRoot),
+    ).toBe('0.81.0');
+    expect(logged()).not.toMatch(/spm-injected\.json/);
+  });
+
+  it('uses the pinned override when --version is omitted', () => {
+    mkInjectedXcodeproj(appRoot, 'MyApp.xcodeproj', {
+      artifactsVersionOverride: '0.80.0',
+    });
+
+    expect(determineVersion({version: null}, reactNativeRoot, appRoot)).toBe(
+      '0.80.0',
+    );
+  });
+
+  it('names the marker in the log when the pin is the source', () => {
+    mkInjectedXcodeproj(appRoot, 'MyApp.xcodeproj', {
+      artifactsVersionOverride: '0.80.0',
+    });
+    determineVersion({version: null}, reactNativeRoot, appRoot);
+
+    expect(logged()).toMatch(/0\.80\.0/);
+    expect(logged()).toMatch(/spm-injected\.json/);
+  });
+
+  it("falls back to react-native's package.json with no pin recorded", () => {
+    mkInjectedXcodeproj(appRoot, 'MyApp.xcodeproj');
+
+    expect(determineVersion({version: null}, reactNativeRoot, appRoot)).toBe(
+      '1000.0.0',
+    );
+    expect(logged()).not.toMatch(/spm-injected\.json/);
+  });
+
+  it("falls back to react-native's package.json when no project is injected", () => {
+    mkXcodeproj(appRoot, 'MyApp.xcodeproj');
+
+    expect(determineVersion({version: null}, reactNativeRoot, appRoot)).toBe(
+      '1000.0.0',
+    );
+  });
+
+  it('falls back without throwing when the marker is corrupt', () => {
+    const xcodeproj = path.join(appRoot, 'MyApp.xcodeproj');
+    fs.mkdirSync(xcodeproj, {recursive: true});
+    fs.writeFileSync(path.join(xcodeproj, SPM_INJECTED_MARKER), '{not json');
+
+    expect(determineVersion({version: null}, reactNativeRoot, appRoot)).toBe(
+      '1000.0.0',
+    );
   });
 });

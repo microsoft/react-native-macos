@@ -19,6 +19,7 @@
   PluginFlavoredFramework,
   PluginPackageDep,
   PluginProductDep,
+  PluginScriptPhase,
   ReactDescriptor,
   RawAutolinkingJson,
   SpmModuleConfig,
@@ -58,17 +59,24 @@
 
 const {discoverPlugins, invokePlugins} = require('./autolinking-plugins');
 const {
+  SpmNameCollisionError,
+  assertSwiftNameNotReserved,
   defaultReadConfig,
   defaultResolveDep,
   expandSpmDependencies,
+  isValidSwiftName,
 } = require('./expand-spm-dependencies');
 const {readPodspec} = require('./read-podspec');
 const {
+  AUTOLINKED_PACKAGE_NAME,
+  REACT_CODEGEN_PACKAGE_NAME,
+  REACT_CODEGEN_PRODUCTS,
+  REACT_NATIVE_PACKAGE_NAME,
+  REACT_NATIVE_PRODUCTS,
   RemoteVersionError,
   findProjectRoot,
   makeLogger,
   remotePackageConfig,
-  toSwiftName,
 } = require('./spm-utils');
 const fs = require('fs');
 const path = require('path');
@@ -89,7 +97,12 @@ const {log, warn} = makeLogger('generate-spm-autolinking');
 let remoteCfg /*: ?{url: string, version: string, identity: string} */ = null;
 
 function reactNativePackageLabel() /*: string */ {
-  return remoteCfg != null ? remoteCfg.identity : 'ReactNative';
+  return remoteCfg != null ? remoteCfg.identity : REACT_NATIVE_PACKAGE_NAME;
+}
+// In remote mode the RN package is labelled with the remote identity, so that
+// name is reserved for this run too.
+function reservedNamesForRun() /*: ?Array<string> */ {
+  return remoteCfg != null ? [remoteCfg.identity] : undefined;
 }
 function reactNativePackageDecl(localDecl /*: string */) /*: string */ {
   return remoteCfg != null
@@ -104,10 +117,11 @@ function reactNativePackageDecl(localDecl /*: string */) /*: string */ {
 function reactProducts() /*: Array<{name: string, package: string}> */ {
   const rn = reactNativePackageLabel();
   return [
-    {name: 'ReactHeaders', package: rn},
-    {name: 'ReactNativeHeaders', package: rn},
-    {name: 'ReactNativeDependenciesHeaders', package: rn},
-    {name: 'ReactAppHeaders', package: 'React-GeneratedCode'},
+    ...REACT_NATIVE_PRODUCTS.map(name => ({name, package: rn})),
+    ...REACT_CODEGEN_PRODUCTS.map(name => ({
+      name,
+      package: REACT_CODEGEN_PACKAGE_NAME,
+    })),
   ];
 }
 function reactProductDeps() /*: string */ {
@@ -146,7 +160,7 @@ function reactDescriptor(
     };
   } else if (absXcframeworks != null) {
     packageRef = {
-      name: 'ReactNative',
+      name: REACT_NATIVE_PACKAGE_NAME,
       path: toPosix(absXcframeworks),
       relPath:
         xcframeworksRelPath != null ? toPosix(xcframeworksRelPath) : undefined,
@@ -155,7 +169,7 @@ function reactDescriptor(
     return null;
   }
   const products = reactProducts().filter(
-    p => p.package !== 'React-GeneratedCode' || codegenPackageExists,
+    p => p.package !== REACT_CODEGEN_PACKAGE_NAME || codegenPackageExists,
   );
   return {packageRef, products};
 }
@@ -231,7 +245,6 @@ function readAutolinkingJson(
  *         name: "MyNativeModule",
  *         path: "ios/MyNativeModule",            // relative to appRoot
  *         exclude: ["*.js", "*.podspec"],        // optional
- *         publicHeadersPath: ".",                // optional
  *       }
  *     ]
  *   }
@@ -251,6 +264,41 @@ function readSpmModulesFromConfig(
   } catch (e) {
     // Config might use Ruby interop or other patterns – skip
     return [];
+  }
+}
+
+/**
+ * Validates one app-local `spm.modules` name against the same rules a library's
+ * `spm.name` gets: a usable Swift identifier, not a name React Native reserves,
+ * and not one already taken by another module or an autolinked dep.
+ * `taken` maps lower-cased name → the name as written.
+ */
+function assertSpmModuleName(
+  name /*: unknown */,
+  taken /*: Map<string, string> */,
+) /*: void */ {
+  const remedy =
+    "Rename it in this app's react-native.config.js 'spm.modules'.";
+  if (typeof name !== 'string' || !isValidSwiftName(name)) {
+    throw new Error(
+      `react-native autolinking: invalid 'spm.modules' name ${JSON.stringify(name) ?? 'undefined'}: must start with a letter or underscore and contain only letters, digits, underscores, or hyphens.`,
+    );
+  }
+  const moduleName = name;
+  assertSwiftNameNotReserved(moduleName, {
+    label: `the 'spm.modules' entry '${moduleName}'`,
+    remedy,
+    extraReservedNames: reservedNamesForRun(),
+  });
+  const clash = taken.get(moduleName.toLowerCase());
+  if (clash != null) {
+    throw new SpmNameCollisionError(
+      `react-native autolinking: SPM Swift name collision: the 'spm.modules' entry '${moduleName}' ` +
+        (clash === moduleName
+          ? `is already the name of another autolinked target.`
+          : `differs from the existing target '${clash}' only in case, which collides on case-insensitive filesystems.`) +
+        ` ${remedy}`,
+    );
   }
 }
 
@@ -730,9 +778,9 @@ function expandSpmSourceGlobs(
  * Returns null if the dependency doesn't have iOS support.
  *
  * `swiftNameByNpm` maps each autolinked dep's npm name to its resolved Swift
- * name (populated by expandSpmDependencies, possibly overridden via the dep's
- * `spm.name` config). Optional for backwards compatibility with callers that
- * don't have the map; falls back to `toSwiftName(name)` per entry.
+ * name (populated by expandSpmDependencies, honoring the dep's `spm.name`
+ * config and scope disambiguation). Every name this function emits comes from
+ * there — see requireSwiftName.
  */
 /**
  * Read the dep's podspec (if any) and extract its declared
@@ -789,11 +837,27 @@ function extractPodspecHeaderSearchPaths(
   return out;
 }
 
+/**
+ * The Swift name expandSpmDependencies resolved for `npmName`, or a hard error:
+ * re-deriving one here would emit a reference nothing in the graph matches.
+ */
+function requireSwiftName(
+  npmName /*: string */,
+  resolved /*: ?string */,
+) /*: string */ {
+  if (resolved == null) {
+    throw new Error(
+      `react-native autolinking: no resolved Swift name for '${npmName}'. expandSpmDependencies must resolve every autolinked dep's name before SPM targets are generated.`,
+    );
+  }
+  return resolved;
+}
+
 function autolinkingDepToSpmTarget(
   depName /*: string */,
   dep /*: AutolinkedDep */,
   outputDir /*: string */,
-  swiftNameByNpm /*: ?Map<string, string> */,
+  swiftNameByNpm /*: Map<string, string> */,
 ) /*: SpmTarget | null */ {
   const iosPlatform = dep.platforms.ios;
   const sourceDir = iosPlatform.sourceDir ?? dep.root;
@@ -806,10 +870,7 @@ function autolinkingDepToSpmTarget(
   // same convention the spmModule branch in main() follows.
   const relSourcePath = path.relative(outputDir, sourceDir);
 
-  // Prefer the resolved Swift name (which honors `spm.name` overrides set in
-  // the dep's react-native.config.js). Fall back to toSwiftName(depName) when
-  // the caller didn't run expandSpmDependencies.
-  const targetName = dep.swiftName ?? toSwiftName(depName);
+  const targetName = requireSwiftName(depName, dep.swiftName);
 
   // No exclude inference — main()'s emission loop emits `sources:` (an
   // explicit allowlist). User-supplied excludes still work.
@@ -819,13 +880,11 @@ function autolinkingDepToSpmTarget(
   const resources = privacyManifest != null ? [privacyManifest] : undefined;
 
   // Map declared spm.dependencies (npm names) to Swift target names so the
-  // synth's .product(...) deps list reaches the consuming target. Each
-  // transitive npm name's Swift name comes from the map (honoring overrides);
-  // toSwiftName fallback handles entries the map doesn't know about.
+  // synth's .product(...) deps list reaches the consuming target.
   const spmDeps /*: Array<string> */ = dep.spmDependencies ?? [];
   const spmTargetDependencies =
     spmDeps.length > 0
-      ? spmDeps.map(n => swiftNameByNpm?.get(n) ?? toSwiftName(n))
+      ? spmDeps.map(n => requireSwiftName(n, swiftNameByNpm.get(n)))
       : undefined;
 
   const headerSearchPaths = extractPodspecHeaderSearchPaths(sourceDir);
@@ -899,12 +958,14 @@ function generateAutolinkedPackageSwift(
   ) {
     packageDeps.push(
       reactNativePackageDecl(
-        `.package(name: "ReactNative", path: "${xcframeworksRelPath}")`,
+        `.package(name: "${REACT_NATIVE_PACKAGE_NAME}", path: "${xcframeworksRelPath}")`,
       ),
     );
     // Per-app generated headers come from the ReactAppHeaders product in
     // the codegen package (sibling of the autolinking dir).
-    packageDeps.push(`.package(name: "React-GeneratedCode", path: "../ios")`);
+    packageDeps.push(
+      `.package(name: "${REACT_CODEGEN_PACKAGE_NAME}", path: "../ios")`,
+    );
   }
 
   // AutolinkedAggregate's target dependencies: .product(...) for npm sub-package
@@ -1007,10 +1068,10 @@ import PackageDescription
 import Foundation
 
 ${guardBlock}let package = Package(
-    name: "Autolinked",
+    name: "${AUTOLINKED_PACKAGE_NAME}",
     platforms: [.iOS(.v15)],
     products: [
-        .library(name: "Autolinked", targets: ["AutolinkedAggregate"]),
+        .library(name: "${AUTOLINKED_PACKAGE_NAME}", targets: ["AutolinkedAggregate"]),
     ],
 ${packageDepsBlock}    targets: [
         .target(
@@ -1074,13 +1135,13 @@ function generateSynthPackageSwift(spec /*: SynthPackageSpec */) /*: string */ {
       spec.codegenPackagePath ?? '../../../ios';
     packageDeps.push(
       reactNativePackageDecl(
-        `.package(name: "ReactNative", path: "${reactNativePackagePath}")`,
+        `.package(name: "${REACT_NATIVE_PACKAGE_NAME}", path: "${reactNativePackagePath}")`,
       ),
     );
     // Per-app generated headers come from the ReactAppHeaders product in
     // the codegen package.
     packageDeps.push(
-      `.package(name: "React-GeneratedCode", path: "${codegenPackagePath}")`,
+      `.package(name: "${REACT_CODEGEN_PACKAGE_NAME}", path: "${codegenPackagePath}")`,
     );
   }
   for (const dep of spmDependencies) {
@@ -1251,11 +1312,13 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
     const allDeps = expandSpmDependencies(directDeps, {
       readConfig: defaultReadConfig,
       resolveDep: defaultResolveDep,
+      extraReservedNames: reservedNamesForRun(),
+      log,
     });
 
-    // Map every autolinked npm name to its resolved Swift name (post-override)
-    // so transitive references inside autolinkingDepToSpmTarget find the right
-    // target identifier — not just the auto-derived toSwiftName.
+    // Map every autolinked npm name to its resolved Swift name so transitive
+    // references inside autolinkingDepToSpmTarget find the right target
+    // identifier.
     const swiftNameByNpm /*: Map<string, string> */ = new Map();
     for (const dep of allDeps) {
       if (dep.swiftName != null) {
@@ -1287,8 +1350,39 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
       discoveredPlugins.map(p => p.depName),
     );
 
+    // Skipped means no sibling package is created for the host either, so a
+    // dep declaring it in `spm.dependencies` gets a package reference to a
+    // path this run never writes — SPM then reports only the missing path.
+    // Only manifests React Native emits can carry that reference: a dep
+    // shipping its own Package.swift declares its package references itself,
+    // and the classification loop below would treat it as self-managed.
+    const pluginHostDependents /*: Map<string, Array<string>> */ = new Map();
+    for (const dep of allDeps) {
+      const declaredHosts = (dep.spmDependencies ?? []).filter(name =>
+        pluginHostDeps.has(name),
+      );
+      if (declaredHosts.length === 0) {
+        continue;
+      }
+      const sourceDir = dep.platforms.ios.sourceDir ?? dep.root;
+      if (sourceDir == null || findSelfManagedPackageDir(sourceDir) != null) {
+        continue;
+      }
+      for (const host of declaredHosts) {
+        const dependents = pluginHostDependents.get(host) ?? [];
+        dependents.push(dep.name);
+        pluginHostDependents.set(host, dependents);
+      }
+    }
+
     for (const dep of allDeps) {
       if (pluginHostDeps.has(dep.name)) {
+        const dependents = pluginHostDependents.get(dep.name);
+        if (dependents != null) {
+          throw new Error(
+            `react-native autolinking: '${dep.name}' ships an SPM autolinking plugin, which owns its native contribution — so React Native does not build it as a sibling target for anything to depend on. It is declared in 'spm.dependencies' by ${dependents.map(name => `'${name}'`).join(', ')}. Remove it there; nothing is lost. Its plugin links its products into the app and resolves its own ecosystem's dependencies, so a library that builds against it does not declare it here.`,
+          );
+        }
         log(
           `Skipping ${dep.name} target generation — provided by its SPM autolinking plugin`,
         );
@@ -1321,7 +1415,15 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   // the globs now relative to its dir and attach the file list to the target
   // so the emission loop below renders `sources: [...]` literally.
   const configModules = readSpmModulesFromConfig(appRoot);
+  // Module names land in the manifest exactly as written, so they get the same
+  // checks a dep's Swift name gets. Seeded with the dep target names already
+  // emitted so a module can't shadow an autolinked library either.
+  const takenSwiftNames /*: Map<string, string> */ = new Map(
+    entries.map(entry => [entry.target.name.toLowerCase(), entry.target.name]),
+  );
   for (const mod of configModules) {
+    assertSpmModuleName(mod.name, takenSwiftNames);
+    takenSwiftNames.set(mod.name.toLowerCase(), mod.name);
     const absPath = path.resolve(appRoot, mod.path);
     const relPath = path.relative(outputDir, absPath);
     const userSources =
@@ -1333,7 +1435,9 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
         name: mod.name,
         path: relPath,
         exclude: mod.exclude ?? [],
-        publicHeadersPath: mod.publicHeadersPath ?? null,
+        // The synth wrapper owns the module's public interface: it declares
+        // publicHeadersPath: "include", a symlink to the module's header tree.
+        publicHeadersPath: null,
         sources: userSources,
       },
       origin: 'spmModule',
@@ -1402,8 +1506,9 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   // longer silently synthesize one for them (that duplicated the scaffolder and
   // hid the gap from the developer and the library author) — collect them and
   // fail with an actionable message after the classification pass. spmModules
-  // (app-local, podspec-less, explicitly declared in react-native.config.js)
-  // keep their synth wrappers: there is nothing to scaffold for them.
+  // (app-local, explicitly declared in react-native.config.js) keep their synth
+  // wrappers: an app-local dir has no npm identity, so there is no package for
+  // the aggregator to reference until one is written for it.
   const missingManifests /*: Array<{name: string, npmName: string, hasPodspec: boolean, mixed?: boolean}> */ =
     [];
 
@@ -1455,11 +1560,14 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
       }
       continue;
     }
-    // spmModule: synth wrapper is the legitimate mechanism (no podspec exists
-    // to scaffold from, and the app developer declared it explicitly). But a
-    // mixed-language module can't be wrapped either — SPM can't compile Swift +
-    // C-family sources in one target, and a synth wrapper would fail with a
-    // cryptic SPM resolve error. Surface the same friendly diagnostic the
+    // spmModule: the synth wrapper is the mechanism, not a fallback — an
+    // app-local dir has no npm identity, so the wrapper is the only package the
+    // aggregator can reference. No podspec is read on this route by design:
+    // app-local native code isn't required to carry one. (A hand-written
+    // Package.swift still wins — the self-managed check above claims it first.)
+    // But a mixed-language module can't be wrapped either — SPM can't compile
+    // Swift + C-family sources in one target, and a synth wrapper would fail
+    // with a cryptic SPM resolve error. Surface the same friendly diagnostic the
     // community-dep path uses instead of letting SPM emit the cryptic one.
     if (hasMixedLanguageSources(absSource)) {
       throw new Error(
@@ -1686,6 +1794,7 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   let pluginGeneratedSources /*: Array<{path: string}> */ = [];
   let pluginFlavoredFrameworks /*: Array<PluginFlavoredFramework> */ = [];
   let pluginWatchPaths /*: Array<string> */ = [];
+  let pluginScriptPhases /*: Array<PluginScriptPhase> */ = [];
   if (discoveredPlugins.length > 0) {
     // React-GeneratedCode is the per-app codegen package (referenced as
     // `../ios` from outputDir). It may be absent (no codegen this run), so the
@@ -1714,15 +1823,17 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
     pluginGeneratedSources = result.generatedSources;
     pluginFlavoredFrameworks = result.flavoredFrameworks;
     pluginWatchPaths = result.watchPaths;
+    pluginScriptPhases = result.scriptPhases;
     log(
       `SPM plugins contributed ${pluginPackageDeps.length} package(s), ` +
         `${pluginProductDeps.length} product(s), ` +
         `${pluginGeneratedSources.length} generated source(s), ` +
-        `${pluginFlavoredFrameworks.length} flavored framework(s)`,
+        `${pluginFlavoredFrameworks.length} flavored framework(s), ` +
+        `${pluginScriptPhases.length} script phase(s)`,
     );
   }
 
-  // Plugin sidecars. Both are ALWAYS written — even `[]` — so removing a
+  // Plugin sidecars. All are ALWAYS written — even `[]` — so removing a
   // plugin (or dropping its declaration) clears stale entries. Machine-local
   // absolute paths; gitignored + regenerated every sync.
   fs.mkdirSync(outputDir, {recursive: true});
@@ -1739,6 +1850,11 @@ function main(argv /*:: ?: Array<string> */) /*: void */ {
   fs.writeFileSync(
     path.join(outputDir, '.spm-plugin-flavored-frameworks.json'),
     JSON.stringify(pluginFlavoredFrameworks, null, 2) + '\n',
+    'utf8',
+  );
+  fs.writeFileSync(
+    path.join(outputDir, '.spm-plugin-script-phases.json'),
+    JSON.stringify(pluginScriptPhases, null, 2) + '\n',
     'utf8',
   );
 
@@ -1873,6 +1989,7 @@ if (require.main === module) {
 
 module.exports = {
   main,
+  autolinkingDepToSpmTarget,
   generateAutolinkedPackageSwift,
   generateSynthPackageSwift,
   reactDescriptor,
