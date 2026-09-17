@@ -452,7 +452,7 @@ export type TextInputIOSProps = Readonly<{
 }>;
 
 // [macOS
-type TextInputMacOSProps = Readonly<{
+export type TextInputMacOSProps = Readonly<{
   /**
    * If `true`, clears the text field synchronously before `onSubmitEditing` is emitted.
    *

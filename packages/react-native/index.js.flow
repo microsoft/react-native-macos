@@ -175,8 +175,6 @@ export type {
 } from './Libraries/Components/TextInput/TextInput';
 export {default as TextInput} from './Libraries/Components/TextInput/TextInput';
 
-export {default as Touchable} from './Libraries/Components/Touchable/Touchable';
-
 export type {
   TouchableHighlightInstance,
   TouchableHighlightProps,
@@ -467,6 +465,16 @@ export {default as Vibration} from './Libraries/Vibration/Vibration';
 
 // #endregion
 // #region APIs (types only)
+
+// [macOS] Preserve the public manual type signatures in the generated API.
+export type {
+  SystemEffectMacOS,
+  TextInputMacOSProps,
+  ViewPropsMacOS,
+  NativeKeyEvent,
+  DragEvent,
+  PasteEvent,
+} from './src/types/macos';
 
 export type {
   BlurEvent,

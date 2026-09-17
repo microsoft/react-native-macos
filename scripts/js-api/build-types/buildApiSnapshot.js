@@ -206,6 +206,15 @@ async function preparePackagesInTempDir(
     }),
   );
 
+  // [macOS] The public compatibility shim lives outside types_generated.
+  // Resolve it from the source tree when API Extractor runs in its temp tree.
+  await fs.writeFile(
+    path.join(tempDirectory, 'react-native/src/types/macos.d.ts'),
+    `export type * from ${JSON.stringify(
+      path.join(REACT_NATIVE_PACKAGE_DIR, 'src/types/macos'),
+    )};\n`,
+  );
+
   const typeDefs = globSync('**/*.d.ts', {
     cwd: tempDirectory,
     onlyFiles: true,

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "module": "esnext",
     "lib": ["es2020"],
@@ -9,9 +10,12 @@
     "jsx": "react",
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
-    "paths": {"react-native": ["."]},
     "moduleResolution": "bundler",
-    "customConditions": ["react-native-strict-api"]
+    // [macOS] Resolve upstream test imports to the fork's generated API.
+    "paths": {
+      "react-native": ["../types_generated/index.d.ts"]
+    }
   },
-  "include": ["**/*.d.ts", "../__typetests__/**/*"]
+  "include": ["**/*"],
+  "exclude": ["macos-public-api.ts"]
 }
