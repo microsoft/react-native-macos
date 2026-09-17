@@ -128,6 +128,36 @@ async function prepareReactNativeDependenciesArtifactsAsync(
     },
   );
 
+  // The headers-only ReactNativeDependenciesHeaders.xcframework sidecar ships
+  // alongside the binary in the same tarball — it is what serves the deps
+  // namespaces to SwiftPM (the binary is framework-type; its root Headers/ is
+  // invisible to binaryTargets). Absent only in pre-sidecar tarballs (pinned
+  // RN_DEP_VERSION): CocoaPods still works (the pod flattens the binary's
+  // root Headers/), SwiftPM consumers regain it via ensureHeadersLayout.
+  //
+  // Slice coverage: this tarball sidecar carries ALL slices the deps prebuild
+  // produced. The ensureHeadersLayout fallback (headers-compose.js) rebuilds it
+  // from DEFAULT_STUB_SLICES (ios + ios-simulator only) — sufficient for a
+  // SwiftPM iOS build, which is the only supported SPM target today. The two
+  // paths therefore agree on the iOS slices; the fallback simply omits the
+  // extra slices (catalyst/tvos/...) that no SPM consumer needs yet. Headers
+  // are slice-uniform, so a consumer never sees divergent content per slice.
+  const headersSidecarSource = path.join(
+    path.dirname(xcframeworkSource),
+    'ReactNativeDependenciesHeaders.xcframework',
+  );
+  if (fs.existsSync(headersSidecarSource)) {
+    execSync(`cp -R "${headersSidecarSource}" "${artifactsPath}"`, {
+      stdio: 'inherit',
+    });
+  } else {
+    dependencyLog(
+      'ReactNativeDependenciesHeaders.xcframework not present in the tarball ' +
+        '(pre-sidecar artifact) — continuing with the binary xcframework only.',
+      'warning',
+    );
+  }
+
   // Delete the tarball after extraction
   if (!process.env.HERMES_ENGINE_TARBALL_PATH) {
     fs.unlinkSync(localPath);
@@ -197,6 +227,13 @@ function checkExistingVersion(
       dependencyLog(
         `React Native Dependencies found on disk at: ${artifactsPath}.\nNo version file has been found. We are going to use it anyway, but there might be some unexpected behaviors.`,
       );
+      // Honor the message above: an artifact without a version marker is a
+      // locally-staged one (e.g. a freshly composed deps build). Use it as-is.
+      // NOTE: this returns BEFORE the version.txt write below, so a
+      // locally-staged artifact never gains a marker — every later run re-hits
+      // this branch. That is intentional (don't clobber a hand-staged build),
+      // but downstream code must not assume version.txt exists here.
+      return true;
     }
   } else {
     dependencyLog('React Native Dependencies not found on disk');

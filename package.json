@@ -48,6 +48,7 @@
   "workspaces": [
     "packages/*",
     "tools/*",
+    "packages/react-native-test-library/*",
     "private/*",
     "!packages/helloworld",
     "!packages/hermes-inspector-msggen",

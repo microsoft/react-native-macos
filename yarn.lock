@@ -3908,6 +3908,8 @@ __metadata:
     listr2: "npm:^6.4.1"
     nullthrows: "npm:^1.1.1"
     react-native-macos: "workspace:*"
+    react-native-test-library-apple: "workspace:*"
+    react-native-test-library-common: "workspace:*"
     rxjs: "npm:@react-native-community/rxjs@6.5.4-custom"
   peerDependencies:
     react: 19.2.3
@@ -12346,7 +12348,9 @@ __metadata:
     metro: "npm:^0.87.0"
     metro-runtime: "npm:^0.87.0"
     metro-source-map: "npm:^0.87.0"
+    micromatch: "npm:^4.0.4"
     nullthrows: "npm:^1.1.1"
+    plist: "npm:^3.1.0"
     pretty-format: "npm:^29.7.0"
     promise: "npm:^8.3.0"
     react-devtools-core: "npm:^6.1.5"
@@ -12368,6 +12372,23 @@ __metadata:
   bin:
     react-native: cli.js
     react-native-macos: cli.js
+  languageName: unknown
+  linkType: soft
+
+"react-native-test-library-apple@workspace:*, react-native-test-library-apple@workspace:packages/react-native-test-library/apple":
+  version: 0.0.0-use.local
+  resolution: "react-native-test-library-apple@workspace:packages/react-native-test-library/apple"
+  dependencies:
+    react-native-test-library-common: "workspace:*"
+  peerDependencies:
+    react: "*"
+    react-native: 1000.0.0
+  languageName: unknown
+  linkType: soft
+
+"react-native-test-library-common@workspace:*, react-native-test-library-common@workspace:packages/react-native-test-library/common":
+  version: 0.0.0-use.local
+  resolution: "react-native-test-library-common@workspace:packages/react-native-test-library/common"
   languageName: unknown
   linkType: soft
 
