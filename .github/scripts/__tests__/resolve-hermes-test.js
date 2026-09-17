@@ -12,10 +12,20 @@
 
 const {spawnSync} = require('child_process');
 const fs = require('fs');
+const ini = require('ini');
 const os = require('os');
 const path = require('path');
 
 const root = path.resolve(__dirname, '../../..');
+const metadata = ini.parse(
+  fs.readFileSync(
+    path.join(
+      root,
+      'packages/react-native/sdks/hermes-engine/version.properties',
+    ),
+    'utf8',
+  ),
+);
 const script = path.join(root, '.github/scripts/resolve-hermes.mts');
 const preload = path.join(__dirname, '__fixtures__/resolve-hermes.cjs');
 let tmp;
@@ -61,8 +71,8 @@ function run(command, overrides = {}) {
 }
 
 test.each([
-  ['0', '0.14.0', 'HERMES_VERSION_NAME', 'Debug'],
-  ['1', '250829098.0.2', 'HERMES_V1_VERSION_NAME', 'Release'],
+  ['0', metadata.HERMES_VERSION_NAME, 'HERMES_VERSION_NAME', 'Debug'],
+  ['1', metadata.HERMES_V1_VERSION_NAME, 'HERMES_V1_VERSION_NAME', 'Release'],
 ])(
   'CI downloads flag %s with the selected key and version',
   (flag, version, key, flavor) => {
@@ -83,13 +93,17 @@ test.each([
 );
 
 test('CI snapshot fallback preserves the four-argument URL helper contract', () => {
-  const result = run(['download-hermes'], {HERMES_TEST_DOWNLOAD: 'snapshot'});
+  const version = '123.4.56';
+  const result = run(['download-hermes'], {
+    HERMES_TEST_DOWNLOAD: 'snapshot',
+    HERMES_TEST_PROPERTIES: `HERMES_VERSION_NAME=${version}`,
+  });
   expect(result.status).toBe(0);
-  expect(result.output).toContain('version=0.14.0\n');
+  expect(result.output).toContain(`version=${version}\n`);
   expect(result.urls).toEqual([
-    'https://central.sonatype.com/repository/maven-snapshots/com/facebook/hermes/hermes-ios/0.14.0-SNAPSHOT/maven-metadata.xml',
-    'https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/0.14.0/hermes-ios-0.14.0-hermes-ios-debug.tar.gz',
-    'https://central.sonatype.com/repository/maven-snapshots/com/facebook/hermes/hermes-ios/0.14.0-SNAPSHOT/hermes-ios-0.14.0-20260101.010203-4-hermes-ios-debug.tar.gz',
+    `https://central.sonatype.com/repository/maven-snapshots/com/facebook/hermes/hermes-ios/${version}-SNAPSHOT/maven-metadata.xml`,
+    `https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-debug.tar.gz`,
+    `https://central.sonatype.com/repository/maven-snapshots/com/facebook/hermes/hermes-ios/${version}-SNAPSHOT/hermes-ios-${version}-20260101.010203-4-hermes-ios-debug.tar.gz`,
   ]);
 });
 
@@ -149,7 +163,7 @@ test.each([
 test.each([
   ['0', '.hermesversion', 'MISSING'],
   ['1', '.hermesv1version', 'MISSING'],
-  ['1', '.hermesv1version', 'HERMES_VERSION_NAME=0.14.0'],
+  ['1', '.hermesv1version', 'HERMES_VERSION_NAME=123.4.56'],
   ['0', '.hermesversion', 'HERMES_VERSION_NAME=invalid'],
 ])(
   'CI resolve-commit reads flag %s tag %s independently of metadata %s',
