@@ -181,10 +181,39 @@ function releaseFixture(t, {versionPrivatePackages = false, workspaces = graph()
 const repositoryRoot = new URL('../../../', import.meta.url).pathname;
 const releasePolicy = JSON.parse(readFileSync(join(repositoryRoot, '.changeset/config.json'), 'utf8'));
 const getReleasePlan = require('@changesets/get-release-plan').default;
+const semver = require('semver');
 
-test('repository Changesets policy accepts main with private lists and skips their release', async t => {
+test('repository Changesets policy disables private versions and tags and fixes core with lists', () => {
+  assert.deepEqual(releasePolicy.privatePackages, {version: false, tag: false});
+  assert.deepEqual(releasePolicy.fixed, [[core, lists]]);
+});
+
+test('repository Changesets policy follows the actual public and private workspace graph', async t => {
   const workspaces = readWorkspaces(repositoryRoot);
-  assert.equal(workspaces.find(pkg => pkg.name === lists).private, true);
+  const corePackage = workspaces.find(pkg => pkg.name === core);
+  const listsPackage = workspaces.find(pkg => pkg.name === lists);
+  assert.ok(corePackage && !corePackage.private, 'Missing public core workspace');
+  assert.ok(listsPackage, 'Missing lists workspace');
+  const publicPackages = listsPackage.private ? [corePackage] : [corePackage, listsPackage];
+  // Derive expectations from manifests, never from the policy or release-plan output.
+  const nextVersion = semver.inc(publicPackages.map(pkg => pkg.version).sort(semver.rcompare)[0], 'patch');
+  const expected = publicPackages.map(pkg => [pkg.name, nextVersion]).sort();
+  const {root} = releaseFixture(t, {workspaces, config: releasePolicy});
+  assert.deepEqual((await getReleasePlan(root)).releases, []);
+  for (const changed of [core, lists]) {
+    writeFileSync(join(root, '.changeset/fix.md'), `---\n"${changed}": patch\n---\n\nFix package.\n`);
+    const bumped = (await getReleasePlan(root)).releases.filter(pkg => pkg.type !== 'none');
+    assert.deepEqual(bumped.map(pkg => [pkg.name, pkg.newVersion]).sort(),
+      changed === lists && listsPackage.private ? [] : expected);
+  }
+});
+
+test('repository Changesets policy accepts a private lists fixture and skips its release', async t => {
+  const workspaces = graph('1000.0.0');
+  workspaces[1].private = true;
+  // A public package can use skipped private packages as development dependencies.
+  workspaces[0].devDependencies = {[lists]: workspaces[0].dependencies[lists]};
+  delete workspaces[0].dependencies[lists];
   const {root} = releaseFixture(t, {workspaces, config: releasePolicy});
   assert.deepEqual((await getReleasePlan(root)).releases, []);
   writeFileSync(join(root, '.changeset/fix.md'), `---\n"${core}": patch\n---\n\nFix core.\n`);
