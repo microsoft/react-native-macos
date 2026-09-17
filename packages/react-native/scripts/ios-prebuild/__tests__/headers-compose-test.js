@@ -10,6 +10,8 @@
 
 'use strict';
 
+import type {HeadersSpecPlan} from '../headers-spec';
+
 const resources = require('../framework-resources');
 const {
   COMPOSE_TOOLING_FILES,
@@ -50,7 +52,6 @@ describe('COMPOSE_TOOLING_FILES stays in sync with headers-compose.js requires',
 });
 
 test('only the version header uses the built overlay on iOS and macOS slices', () => {
-  const os = require('os');
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'stamped-headers-'));
   const rnRoot = path.join(root, 'source');
   const overlay = path.join(root, 'built');
@@ -74,13 +75,26 @@ test('only the version header uses the built overlay on iOS and macOS slices', (
   for (const slice of slices) {
     fs.mkdirSync(path.join(xcfw, slice, 'React.framework'), {recursive: true});
   }
-  const plan = {
+  const plan: HeadersSpecPlan = {
     react: [
-      {relPath: 'ReactNativeVersion.h', source: versionSource},
-      {relPath: 'TraceRecordingState.h', source: tracingSource},
+      {
+        relPath: 'ReactNativeVersion.h',
+        source: versionSource,
+        naturalPath: 'React/ReactNativeVersion.h',
+      },
+      {
+        relPath: 'TraceRecordingState.h',
+        source: tracingSource,
+        naturalPath: 'jsinspector-modern/tracing/TraceRecordingState.h',
+      },
     ],
+    reactNativeHeaders: [],
+    depsNamespaces: [],
     umbrella: [],
+    namespaceModules: {},
+    namespaceUmbrellas: [],
     privateReactHeaders: {modular: [], textual: []},
+    collisions: [],
   };
   try {
     emitReactFrameworkHeaders(xcfw, plan, rnRoot, overlay);
@@ -121,7 +135,6 @@ describe('composeToolingHash', () => {
 
 test('header sidecar composition uses the binary macOS slice instead of iOS defaults', () => {
   const emitter = require('../headers-xcframework');
-  const os = require('os');
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'macos-headers-compose-'));
   const slices = [
     {name: 'macos', sdk: 'macosx', targets: ['arm64-apple-macosx11.0']},
@@ -134,13 +147,17 @@ test('header sidecar composition uses the binary macOS slice instead of iOS defa
     .mockReturnValue(path.join(root, 'ReactNativeHeaders.xcframework'));
   // No compiler or xcodebuild is needed: this checks the platform handoff.
   try {
-    const {buildReactNativeHeadersXcframework} = require('../headers-compose');
     buildReactNativeHeadersXcframework(
       root,
       {
+        react: [],
         reactNativeHeaders: [],
+        depsNamespaces: [],
+        umbrella: [],
         namespaceUmbrellas: [],
         namespaceModules: {},
+        privateReactHeaders: {modular: [], textual: []},
+        collisions: [],
       },
       root,
       emitter.stubSlicesFromXcframework('/binary/React.xcframework'),
@@ -161,7 +178,7 @@ test('header sidecar composition uses the binary macOS slice instead of iOS defa
 
 describe('binary-derived header sidecars', () => {
   let tmp = '';
-  const plan = {
+  const plan: HeadersSpecPlan = {
     react: [],
     reactNativeHeaders: [],
     umbrella: [],
@@ -171,7 +188,7 @@ describe('binary-derived header sidecars', () => {
     collisions: [],
     privateReactHeaders: {modular: [], textual: []},
   };
-  const writeBinary = (name, platform) => {
+  const writeBinary = (name: string, platform: string) => {
     const dir = path.join(tmp, name + '.xcframework');
     fs.mkdirSync(dir, {recursive: true});
     fs.writeFileSync(

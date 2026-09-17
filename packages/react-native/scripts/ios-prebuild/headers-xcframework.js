@@ -98,7 +98,7 @@ function stubSlicesFromXcframework(
       `headers-xcframework: ${xcfwPath} must have a non-empty AvailableLibraries array.`,
     );
   }
-  const seen = new Set();
+  const seen /*: Set<string> */ = new Set();
   return plist.AvailableLibraries.map(lib => {
     if (
       lib == null ||
@@ -116,7 +116,7 @@ function stubSlicesFromXcframework(
       lib.SupportedPlatformVariant != null
         ? `${lib.SupportedPlatform}-${lib.SupportedPlatformVariant}`
         : lib.SupportedPlatform;
-    if (!Object.prototype.hasOwnProperty.call(PLATFORM_STUB_RECIPES, key)) {
+    if (!Object.hasOwn(PLATFORM_STUB_RECIPES, key)) {
       throw new Error(
         `headers-xcframework: no stub recipe for slice '${key}' of ` +
           `${xcfwPath}. Add it to PLATFORM_STUB_RECIPES.`,
