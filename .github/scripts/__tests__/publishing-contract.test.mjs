@@ -243,12 +243,12 @@ test('repository Changesets policy couples public stable packages without regist
   }
 });
 
-test('real Yarn constraints preserve workspace fork edges and distinguish public and private upstream consumers', t => {
+test('real Yarn constraints preserve private upstream versions, align public versions, and preserve workspace fork edges', t => {
   for (const main of [true, false]) {
     const workspaces = graph(main ? '1000.0.0' : '0.83.2');
     workspaces[1].private = main;
     workspaces[1].version = '0.82.0';
-    workspaces[2].private = false;
+    workspaces[2].version = '0.82.7';
     workspaces[3].version = '0.82.0';
     for (const index of [0, 1, 3]) {
       for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
@@ -271,8 +271,10 @@ test('real Yarn constraints preserve workspace fork edges and distinguish public
     assert.equal(actual[0].version, workspaces[0].version);
     assert.equal(actual[1].version, main ? '1000.0.0' : '0.83.2');
     assert.equal(actual[2].private, true);
-    assert.equal(actual[2].version, '0.83.1');
+    assert.equal(actual[2].version, '0.82.7');
     assert.equal(actual[3].version, '1000.0.0');
+    assert.equal(actual[5].private, true);
+    assert.equal(actual[5].version, main ? '0.83.0' : '0.83.1');
     for (const index of [0, 1, 3]) {
       for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
         assert.equal(actual[index][field]['@react-native/codegen'], main || index === 3 ? 'workspace:*' : '0.83.1');

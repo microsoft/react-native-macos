@@ -69,7 +69,7 @@ function enforcePrivateReactNativeScopedPackages({Yarn}) {
 
 /**
  * Enforce that react-native-macos declares a peer dependency on react-native on release branches,
- * and that this version is consistent across all @react-native/ scoped packages.
+ * and that this version is consistent across public @react-native/ scoped packages.
  * Do not enforce on the main branch, where there is no published version of React Native to align to.
  * @param {Context} context
  */
@@ -77,9 +77,14 @@ function enforceReactNativeVersionConsistency({Yarn}) {
     if (!isMainBranch({Yarn})) {
         const reactNativePeerDependency = getReactNativePeerDependency({Yarn});
 
-        // Enforce this version on all @react-native/ scoped packages
+        // Private workspaces are never published and retain their branch-local
+        // development versions.
         for (const workspace of Yarn.workspaces()) {
-            if (workspace.ident?.startsWith('@react-native/') && !PACKAGES_TO_IGNORE.includes(workspace.ident)) {
+            if (
+                workspace.ident?.startsWith('@react-native/') &&
+                !PACKAGES_TO_IGNORE.includes(workspace.ident) &&
+                !workspace.manifest.private
+            ) {
                 workspace.set('version', reactNativePeerDependency);
             }
         }
