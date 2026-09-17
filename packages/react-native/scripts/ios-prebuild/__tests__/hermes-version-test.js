@@ -119,7 +119,10 @@ test('rejects an unknown policy', () => {
   );
 });
 
-test('reads checked-in metadata relative to the helper', () => {
+test('the checked-in compiler and source tag match the single Hermes metadata', () => {
+  const compilerVersion = require('../../../package.json').dependencies[
+    'hermes-compiler'
+  ];
   const metadata = ini.parse(
     fs.readFileSync(
       path.resolve(__dirname, '../../../sdks/hermes-engine/version.properties'),
@@ -130,6 +133,7 @@ test('reads checked-in metadata relative to the helper', () => {
     const selected = readHermesMetadata('single', flag);
     expect(selected.version).toBe(metadata.HERMES_VERSION_NAME);
     expect(selected.tagFile).toBe('.hermesv1version');
+    expect(compilerVersion).toBe(selected.version);
     expect(
       fs
         .readFileSync(
@@ -137,7 +141,7 @@ test('reads checked-in metadata relative to the helper', () => {
           'utf8',
         )
         .trim(),
-    ).not.toBe('');
+    ).toBe(`hermes-v${selected.version}`);
   }
 });
 
