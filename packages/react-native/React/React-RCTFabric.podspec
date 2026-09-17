@@ -52,6 +52,7 @@ Pod::Spec.new do |s|
   # [macOS MobileCoreServices not available on macOS
   s.ios.framework          = "MobileCoreServices"
   s.visionos.framework     = "MobileCoreServices"
+  s.osx.frameworks         = ["UniformTypeIdentifiers"]
   # macOS]
   s.pod_target_xcconfig    = {
     "HEADER_SEARCH_PATHS" => header_search_paths,
