@@ -13521,6 +13521,7 @@ __metadata:
     invariant: "npm:^2.2.4"
     jest-environment-node: "npm:^29.7.0"
     memoize-one: "npm:^5.0.0"
+    metro: "npm:^0.83.3"
     metro-runtime: "npm:^0.83.3"
     metro-source-map: "npm:^0.83.3"
     nullthrows: "npm:^1.1.1"
