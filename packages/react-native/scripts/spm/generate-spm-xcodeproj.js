@@ -22,6 +22,7 @@
  */
 
 const {readFlavoredFrameworksManifest} = require('./flavored-frameworks');
+const {parseConfigCommandJson} = require('./generate-spm-autolinking-config');
 const {
   addArrayMembers,
   addArrayStringValues,
@@ -1799,13 +1800,13 @@ function readGeneratedSourcesManifest(
   appRoot /*: string */,
 ) /*: Array<GeneratedSource> */ {
   const manifestPath = path.join(appRoot, SPM_GENERATED_SOURCES_MANIFEST);
-  let raw: string;
+  let raw /*: string */ = '';
   try {
     raw = fs.readFileSync(manifestPath, 'utf8');
   } catch {
     return [];
   }
-  let entries: unknown;
+  let entries /*: unknown */ = null;
   try {
     entries = JSON.parse(raw);
   } catch {
@@ -1844,7 +1845,7 @@ function readGeneratedSourcesManifest(
  */
 function readMarker(
   xcodeprojPath /*: string */,
-) /*: ?{generatedSources?: {[string]: Array<string>}, artifactsVersionOverride?: ?string, buildSettingChanges?: Array<BuildSettingChange>, ...} */ {
+) /*: ?{generatedSources?: {[string]: Array<string>}, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>, buildSettingChanges?: Array<BuildSettingChange>, ...} */ {
   const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
   try {
     // $FlowFixMe[incompatible-return] JSON.parse returns any
@@ -1857,10 +1858,11 @@ function readMarker(
 // Returns the `*.xcodeproj` under `appRoot` carrying a `.spm-injected.json`
 // marker (the user-owned project SPM packages were injected into in place),
 // or null when none has been injected yet. Pure fs reads — safe for the
-// build-time sync (sync-spm-autolinking.js, via readArtifactsVersionOverride
-// below) to call without pulling in any pbxproj-editing machinery at runtime.
+// marker readers below, and for callers that only locate the project (setup-
+// apple-spm.js's action defaulting and `deinit`), to call without exercising
+// any pbxproj-editing machinery.
 function findInjectedXcodeproj(appRoot /*: string */) /*: string | null */ {
-  let entries: Array<{name: string, isDirectory(): boolean}>;
+  let entries /*: Array<{name: string, isDirectory(): boolean}> */ = [];
   try {
     // $FlowFixMe[incompatible-type] Dirent typing
     entries = fs.readdirSync(appRoot, {withFileTypes: true});
@@ -1884,11 +1886,13 @@ function findInjectedXcodeproj(appRoot /*: string */) /*: string | null */ {
  * update --version` pinned into the injected xcodeproj's `.spm-injected.json`
  * marker (see the field's doc comment in injectSpmIntoExistingXcodeproj
  * below), or null when no project is injected yet, no override is pinned, or
- * the marker can't be read (never throws). Pure fs reads — the build-time
- * sync (sync-spm-autolinking.js) calls this to prefer the pinned version over
- * the one derived from node_modules/react-native/package.json, so a
- * version-mismatched setup keeps healing against the SAME artifact slot the
- * explicit `--version` selected.
+ * the marker can't be read (never throws). Pure fs reads.
+ *
+ * Nothing in production calls this yet: the pin is written but never read
+ * back, so the build-time sync (sync-spm-autolinking.js) still derives the
+ * version from node_modules/react-native/package.json and can heal against a
+ * different artifact slot than the explicit `--version` selected. Only the
+ * tests cover it.
  */
 function readArtifactsVersionOverride(appRoot /*: string */) /*: ?string */ {
   const xcodeprojPath = findInjectedXcodeproj(appRoot);
@@ -1900,12 +1904,38 @@ function readArtifactsVersionOverride(appRoot /*: string */) /*: ?string */ {
 }
 
 /**
+ * Read the autolinking config command a previous `spm add`/`update` pinned into
+ * the injected xcodeproj's `.spm-injected.json` marker, or null when nothing
+ * usable is pinned. Pure fs reads, like readArtifactsVersionOverride above, but
+ * this one IS wired: setup-apple-spm.js's resolveExplicitConfigCommand reads it
+ * on add/update/scaffold and on the build-time `sync`. Re-validated through the
+ * same parseConfigCommandJson the flag goes through, and never throws, so a
+ * hand-edited marker degrades to the env-var/default command instead of
+ * injecting a bogus argv into the build.
+ */
+function readPinnedConfigCommand(appRoot /*: string */) /*: ?Array<string> */ {
+  const xcodeprojPath = findInjectedXcodeproj(appRoot);
+  if (xcodeprojPath == null) {
+    return null;
+  }
+  const pinned = readMarker(xcodeprojPath)?.configCommand;
+  if (pinned == null) {
+    return null;
+  }
+  try {
+    return parseConfigCommandJson(JSON.stringify(pinned), SPM_INJECTED_MARKER);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Add SPM packages to a user's EXISTING xcodeproj in place. Returns
  * {status: 'injected', target} on success, or {status: 'refused', reason}
  * when the project can't be safely edited (caller surfaces it; fail-loud).
  */
 function injectSpmIntoExistingXcodeproj(
-  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string} */,
+  opts /*: {appRoot: string, reactNativeRoot: string, xcodeprojPath: string, appName?: ?string, artifactsVersionOverride?: ?string, configCommand?: ?Array<string>} */,
 ) /*: {status: 'injected', target: string} | {status: 'refused', reason: string} */ {
   const {appRoot, reactNativeRoot, xcodeprojPath} = opts;
   const pbxprojPath = path.join(xcodeprojPath, 'project.pbxproj');
@@ -2022,6 +2052,16 @@ function injectSpmIntoExistingXcodeproj(
     prevMarker?.artifactsVersionOverride ??
     null;
 
+  // Same set-or-preserve contract as the version pin above, for the autolinking
+  // config command `add`/`update` resolved (`--config-command` or
+  // RCT_SPM_AUTOLINKING_CONFIG_COMMAND) — the build-time sync sees neither the
+  // flag nor the developer's shell environment, so without the pin it
+  // re-derives autolinking.json with the default @react-native-community/cli
+  // command and breaks apps that replace it. Read back by
+  // readPinnedConfigCommand (above). No "clear" verb yet either; `deinit` drops
+  // the whole marker, this field with it.
+  const configCommand = opts.configCommand ?? prevMarker?.configCommand ?? null;
+
   // Marker: idempotency signal + the exact, reversible record of every edit so
   // `deinit` (removeSpmInjection) can undo precisely what was added.
   writeIfChanged(
@@ -2038,6 +2078,7 @@ function injectSpmIntoExistingXcodeproj(
         // `update` to reconcile away entries that left the manifest.
         generatedSources: generatedSourceUuids,
         artifactsVersionOverride,
+        configCommand,
         scheme: {
           file: schemeResult.file,
           created: schemeResult.status === 'created',
@@ -2220,5 +2261,6 @@ module.exports = {
   removePreActionFromScheme,
   findInjectedXcodeproj,
   readArtifactsVersionOverride,
+  readPinnedConfigCommand,
   SPM_INJECTED_MARKER,
 };

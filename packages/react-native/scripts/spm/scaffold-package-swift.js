@@ -197,7 +197,7 @@ function collectSubdirs(
   ]);
   const out /*: Array<string> */ = [];
   const walk = (absDir /*: string */, relDir /*: string */) => {
-    let entries: Array<{name: string, isDirectory(): boolean}>;
+    let entries /*: Array<{name: string, isDirectory(): boolean}> */ = [];
     try {
       // $FlowFixMe[incompatible-type] Dirent typing
       entries = fs.readdirSync(absDir, {withFileTypes: true});
@@ -939,7 +939,7 @@ function scaffoldPackageSwiftForDep(
     };
   }
 
-  let model: PodspecModel;
+  let model;
   try {
     model = readPodspec(podspecPath);
   } catch (e) {
@@ -1135,7 +1135,7 @@ function scaffoldAll(
     directDeps.push({name, root, platforms: {ios: iosPlatform}});
   }
 
-  let allDeps: Array<AutolinkedDep>;
+  let allDeps /*: Array<AutolinkedDep> */ = [];
   try {
     allDeps = expandSpmDependencies(directDeps, {
       readConfig: defaultReadConfig,

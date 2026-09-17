@@ -13,6 +13,7 @@
 const {
   COMPOSE_TOOLING_FILES,
   composeToolingHash,
+  emitReactFrameworkHeaders,
 } = require('../headers-compose');
 const fs = require('fs');
 const path = require('path');
@@ -38,6 +39,69 @@ describe('COMPOSE_TOOLING_FILES stays in sync with headers-compose.js requires',
       expect(required).toContain(name);
     }
   });
+});
+
+test('only the version header uses the built overlay on iOS and macOS slices', () => {
+  const os = require('os');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'stamped-headers-'));
+  const rnRoot = path.join(root, 'source');
+  const overlay = path.join(root, 'built');
+  const xcfw = path.join(root, 'React.xcframework');
+  const versionSource = 'React/Base/ReactNativeVersion.h';
+  const tracingSource =
+    'ReactCommon/jsinspector-modern/tracing/TraceRecordingState.h';
+  const sentinel = '#define REACT_NATIVE_VERSION_MAJOR 1000\n';
+  const stamped =
+    '#define REACT_NATIVE_VERSION_MAJOR 0\n#define REACT_NATIVE_VERSION_MINOR 87\n';
+  for (const [dir, name, text] of [
+    [rnRoot, versionSource, sentinel],
+    [overlay, versionSource, stamped],
+    [rnRoot, tracingSource, '// current move-only tracing definition\n'],
+    [overlay, tracingSource, '// stale copyable tracing definition\n'],
+  ]) {
+    fs.mkdirSync(path.dirname(path.join(dir, name)), {recursive: true});
+    fs.writeFileSync(path.join(dir, name), text);
+  }
+  const slices = ['ios-arm64', 'macos-arm64_x86_64'];
+  for (const slice of slices) {
+    fs.mkdirSync(path.join(xcfw, slice, 'React.framework'), {recursive: true});
+  }
+  const plan = {
+    react: [
+      {relPath: 'ReactNativeVersion.h', source: versionSource},
+      {relPath: 'TraceRecordingState.h', source: tracingSource},
+    ],
+    umbrella: [],
+    privateReactHeaders: {modular: [], textual: []},
+  };
+  try {
+    emitReactFrameworkHeaders(xcfw, plan, rnRoot, overlay);
+    for (const slice of slices) {
+      const headers = path.join(xcfw, slice, 'React.framework', 'Headers');
+      expect(
+        fs.readFileSync(path.join(headers, 'ReactNativeVersion.h'), 'utf8'),
+      ).toBe(stamped);
+      expect(
+        fs.readFileSync(path.join(headers, 'TraceRecordingState.h'), 'utf8'),
+      ).toBe('// current move-only tracing definition\n');
+    }
+    expect(fs.readFileSync(path.join(rnRoot, versionSource), 'utf8')).toBe(
+      sentinel,
+    );
+    emitReactFrameworkHeaders(xcfw, plan, rnRoot);
+    expect(
+      fs.readFileSync(
+        path.join(
+          xcfw,
+          slices[0],
+          'React.framework/Headers/ReactNativeVersion.h',
+        ),
+        'utf8',
+      ),
+    ).toBe(sentinel);
+  } finally {
+    fs.rmSync(root, {recursive: true, force: true});
+  }
 });
 
 describe('composeToolingHash', () => {

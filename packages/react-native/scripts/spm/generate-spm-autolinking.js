@@ -426,7 +426,7 @@ function hasMixedLanguageSources(absSource /*: string */) /*: boolean */ {
   let hasClang = false;
   const walk = (dir /*: string */, depth /*: number */) => {
     if (depth > 6 || (hasSwift && hasClang)) return;
-    let entries: Array<{name: string, isDirectory(): boolean}>;
+    let entries /*: Array<{name: string, isDirectory(): boolean}> */ = [];
     try {
       // $FlowFixMe[incompatible-type] Dirent typing
       entries = fs.readdirSync(dir, {withFileTypes: true});

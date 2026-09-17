@@ -14,6 +14,7 @@ const {
   SPM_INJECTED_MARKER,
   injectSpmIntoExistingXcodeproj,
   readArtifactsVersionOverride,
+  readPinnedConfigCommand,
   removeSpmInjection,
 } = require('../generate-spm-xcodeproj');
 const fs = require('fs');
@@ -391,5 +392,150 @@ describe('readArtifactsVersionOverride', () => {
     );
     expect(() => readArtifactsVersionOverride(appRoot)).not.toThrow();
     expect(readArtifactsVersionOverride(appRoot)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// configCommand — the marker field persisting an explicit `spm add/update
+// --config-command '<json argv>'`. Without the pin, the build-time `sync`
+// re-derived autolinking.json with the default @react-native-community/cli
+// command and failed the "Sync SPM Autolinking" build phase in apps (e.g. Expo
+// apps) that replace it.
+// ---------------------------------------------------------------------------
+describe('configCommand marker field', () => {
+  const EXPO_COMMAND = [
+    'npx',
+    'expo-modules-autolinking',
+    'react-native-config',
+    '--json',
+    '--platform',
+    'ios',
+  ];
+
+  it('records an explicit config command into the marker', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      configCommand: EXPO_COMMAND,
+    });
+    expect(readMarker(xcodeprojPath).configCommand).toEqual(EXPO_COMMAND);
+    expect(readPinnedConfigCommand(appRoot)).toEqual(EXPO_COMMAND);
+  });
+
+  it('defaults to null when --config-command has never been given', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(readMarker(xcodeprojPath).configCommand).toBeNull();
+    expect(readPinnedConfigCommand(appRoot)).toBeNull();
+  });
+
+  it('preserves the pin on a later run without --config-command', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      configCommand: EXPO_COMMAND,
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+    });
+    expect(readMarker(xcodeprojPath).configCommand).toEqual(EXPO_COMMAND);
+    expect(readPinnedConfigCommand(appRoot)).toEqual(EXPO_COMMAND);
+  });
+
+  it('a later explicit --config-command overwrites the previous pin', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      configCommand: EXPO_COMMAND,
+    });
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      configCommand: ['my-cli', 'config'],
+    });
+    expect(readMarker(xcodeprojPath).configCommand).toEqual([
+      'my-cli',
+      'config',
+    ]);
+    expect(readPinnedConfigCommand(appRoot)).toEqual(['my-cli', 'config']);
+  });
+
+  it('deinit drops the pin along with the whole marker', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      configCommand: EXPO_COMMAND,
+    });
+    removeSpmInjection({appRoot, xcodeprojPath});
+    expect(fs.existsSync(path.join(xcodeprojPath, SPM_INJECTED_MARKER))).toBe(
+      false,
+    );
+    expect(readPinnedConfigCommand(appRoot)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// readPinnedConfigCommand — pure fs read, used by setup-apple-spm.js (including
+// the build-time `sync`) to reuse the config command an earlier `add`/`update`
+// pinned. A hand-edited or corrupt marker must degrade to the env/default path
+// instead of injecting a bogus argv or throwing mid-build.
+// ---------------------------------------------------------------------------
+describe('readPinnedConfigCommand', () => {
+  it('returns null when no xcodeproj has been injected yet', () => {
+    const {appRoot} = scaffoldApp();
+    expect(readPinnedConfigCommand(appRoot)).toBeNull();
+  });
+
+  it('returns null (never throws) on a malformed marker', () => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      configCommand: ['my-cli', 'config'],
+    });
+    fs.writeFileSync(
+      path.join(xcodeprojPath, SPM_INJECTED_MARKER),
+      '{ not valid json',
+      'utf8',
+    );
+    expect(() => readPinnedConfigCommand(appRoot)).not.toThrow();
+    expect(readPinnedConfigCommand(appRoot)).toBeNull();
+  });
+
+  it.each([
+    ['a bare string', '"npx expo-modules-autolinking"'],
+    ['an empty array', '[]'],
+    ['a non-string member', '["npx", 7]'],
+    ['an empty-string member', '["npx", ""]'],
+    ['an object', '{"command": "npx"}'],
+  ])('returns null for a pinned value that is %s', (_label, pinned) => {
+    const {appRoot, xcodeprojPath, rnRoot} = scaffoldApp();
+    injectSpmIntoExistingXcodeproj({
+      appRoot,
+      reactNativeRoot: rnRoot,
+      xcodeprojPath,
+      configCommand: ['my-cli', 'config'],
+    });
+    const markerPath = path.join(xcodeprojPath, SPM_INJECTED_MARKER);
+    const marker = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
+    marker.configCommand = JSON.parse(pinned);
+    fs.writeFileSync(markerPath, JSON.stringify(marker), 'utf8');
+    expect(readPinnedConfigCommand(appRoot)).toBeNull();
   });
 });

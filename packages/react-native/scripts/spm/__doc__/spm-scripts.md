@@ -137,6 +137,40 @@ accepts kebab-case equivalents (e.g. `--skip-codegen`).
 | `--artifacts <path>` | [advanced] Local artifact root containing complete `debug/` and `release/` cache slots |
 | `--download <auto\|skip\|force>` | [advanced] Artifact download policy (default: auto) |
 | `--skipCodegen` | [advanced] Skip the codegen step |
+| `--configCommand <json>` | [advanced] JSON array of the argv used to generate `autolinking.json`, overriding the default `@react-native-community/cli config` command. Also settable via the `RCT_SPM_AUTOLINKING_CONFIG_COMMAND` env var. Either way the value is remembered, so you pass it once. Example: `'["npx","expo-modules-autolinking","react-native-config","--json","--platform","ios"]'` |
+
+### The autolinking config command is remembered
+
+An app that replaces `@react-native-community/cli` autolinking (an Expo app,
+for example) has to tell `spm` how to produce `autolinking.json`. Pass the
+command once, on `add` or `update`:
+
+```bash
+npx react-native spm add --configCommand '["npx","expo-modules-autolinking","react-native-config","--json","--platform","ios"]'
+```
+
+Every action that needs `autolinking.json` — `add`, `update`, `scaffold`, and
+the build-time `sync` — resolves the command in this order:
+
+1. `--configCommand`
+2. `RCT_SPM_AUTOLINKING_CONFIG_COMMAND`
+3. the `configCommand` pinned in `MyApp.xcodeproj/.spm-injected.json` by an
+   earlier `add`/`update`
+4. the default `@react-native-community/cli config`
+
+`add`/`update` pin whichever of the first two routes supplied the command,
+validated as an argv array; a later run that passes neither keeps the existing
+pin, and passing `--configCommand` again replaces it. The pin exists because
+the **Sync SPM Autolinking** build phase inherits neither your flag nor the
+shell that exported the env var — without it, a successful `add` is followed by
+failing builds, because the phase re-derives `autolinking.json` with the
+default command. A pin never shadows the env var, so an override in your shell
+still takes effect, and a pin that no longer parses is ignored in favor of the
+default.
+
+`deinit` deletes `.spm-injected.json`, and the pin with it. A later `add`
+therefore falls back to the default command unless you pass `--configCommand`
+(or export the env var) again.
 
 ### Debug/Release flavor is automatic
 
@@ -161,7 +195,7 @@ package graph, or require a second build.
 | Path | Commit? | Why |
 |------|---------|-----|
 | `MyApp.xcodeproj/` | Yes | Your project, with SwiftPM injected in place. Holds your signing, capabilities, Build Phases — `add` only adds SwiftPM refs/settings, additively. |
-| `MyApp.xcodeproj/.spm-injected.json` | Yes | Marker recording every edit `add` made, so `deinit` can surgically reverse it and re-runs stay idempotent. |
+| `MyApp.xcodeproj/.spm-injected.json` | Yes | Marker recording every edit `add` made, so `deinit` can surgically reverse it and re-runs stay idempotent. Also pins settings later runs and Xcode builds must reuse, such as the [autolinking config command](#the-autolinking-config-command-is-remembered). |
 | `build/generated/` | No | Codegen/autolinking output; regenerated |
 | `build/xcframeworks/` | No | Symlinks to the machine-local artifact cache |
 | `Package.resolved` | No | SwiftPM resolution file; machine-specific |
@@ -335,6 +369,7 @@ across apps; refresh it with `react-native spm update --download force`.
 | "not contained in target" | Re-run setup (regenerates file-level symlinks) |
 | Codegen fails | Use `--skipCodegen` to iterate on other parts |
 | "SPM sync failed" warning | Check Xcode build log for details; node may not be in PATH — ensure `with-environment.sh` is present |
+| "Sync SPM Autolinking" build phase fails: `'npx --no-install @react-native-community/cli config' exited with status 1` | This app replaces `@react-native-community/cli` autolinking (e.g. an Expo app). Re-run `spm add`/`update` with `--configCommand` (or with `RCT_SPM_AUTOLINKING_CONFIG_COMMAND` exported) so the working command is pinned for the build phase to reuse — see [The autolinking config command is remembered](#the-autolinking-config-command-is-remembered). |
 | Autolinking not updating on build | Touch `package.json` to force a sync, or delete `build/generated/autolinking/.spm-sync-stamp` |
 | Stale SwiftPM state or corrupted build | `rm -rf build/ .build/`, then `react-native spm update`, then reopen Xcode |
 | Want to revert to CocoaPods | `react-native spm deinit`, then `pod install` |
