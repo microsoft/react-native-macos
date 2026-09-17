@@ -73,7 +73,9 @@ describe('resolveHermesHeaders', () => {
 });
 
 describe('producer header slices', () => {
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
   test.each(['macos', 'xros', 'unknown'])(
     'derives the RN sidecar from the composed %s binary',
