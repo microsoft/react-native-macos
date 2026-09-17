@@ -343,7 +343,7 @@ static const NSTimeInterval kAutoRetryInterval = 20.0;
   [self dismissViewControllerAnimated:NO completion:nil];
 #else // [macOS
   if (self.presentingViewController) {
-    [[RCTKeyWindow() contentViewController] dismissViewController:self];
+    [self.presentingViewController dismissViewController:self];
   }
 #endif // macOS]
 }

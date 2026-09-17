@@ -350,6 +350,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     _lastErrorMessage = [messageWithoutAnsi substringToIndex:MIN((NSUInteger)10000, messageWithoutAnsi.length)];
     _lastErrorCookie = errorCookie;
 
+#if TARGET_OS_OSX // [macOS
+    // Create the table before reloading it on the first presentation.
+    (void)self.view;
+#endif // macOS]
     [_stackTraceTableView reloadData];
 
     if (!isRootViewControllerPresented) {
@@ -373,7 +377,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   [self dismissViewControllerAnimated:YES completion:nil];
 #else // [macOS
   if (self.presentingViewController) {
-    [[RCTKeyWindow() contentViewController] dismissViewController:self];
+    [self.presentingViewController dismissViewController:self];
   }
 #endif // macOS]
 }
