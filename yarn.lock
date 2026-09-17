@@ -7917,10 +7917,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hermes-compiler@npm:250829098.0.6":
-  version: 250829098.0.6
-  resolution: "hermes-compiler@npm:250829098.0.6"
-  checksum: 10c0/ca565183f28fb6ee079ba1232ab005be8a2af49ac0db45e912b23a90cc44e8202a1f808a059d6c1601bcc9b976caac356639dc59d7eb5897cb2ecb1ef3661a23
+"hermes-compiler@npm:250829098.0.12":
+  version: 250829098.0.12
+  resolution: "hermes-compiler@npm:250829098.0.12"
+  checksum: 10c0/068efecbc91286393ac52b10b7f6ca3c51884fa4fa500e65aaaa6ba74cc137786ec0ffa8bf7a2f39f27278822246d8108ad63053a88aca5de69fe599ec0028b9
   languageName: node
   linkType: hard
 
@@ -12110,7 +12110,7 @@ __metadata:
     commander: "npm:^12.0.0"
     flow-enums-runtime: "npm:^0.0.6"
     glob: "npm:^7.1.1"
-    hermes-compiler: "npm:250829098.0.6"
+    hermes-compiler: "npm:250829098.0.12"
     invariant: "npm:^2.2.4"
     memoize-one: "npm:^5.0.0"
     metro: "npm:^0.84.2"
