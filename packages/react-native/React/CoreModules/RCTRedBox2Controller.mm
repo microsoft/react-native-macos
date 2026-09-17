@@ -743,11 +743,15 @@ static const NSTimeInterval kAutoRetryInterval = 20.0;
 
 - (CGFloat)tableView:(__unused RCTUITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath // [macOS]
 {
+#if TARGET_OS_OSX // [macOS
+  return RCTUITableViewAutomaticDimension;
+#else // macOS]
   auto section = [self sectionForIndex:indexPath.section];
   if (section == Section::Message || section == Section::CodeFrame) {
     return RCTUITableViewAutomaticDimension; // [macOS]
   }
   return 50;
+#endif // [macOS]
 }
 
 - (CGFloat)tableView:(__unused RCTUITableView *)tableView // [macOS]
