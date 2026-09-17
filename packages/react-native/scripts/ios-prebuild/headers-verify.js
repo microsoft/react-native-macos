@@ -495,6 +495,15 @@ function parseArgs(argv /*: Array<string> */) /*: {
 function main(argv /*:: ?: Array<string> */) /*: void */ {
   const args = parseArgs(argv ?? process.argv.slice(2));
   const inventory = computeInventory(RN_ROOT);
+  // [macOS] Reject physical-source collisions before plan selection or baseline writes.
+  if (inventory.collisions.length > 0) {
+    const detail = inventory.collisions
+      .map(c => `${c.naturalPath} <- ${c.sources.join(', ')}`)
+      .join('\n  ');
+    throw new Error(
+      `header-inventory natural-path collisions (R8):\n  ${detail}`,
+    );
+  }
   const plan = planFromInventory(inventory, RN_ROOT);
   if (plan.collisions.length > 0) {
     throw new Error(`R8 collisions:\n  ${plan.collisions.join('\n  ')}`);

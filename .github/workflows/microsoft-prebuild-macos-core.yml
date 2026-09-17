@@ -27,17 +27,20 @@ jobs:
         id: cache-slice
         uses: actions/cache/restore@v4
         with:
-          key: v1-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v2-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('.github/workflows/microsoft-prebuild-macos-core.yml', '.github/workflows/microsoft-resolve-hermes.yml', '.github/actions/microsoft-setup-toolchain/action.yml', '.github/scripts/resolve-hermes.mts', 'yarn.lock', 'packages/react-native/package.json', 'packages/react-native/Package.swift', 'packages/react-native/**/*.podspec', 'packages/react-native/sdks/.hermes*version', 'packages/react-native/sdks/hermes-engine/version.properties', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild/headers-include-baseline.json', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
             packages/react-native/.build/output/spm/Debug/Build/Products
             packages/react-native/.build/headers
+            packages/react-native/.build/artifacts/hermes/destroot/include
+            packages/react-native/third-party/ReactNativeDependencies.xcframework/Headers
 
       - name: Setup toolchain
         if: steps.cache-slice.outputs.cache-hit != 'true'
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
-          platform: ${{ matrix.platform }}
+          # The shared action selects Xcode/SDKs by platform family.
+          platform: ${{ startsWith(matrix.platform, 'visionos') && 'visionos' || startsWith(matrix.platform, 'ios') && 'ios' || matrix.platform }}
 
       - name: Install npm dependencies
         if: steps.cache-slice.outputs.cache-hit != 'true'
@@ -69,25 +72,47 @@ jobs:
         run: node scripts/ios-prebuild.js -b -f Debug -p ${{ matrix.platform }}
 
       - name: Save slice cache
-        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable') }}
+        if: ${{ steps.cache-slice.outputs.cache-hit != 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable')) }}
         uses: actions/cache/save@v4
         with:
-          key: v1-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: ${{ steps.cache-slice.outputs.cache-primary-key }}
           path: |
             packages/react-native/.build/output/spm/Debug/Build/Products
             packages/react-native/.build/headers
+            packages/react-native/.build/artifacts/hermes/destroot/include
+            packages/react-native/third-party/ReactNativeDependencies.xcframework/Headers
+
+      # Transfer the exact headers used by the iOS compile-gate slice, including
+      # on cache hits. Do not resolve a potentially different dependency here.
+      - name: Upload Hermes headers
+        if: matrix.platform == 'ios-simulator'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuild-macos-core-hermes-headers-Debug
+          path: packages/react-native/.build/artifacts/hermes/destroot/include
+          if-no-files-found: error
+
+      - name: Upload dependency headers
+        if: matrix.platform == 'ios-simulator'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuild-macos-core-dependency-headers-Debug
+          path: packages/react-native/third-party/ReactNativeDependencies.xcframework/Headers
+          if-no-files-found: error
 
       - name: Upload headers
         uses: actions/upload-artifact@v4
         with:
           name: prebuild-macos-core-headers-Debug-${{ matrix.platform }}
           path: packages/react-native/.build/headers
+          if-no-files-found: error
 
       - name: Upload slice artifacts
         uses: actions/upload-artifact@v4
         with:
           name: prebuild-macos-core-slice-Debug-${{ matrix.platform }}
           path: packages/react-native/.build/output/spm/Debug/Build/Products
+          if-no-files-found: error
 
   compose-xcframework:
     name: 'Compose XCFramework (Debug)'
@@ -104,17 +129,25 @@ jobs:
         id: cache-xcframework
         uses: actions/cache/restore@v4
         with:
-          key: v1-macos-core-xcframework-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: v2-macos-core-xcframework-Debug-${{ hashFiles('.github/workflows/microsoft-prebuild-macos-core.yml', '.github/workflows/microsoft-resolve-hermes.yml', '.github/actions/microsoft-setup-toolchain/action.yml', '.github/scripts/resolve-hermes.mts', 'yarn.lock', 'packages/react-native/package.json', 'packages/react-native/Package.swift', 'packages/react-native/**/*.podspec', 'packages/react-native/sdks/.hermes*version', 'packages/react-native/sdks/hermes-engine/version.properties', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild/headers-include-baseline.json', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
             packages/react-native/.build/output/xcframeworks/ReactCoreDebug.xcframework.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactCoreDebug.framework.dSYM.tar.gz
+            packages/react-native/.build/output/xcframeworks/ReactNativeHeadersDebug.xcframework.tar.gz
 
       - name: Setup toolchain
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
           node-version: '22'
-          platform: ios
+          platform: visionos
+
+      - name: Verify compose SDKs
+        if: steps.cache-xcframework.outputs.cache-hit != 'true'
+        run: |
+          for sdk in iphoneos iphonesimulator macosx xros xrsimulator; do
+            xcrun --sdk "$sdk" --show-sdk-path
+          done
 
       - name: Install npm dependencies
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
@@ -136,24 +169,45 @@ jobs:
           path: packages/react-native/.build/headers
           merge-multiple: true
 
+      - name: Download Hermes headers
+        if: steps.cache-xcframework.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: prebuild-macos-core-hermes-headers-Debug
+          path: packages/react-native/.build/artifacts/hermes/destroot/include
+
+      - name: Download dependency headers
+        if: steps.cache-xcframework.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: prebuild-macos-core-dependency-headers-Debug
+          path: packages/react-native/third-party/ReactNativeDependencies.xcframework/Headers
+
       - name: Verify downloaded artifacts
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
         run: |
-          echo "=== Products directory ==="
-          ls -R packages/react-native/.build/output/spm/Debug/Build/Products/ | head -40
-          echo "=== Headers directory ==="
-          ls packages/react-native/.build/headers/ | head -20
+          test -d packages/react-native/.build/output/spm/Debug/Build/Products
+          test -d packages/react-native/.build/headers
+          test -f packages/react-native/.build/artifacts/hermes/destroot/include/hermes/hermes.h
+          test -d packages/react-native/third-party/ReactNativeDependencies.xcframework/Headers
 
       - name: Create XCFramework
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
         working-directory: packages/react-native
-        run: node scripts/ios-prebuild -c -f Debug
+        run: node scripts/ios-prebuild -c -f Debug --require-hermes
 
-      - name: Compress XCFramework
+      - name: Verify composed headers (iOS Simulator)
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
+        working-directory: packages/react-native
+        run: node scripts/ios-prebuild/headers-verify.js --flavor Debug
+
+      - name: Name XCFramework archives
+        if: steps.cache-xcframework.outputs.cache-hit != 'true'
+        working-directory: packages/react-native/.build/output/xcframeworks
         run: |
-          cd packages/react-native/.build/output/xcframeworks/Debug
-          tar -cz -f ../ReactCoreDebug.xcframework.tar.gz React.xcframework
+          # The composer already packages React AND ReactNativeHeaders together.
+          cp Debug/React.xcframework.tar.gz ReactCoreDebug.xcframework.tar.gz
+          cp Debug/ReactNativeHeaders.xcframework.tar.gz ReactNativeHeadersDebug.xcframework.tar.gz
 
       - name: Compress dSYMs
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
@@ -161,14 +215,23 @@ jobs:
           cd packages/react-native/.build/output/xcframeworks/Debug/Symbols
           tar -cz -f ../../ReactCoreDebug.framework.dSYM.tar.gz .
 
+      - name: Verify archive payloads
+        working-directory: packages/react-native/.build/output/xcframeworks
+        run: |
+          # Also check cache hits before publishing the restored archives.
+          tar -tzf ReactCoreDebug.xcframework.tar.gz React.xcframework/Info.plist ReactNativeHeaders.xcframework/Info.plist
+          tar -tzf ReactNativeHeadersDebug.xcframework.tar.gz ReactNativeHeaders.xcframework/Info.plist
+          tar -tzf ReactCoreDebug.framework.dSYM.tar.gz > /dev/null
+
       - name: Save compose cache
-        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable') }}
+        if: ${{ steps.cache-xcframework.outputs.cache-hit != 'true' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable')) }}
         uses: actions/cache/save@v4
         with:
-          key: v1-macos-core-xcframework-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
+          key: ${{ steps.cache-xcframework.outputs.cache-primary-key }}
           path: |
             packages/react-native/.build/output/xcframeworks/ReactCoreDebug.xcframework.tar.gz
             packages/react-native/.build/output/xcframeworks/ReactCoreDebug.framework.dSYM.tar.gz
+            packages/react-native/.build/output/xcframeworks/ReactNativeHeadersDebug.xcframework.tar.gz
 
       - name: Upload XCFramework
         uses: actions/upload-artifact@v4
@@ -176,6 +239,7 @@ jobs:
           name: ReactCoreDebug.xcframework.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCoreDebug.xcframework.tar.gz
           retention-days: 14
+          if-no-files-found: error
 
       - name: Upload dSYMs
         uses: actions/upload-artifact@v4
@@ -183,3 +247,12 @@ jobs:
           name: ReactCoreDebug.framework.dSYM.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCoreDebug.framework.dSYM.tar.gz
           retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload ReactNativeHeaders
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReactNativeHeadersDebug.xcframework.tar.gz
+          path: packages/react-native/.build/output/xcframeworks/ReactNativeHeadersDebug.xcframework.tar.gz
+          retention-days: 14
+          if-no-files-found: error
