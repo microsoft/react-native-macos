@@ -39,11 +39,12 @@ function setActionOutput(key: string, value: string) {
  * packages/react-native/sdks/hermes-engine/version.properties.
  *
  * Uses the same version key and validation as the local prebuild script.
+ * Defaults to Hermes V1 unless RCT_HERMES_V1_ENABLED=0.
  * A missing file permits a source build; malformed metadata must fail CI.
  */
 function resolveHermesArtifactVersion(): string | null {
   try {
-    const {version, versionKey} = readHermesMetadata('legacy-default');
+    const {version, versionKey} = readHermesMetadata('v1-default');
     echo(`Using ${versionKey}=${version}`);
     return version;
   } catch (error: any) {
@@ -56,12 +57,12 @@ function resolveHermesArtifactVersion(): string | null {
 
 /**
  * Reads the pinned Hermes ref from packages/react-native/sdks/.hermesversion
- * (or .hermesv1version when RCT_HERMES_V1_ENABLED=1). The value is a tag or commit in
+ * (or .hermesv1version unless RCT_HERMES_V1_ENABLED=0). The value is a tag or commit in
  * facebook/hermes. Returns null if the file is missing or empty.
  */
 function resolveHermesTag(): string | null {
   const {tagFile} = selectHermesMetadata(
-    'legacy-default', process.env.RCT_HERMES_V1_ENABLED,
+    'v1-default', process.env.RCT_HERMES_V1_ENABLED,
   );
   const tagPath = path.resolve(
     import.meta.dirname!, '..', '..',
@@ -90,7 +91,7 @@ async function downloadUpstreamHermesTarball(
     echo('Hermes version.properties is missing — will build from source.');
     return null;
   }
-  // On the 0.84 fork, selected metadata 1000.0.0 requires a source build.
+  // Retain the 0.84 source policy for selected metadata 1000.0.0 (legacy on 0.85).
   // Resolve its revision only in resolve-commit, before the CI cache lookup.
   if (version === '1000.0.0') {
     echo('Hermes version.properties selects 1000.0.0 — will build from source.');
