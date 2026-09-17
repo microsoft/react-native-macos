@@ -15,6 +15,7 @@ jest.mock('child_process', () => ({execSync: jest.fn()}));
 const {prepareHermesArtifactsAsync} = require('../hermes');
 const {execSync} = require('child_process');
 const fs = require('fs');
+const ini = require('ini');
 const os = require('os');
 const path = require('path');
 const {Readable} = require('stream');
@@ -24,6 +25,8 @@ const propertiesPath = path.resolve(
   '../../../sdks/hermes-engine/version.properties',
 );
 const readFileSync = fs.readFileSync.bind(fs);
+const checkedInProperties = readFileSync(propertiesPath, 'utf8');
+const metadata = ini.parse(checkedInProperties);
 const originalFetch = global.fetch;
 const envKeys = [
   'RCT_HERMES_V1_ENABLED',
@@ -50,7 +53,7 @@ beforeEach(() => {
     artifacts,
     'destroot/Library/Frameworks/universal/hermesvm.xcframework',
   );
-  properties = readFileSync(propertiesPath, 'utf8');
+  properties = 'HERMES_VERSION_NAME=123.4.56\nHERMES_V1_VERSION_NAME=234.5.67';
   jest.spyOn(process, 'cwd').mockReturnValue(tmp);
   jest.spyOn(console, 'log').mockImplementation(() => {});
   jest.spyOn(fs, 'readFileSync').mockImplementation((file, ...args) => {
@@ -91,27 +94,34 @@ function releaseUrl(version, flavor = 'debug') {
 }
 
 test.each(['Debug', 'Release'])(
-  'uses main metadata with the 1000.0.0 RN package for %s',
+  'uses checked-in metadata with the 1000.0.0 RN package for %s',
   async flavor => {
+    properties = checkedInProperties;
+    const version = metadata.HERMES_VERSION_NAME;
     expect(await prepareHermesArtifactsAsync('1000.0.0', flavor)).toBe(
       artifacts,
     );
-    const url = releaseUrl('0.14.0', flavor.toLowerCase());
+    const url = releaseUrl(version, flavor.toLowerCase());
     expect(global.fetch.mock.calls).toEqual([[url, {method: 'HEAD'}], [url]]);
-    expect(readFileSync(versionFile, 'utf8')).toBe(`0.14.0-${flavor}`);
+    expect(readFileSync(versionFile, 'utf8')).toBe(`${version}-${flavor}`);
     expect(fs.existsSync(path.join(artifacts, 'hermes-ios.download'))).toBe(
       false,
     );
     expect(
-      fs.existsSync(path.join(artifacts, `hermes-ios-0.14.0-${flavor}.tar.gz`)),
+      fs.existsSync(
+        path.join(artifacts, `hermes-ios-${version}-${flavor}.tar.gz`),
+      ),
     ).toBe(false);
   },
 );
 
 test('selects V1 metadata only with flag 1', async () => {
+  properties = checkedInProperties;
   process.env.RCT_HERMES_V1_ENABLED = '1';
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
-  expect(global.fetch).toHaveBeenCalledWith(releaseUrl('250829098.0.2'));
+  expect(global.fetch).toHaveBeenCalledWith(
+    releaseUrl(metadata.HERMES_V1_VERSION_NAME),
+  );
 });
 
 test.each([
@@ -205,8 +215,8 @@ test('main does not infer a source exception from selected metadata 1000.0.0', a
 
 test('uses the selected pin for snapshot metadata and download', async () => {
   const base =
-    'https://central.sonatype.com/repository/maven-snapshots/com/facebook/hermes/hermes-ios/0.14.0-SNAPSHOT';
-  const url = `${base}/hermes-ios-0.14.0-20260101.010203-4-hermes-ios-debug.tar.gz`;
+    'https://central.sonatype.com/repository/maven-snapshots/com/facebook/hermes/hermes-ios/123.4.56-SNAPSHOT';
+  const url = `${base}/hermes-ios-123.4.56-20260101.010203-4-hermes-ios-debug.tar.gz`;
   global.fetch.mockImplementation(async (target, options) => {
     if (target.endsWith('/maven-metadata.xml')) {
       return {
@@ -222,7 +232,7 @@ test('uses the selected pin for snapshot metadata and download', async () => {
   });
   await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
   expect(global.fetch.mock.calls).toEqual([
-    [releaseUrl('0.14.0'), {method: 'HEAD'}],
+    [releaseUrl('123.4.56'), {method: 'HEAD'}],
     [`${base}/maven-metadata.xml`],
     [url, {method: 'HEAD'}],
     [`${base}/maven-metadata.xml`],
@@ -234,7 +244,7 @@ test('preserves the enterprise repository override', async () => {
   process.env.ENTERPRISE_REPOSITORY = 'https://mirror.example/maven';
   await prepareHermesArtifactsAsync('0.83.1', 'Release');
   expect(global.fetch).toHaveBeenCalledWith(
-    releaseUrl('0.14.0', 'release').replace(
+    releaseUrl('123.4.56', 'release').replace(
       'https://repo1.maven.org/maven2',
       process.env.ENTERPRISE_REPOSITORY,
     ),
@@ -248,17 +258,14 @@ test('reuses only the matching Hermes version, flag and flavor cache', async () 
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
   expect(global.fetch).not.toHaveBeenCalled();
   expect(execSync).not.toHaveBeenCalled();
-  properties =
-    'HERMES_VERSION_NAME=123.4.58\nHERMES_V1_VERSION_NAME=250829098.0.2';
+  properties = 'HERMES_VERSION_NAME=123.4.58\nHERMES_V1_VERSION_NAME=234.5.67';
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
   expect(global.fetch).toHaveBeenCalledWith(releaseUrl('123.4.58'));
   await prepareHermesArtifactsAsync('0.83.1', 'Release');
   expect(global.fetch).toHaveBeenCalledWith(releaseUrl('123.4.58', 'release'));
   process.env.RCT_HERMES_V1_ENABLED = '1';
   await prepareHermesArtifactsAsync('0.83.1', 'Release');
-  expect(global.fetch).toHaveBeenCalledWith(
-    releaseUrl('250829098.0.2', 'release'),
-  );
+  expect(global.fetch).toHaveBeenCalledWith(releaseUrl('234.5.67', 'release'));
 });
 
 test('unavailable artifacts fail without an npm or source fallback', async () => {
