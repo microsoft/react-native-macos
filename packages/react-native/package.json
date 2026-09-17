@@ -165,7 +165,6 @@
     "local-cli",
     "scripts/cocoapods/**",
     "scripts/codegen/**",
-    "scripts/update-ruby.sh",
     "sdks/hermes-engine/**",
     "React-RCTUIKit.podspec"
   ],

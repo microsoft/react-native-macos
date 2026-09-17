@@ -55,8 +55,8 @@ function resolveHermesArtifactVersion(): string | null {
 }
 
 /**
- * Reads the pinned Hermes tag from packages/react-native/sdks/.hermesversion
- * (or .hermesv1version when RCT_HERMES_V1_ENABLED=1). The value is a git tag in
+ * Reads the pinned Hermes ref from packages/react-native/sdks/.hermesversion
+ * (or .hermesv1version when RCT_HERMES_V1_ENABLED=1). The value is a tag or commit in
  * facebook/hermes. Returns null if the file is missing or empty.
  */
 function resolveHermesTag(): string | null {
@@ -268,14 +268,14 @@ switch (command) {
       echo(`Resolved Hermes commit: ${commit} (merge base timestamp: ${timestamp})`);
       break;
     }
-    // Concrete versions and missing metadata retain the independent tag pin.
+    // Concrete versions and missing metadata retain the independent source pin.
     const tag = resolveHermesTag();
     if (tag == null) {
-      echo('Could not read pinned Hermes tag from sdks/.hermesversion or sdks/.hermesv1version');
+      echo('Could not read pinned Hermes ref from sdks/.hermesversion or sdks/.hermesv1version');
       process.exit(1);
     }
     setActionOutput('hermes-commit', tag);
-    echo(`Resolved Hermes tag: ${tag}`);
+    echo(`Resolved Hermes ref: ${tag}`);
     break;
   }
   default:

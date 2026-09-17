@@ -177,13 +177,15 @@ end
 
 def podspec_source_build_from_github_tag(react_native_path)
     tag = File.read(hermestag_file(react_native_path)).strip
+    # [macOS] CocoaPods must fetch full commit SHAs as commits, not tags.
+    ref_type = tag.match?(/\A[0-9a-fA-F]{40}\z/) ? :commit : :tag
 
     if hermes_v1_enabled()
-        hermes_log("Using tag defined in sdks/.hermesv1version: #{tag}")
+        hermes_log("Using #{ref_type} defined in sdks/.hermesv1version: #{tag}")
     else
-        hermes_log("Using tag defined in sdks/.hermesversion: #{tag}")
+        hermes_log("Using #{ref_type} defined in sdks/.hermesversion: #{tag}")
     end
-    return {:git => HERMES_GITHUB_URL, :tag => tag}
+    return {:git => HERMES_GITHUB_URL, ref_type => tag}
 end
 
 def podspec_source_build_from_github_main()

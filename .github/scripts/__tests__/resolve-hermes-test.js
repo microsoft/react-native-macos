@@ -12,20 +12,14 @@
 
 const {spawnSync} = require('child_process');
 const fs = require('fs');
-const ini = require('ini');
 const os = require('os');
 const path = require('path');
+const {
+  readHermesMetadata,
+} = require('../../../packages/react-native/scripts/ios-prebuild/hermes-version');
 
 const root = path.resolve(__dirname, '../../..');
-const metadata = ini.parse(
-  fs.readFileSync(
-    path.join(
-      root,
-      'packages/react-native/sdks/hermes-engine/version.properties',
-    ),
-    'utf8',
-  ),
-);
+const {version: v1Version} = readHermesMetadata('legacy-default', '1');
 const script = path.join(root, '.github/scripts/resolve-hermes.mts');
 const preload = path.join(__dirname, '__fixtures__/resolve-hermes.cjs');
 const sourceCommit = '1234567890abcdef1234567890abcdef12345678';
@@ -83,7 +77,7 @@ function run(command, overrides = {}) {
 test.each([
   [undefined, '123.4.56', 'HERMES_VERSION_NAME', 'Debug'],
   ['0', '123.4.56', 'HERMES_VERSION_NAME', 'Debug'],
-  ['1', metadata.HERMES_V1_VERSION_NAME, 'HERMES_V1_VERSION_NAME', 'Release'],
+  ['1', v1Version, 'HERMES_V1_VERSION_NAME', 'Release'],
 ])(
   'CI downloads flag %s with the selected key and version',
   (flag, version, key, flavor) => {
@@ -245,6 +239,24 @@ test('CI fails source resolution without falling back to a tag', () => {
   expect(result.output).toBe('');
   expect(result.urls).toEqual([]);
   expect(result.calls).toEqual({source: [[]], nightly: []});
+});
+
+test('CI resolve-commit emits the checked-in V1 SHA for concrete metadata', () => {
+  const ref = fs
+    .readFileSync(
+      path.join(root, 'packages/react-native/sdks/.hermesv1version'),
+      'utf8',
+    )
+    .trim();
+  expect(ref).toMatch(/^[0-9a-fA-F]{40}$/);
+  expect(v1Version).not.toBe('1000.0.0');
+
+  const result = run(['resolve-commit'], {RCT_HERMES_V1_ENABLED: '1'});
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain(`Using HERMES_V1_VERSION_NAME=${v1Version}`);
+  expect(result.output).toBe(`hermes-commit=${ref}\n`);
+  expect(result.urls).toEqual([]);
+  expect(result.calls).toEqual({source: [], nightly: []});
 });
 
 test.each([

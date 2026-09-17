@@ -91,7 +91,7 @@ val hermesVersionProvider: Provider<String> =
           )
 
       if (hermesVersionFile.exists()) {
-        hermesVersion = hermesVersionFile.readText()
+        hermesVersion = hermesVersionFile.readText().trim()
       }
 
       hermesVersion
