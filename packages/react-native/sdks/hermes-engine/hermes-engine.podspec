@@ -21,30 +21,12 @@ end
 
 # package.json
 package = JSON.parse(File.read(File.join(react_native_path, "package.json")))
-version = findMatchingHermesVersion(package) # [macOS] Use special logic instead of just package['version']
-
-if version.nil?
-  versionProperties = Hash[*File.read("version.properties").split(/[=\n]+/)]
-
-  if ENV['RCT_HERMES_V1_ENABLED'] == "0"
-    version = versionProperties['HERMES_VERSION_NAME']
-  else
-    version = versionProperties['HERMES_V1_VERSION_NAME']
-  end
-
-  # Local monorepo build. We don't want to build Hermes V1 from source.
-  if ENV['RCT_HERMES_V1_ENABLED'] == "0" && package['version'] == "1000.0.0" then
-    hermesCompilerVersion = package['dependencies']['hermes-compiler']
-    if hermesCompilerVersion != "0.0.0" then
-      version = hermesCompilerVersion
-    end
-  end
-end
+versionProperties = Hash[*File.read(File.join(__dir__, "version.properties")).split(/[=\n]+/)]
+versionKey = hermes_v1_enabled() ? 'HERMES_V1_VERSION_NAME' : 'HERMES_VERSION_NAME'
+version = versionProperties.fetch(versionKey)
 
 source_type = hermes_source_type(version, react_native_path)
 source = podspec_source(source_type, version, react_native_path)
-
-version = version || package['version'] # [macOS] If version is nil, fall back to package version so CocoaPods doesn't fail
 
 Pod::Spec.new do |spec|
   spec.name        = "hermes-engine"

@@ -65,6 +65,12 @@ def hermes_source_type(version, react_native_path)
         return HermesEngineSourceType::BUILD_FROM_GITHUB_MAIN
     end
 
+    # [macOS] Selected metadata 1000.0.0 uses the merge-base source policy, not artifacts.
+    # Keep explicit source and tarball overrides above this default.
+    if version == "1000.0.0"
+        return HermesEngineSourceType::BUILD_FROM_GITHUB_MAIN
+    end
+
     if release_artifact_exists(version)
         return HermesEngineSourceType::DOWNLOAD_PREBUILD_RELEASE_TARBALL
     end
