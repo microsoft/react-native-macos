@@ -3378,14 +3378,14 @@ __metadata:
     "@jest/create-cache-key-function": "npm:^29.7.0"
     "@microsoft/api-extractor": "npm:^7.52.2"
     "@octokit/rest": "npm:^22.0.0"
-    "@react-native/babel-preset": "npm:0.85.3"
-    "@react-native/eslint-config": "npm:0.85.3"
-    "@react-native/eslint-plugin": "npm:0.85.3"
-    "@react-native/eslint-plugin-monorepo": "npm:0.85.3"
-    "@react-native/eslint-plugin-specs": "npm:0.85.3"
-    "@react-native/jest-preset": "npm:0.85.3"
-    "@react-native/metro-babel-transformer": "npm:0.85.3"
-    "@react-native/metro-config": "npm:0.85.3"
+    "@react-native/babel-preset": "workspace:*"
+    "@react-native/eslint-config": "workspace:*"
+    "@react-native/eslint-plugin": "workspace:*"
+    "@react-native/eslint-plugin-monorepo": "workspace:*"
+    "@react-native/eslint-plugin-specs": "workspace:*"
+    "@react-native/jest-preset": "workspace:*"
+    "@react-native/metro-babel-transformer": "workspace:*"
+    "@react-native/metro-config": "workspace:*"
     "@tsconfig/node22": "npm:22.0.2"
     "@types/react": "npm:^19.1.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.36.0"
@@ -3460,7 +3460,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native-macos/virtualized-lists@npm:0.85.0-rc0, @react-native-macos/virtualized-lists@workspace:packages/virtualized-lists":
+"@react-native-macos/virtualized-lists@workspace:*, @react-native-macos/virtualized-lists@workspace:packages/virtualized-lists":
   version: 0.0.0-use.local
   resolution: "@react-native-macos/virtualized-lists@workspace:packages/virtualized-lists"
   dependencies:
@@ -3493,7 +3493,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/babel-preset@npm:0.85.3, @react-native/babel-preset@workspace:*, @react-native/babel-preset@workspace:packages/react-native-babel-preset":
+"@react-native/babel-preset@workspace:*, @react-native/babel-preset@workspace:packages/react-native-babel-preset":
   version: 0.0.0-use.local
   resolution: "@react-native/babel-preset@workspace:packages/react-native-babel-preset"
   dependencies:
@@ -3677,7 +3677,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-config@npm:0.85.3, @react-native/eslint-config@workspace:packages/eslint-config-react-native":
+"@react-native/eslint-config@workspace:*, @react-native/eslint-config@workspace:packages/eslint-config-react-native":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-config@workspace:packages/eslint-config-react-native"
   dependencies:
@@ -3701,7 +3701,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin-monorepo@npm:0.85.3, @react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo":
+"@react-native/eslint-plugin-monorepo@workspace:*, @react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin-monorepo@workspace:private/eslint-plugin-monorepo"
   dependencies:
@@ -3709,7 +3709,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin-specs@npm:0.85.3, @react-native/eslint-plugin-specs@workspace:packages/eslint-plugin-specs":
+"@react-native/eslint-plugin-specs@workspace:*, @react-native/eslint-plugin-specs@workspace:packages/eslint-plugin-specs":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin-specs@workspace:packages/eslint-plugin-specs"
   dependencies:
@@ -3724,7 +3724,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/eslint-plugin@npm:0.85.3, @react-native/eslint-plugin@workspace:*, @react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native":
+"@react-native/eslint-plugin@workspace:*, @react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native":
   version: 0.0.0-use.local
   resolution: "@react-native/eslint-plugin@workspace:packages/eslint-plugin-react-native"
   dependencies:
@@ -3752,7 +3752,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/jest-preset@npm:0.85.3, @react-native/jest-preset@workspace:packages/jest-preset":
+"@react-native/jest-preset@workspace:*, @react-native/jest-preset@workspace:packages/jest-preset":
   version: 0.0.0-use.local
   resolution: "@react-native/jest-preset@workspace:packages/jest-preset"
   dependencies:
@@ -3773,7 +3773,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/metro-babel-transformer@npm:0.85.3, @react-native/metro-babel-transformer@workspace:*, @react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer":
+"@react-native/metro-babel-transformer@workspace:*, @react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer":
   version: 0.0.0-use.local
   resolution: "@react-native/metro-babel-transformer@workspace:packages/react-native-babel-transformer"
   dependencies:
@@ -3786,7 +3786,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@react-native/metro-config@npm:0.85.3, @react-native/metro-config@workspace:packages/metro-config":
+"@react-native/metro-config@workspace:*, @react-native/metro-config@workspace:packages/metro-config":
   version: 0.0.0-use.local
   resolution: "@react-native/metro-config@workspace:packages/metro-config"
   dependencies:
@@ -12793,7 +12793,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "react-native-macos@workspace:packages/react-native"
   dependencies:
-    "@react-native-macos/virtualized-lists": "npm:0.85.0-rc0"
+    "@react-native-macos/virtualized-lists": "workspace:*"
     "@react-native/assets-registry": "npm:0.85.3"
     "@react-native/codegen": "npm:0.85.3"
     "@react-native/community-cli-plugin": "npm:0.85.3"

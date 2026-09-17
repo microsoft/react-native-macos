@@ -167,7 +167,7 @@
     }
   },
   "dependencies": {
-    "@react-native-macos/virtualized-lists": "0.85.0-rc0",
+    "@react-native-macos/virtualized-lists": "workspace:*",
     "@react-native/assets-registry": "0.85.3",
     "@react-native/codegen": "0.85.3",
     "@react-native/community-cli-plugin": "0.85.3",
