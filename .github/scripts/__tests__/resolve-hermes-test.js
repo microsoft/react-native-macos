@@ -20,6 +20,7 @@ const {
 
 const root = path.resolve(__dirname, '../../..');
 const {version: v1Version} = readHermesMetadata('v1-default', '1');
+const {version: legacyVersion} = readHermesMetadata('v1-default', '0');
 const script = path.join(root, '.github/scripts/resolve-hermes.mts');
 const preload = path.join(__dirname, '__fixtures__/resolve-hermes.cjs');
 const sourceCommit = '1234567890abcdef1234567890abcdef12345678';
@@ -79,19 +80,13 @@ test.each([
   [undefined, v1Version, 'HERMES_V1_VERSION_NAME', 'Debug'],
   ['', v1Version, 'HERMES_V1_VERSION_NAME', 'Debug'],
   ['true', v1Version, 'HERMES_V1_VERSION_NAME', 'Release'],
-  ['0', '123.4.56', 'HERMES_VERSION_NAME', 'Debug'],
+  ['0', legacyVersion, 'HERMES_VERSION_NAME', 'Debug'],
   ['1', v1Version, 'HERMES_V1_VERSION_NAME', 'Release'],
 ])(
   'CI downloads flag %s with the selected key and version',
   (flag, version, key, flavor) => {
     const result = run(['download-hermes', flavor], {
       ...(flag == null ? {} : {RCT_HERMES_V1_ENABLED: flag}),
-      ...(flag === '0'
-        ? {
-            HERMES_TEST_PROPERTIES:
-              `HERMES_VERSION_NAME=${version}\nHERMES_V1_VERSION_NAME=1000.0.0`,
-          }
-        : {}),
       HERMES_TEST_DOWNLOAD: 'release',
     });
     expect(result.status).toBe(0);
@@ -142,12 +137,9 @@ test('CI snapshot fallback uses the five-argument URL helper with the Hermes sub
 test.each([undefined, '1', '0'])(
   'CI selects source when concrete artifacts are unavailable for flag %s',
   flag => {
-    const version = flag === '0' ? '123.4.56' : v1Version;
+    const version = flag === '0' ? legacyVersion : v1Version;
     const result = run(['download-hermes'], {
       ...(flag == null ? {} : {RCT_HERMES_V1_ENABLED: flag}),
-      ...(flag === '0'
-        ? {HERMES_TEST_PROPERTIES: `HERMES_VERSION_NAME=${version}`}
-        : {}),
     });
     expect(result.status).toBe(0);
     expect(result.output).toBe('');
@@ -175,7 +167,10 @@ const invalidMetadata = [
   ['', 'Expected one exact HERMES_V1_VERSION_NAME'],
   ['UNREADABLE', 'EACCES'],
   ['HERMES_VERSION_NAME=1.2.3', 'Expected one exact HERMES_V1_VERSION_NAME'],
-  ['HERMES_V1_VERSION_NAME=^1.2.3', 'Expected one exact HERMES_V1_VERSION_NAME'],
+  [
+    'HERMES_V1_VERSION_NAME=^1.2.3',
+    'Expected one exact HERMES_V1_VERSION_NAME',
+  ],
   [
     'HERMES_V1_VERSION_NAME=1.2.3\nHERMES_V1_VERSION_NAME=1.2.3',
     'Expected one exact HERMES_V1_VERSION_NAME',
@@ -221,7 +216,11 @@ test('CI selects source without a download when version.properties is missing', 
 });
 
 test.each([
-  ['0', 'HERMES_VERSION_NAME', undefined],
+  [
+    '0',
+    'HERMES_VERSION_NAME',
+    'HERMES_VERSION_NAME=1000.0.0\nHERMES_V1_VERSION_NAME=123.4.56',
+  ],
   [
     undefined,
     'HERMES_V1_VERSION_NAME',
@@ -260,6 +259,8 @@ test('CI legacy source resolution uses the current helper SHA for the cache outp
   const commit = 'abcdef1234567890abcdef1234567890abcdef12';
   const result = run(['resolve-commit'], {
     RCT_HERMES_V1_ENABLED: '0',
+    HERMES_TEST_PROPERTIES:
+      'HERMES_VERSION_NAME=1000.0.0\nHERMES_V1_VERSION_NAME=123.4.56',
     HERMES_TEST_COMMIT: commit,
   });
   expect(result.status).toBe(0);
@@ -271,6 +272,8 @@ test('CI legacy source resolution uses the current helper SHA for the cache outp
 test('CI fails legacy source resolution without falling back to a tag', () => {
   const result = run(['resolve-commit'], {
     RCT_HERMES_V1_ENABLED: '0',
+    HERMES_TEST_PROPERTIES:
+      'HERMES_VERSION_NAME=1000.0.0\nHERMES_V1_VERSION_NAME=123.4.56',
     HERMES_TEST_SOURCE_ERROR: 'Cannot resolve merge-base timestamp',
   });
   expect(result.status).toBe(1);
