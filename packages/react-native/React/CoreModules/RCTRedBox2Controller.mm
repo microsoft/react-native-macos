@@ -691,7 +691,17 @@ static const NSTimeInterval kAutoRetryInterval = 20.0;
   [codeScrollView addSubview:codeLabel];
   [container addSubview:codeScrollView];
 #else // [macOS
-  [container addSubview:codeLabel];
+  // Measure all source lines at their natural width, independently of the table column.
+  codeLabel.preferredMaxLayoutWidth = ceil(codeLabel.intrinsicContentSize.width);
+  NSSize codeSize = codeLabel.intrinsicContentSize;
+  NSScrollView *codeScrollView = [[NSScrollView alloc] init];
+  codeScrollView.translatesAutoresizingMaskIntoConstraints = NO;
+  codeScrollView.hasHorizontalScroller = YES;
+  codeScrollView.hasVerticalScroller = YES;
+  codeScrollView.autohidesScrollers = YES;
+  codeScrollView.drawsBackground = NO;
+  codeScrollView.documentView = codeLabel;
+  [container addSubview:codeScrollView];
 #endif // macOS]
 
   // File name label below the code frame
@@ -714,22 +724,24 @@ static const NSTimeInterval kAutoRetryInterval = 20.0;
     [container.leadingAnchor constraintEqualToAnchor:cell.contentView.leadingAnchor constant:10],
     [container.trailingAnchor constraintEqualToAnchor:cell.contentView.trailingAnchor constant:-10],
 
-#if !TARGET_OS_OSX // [macOS]
     [codeScrollView.topAnchor constraintEqualToAnchor:container.topAnchor constant:10],
     [codeScrollView.leadingAnchor constraintEqualToAnchor:container.leadingAnchor constant:10],
     [codeScrollView.trailingAnchor constraintEqualToAnchor:container.trailingAnchor constant:-10],
     [codeScrollView.bottomAnchor constraintEqualToAnchor:container.bottomAnchor constant:-10],
 
+#if !TARGET_OS_OSX // [macOS]
     [codeLabel.topAnchor constraintEqualToAnchor:codeScrollView.topAnchor],
     [codeLabel.leadingAnchor constraintEqualToAnchor:codeScrollView.leadingAnchor],
     [codeLabel.trailingAnchor constraintEqualToAnchor:codeScrollView.trailingAnchor],
     [codeLabel.bottomAnchor constraintEqualToAnchor:codeScrollView.bottomAnchor],
     [codeLabel.heightAnchor constraintEqualToAnchor:codeScrollView.heightAnchor],
 #else // [macOS
-    [codeLabel.topAnchor constraintEqualToAnchor:container.topAnchor constant:10],
-    [codeLabel.leadingAnchor constraintEqualToAnchor:container.leadingAnchor constant:10],
-    [codeLabel.trailingAnchor constraintEqualToAnchor:container.trailingAnchor constant:-10],
-    [codeLabel.bottomAnchor constraintEqualToAnchor:container.bottomAnchor constant:-10],
+    [codeLabel.topAnchor constraintEqualToAnchor:codeScrollView.contentView.topAnchor],
+    [codeLabel.leadingAnchor constraintEqualToAnchor:codeScrollView.contentView.leadingAnchor],
+    [codeLabel.widthAnchor constraintEqualToConstant:ceil(codeSize.width)],
+    [codeLabel.heightAnchor constraintEqualToConstant:ceil(codeSize.height)],
+    [codeScrollView.heightAnchor constraintEqualToConstant:ceil(codeSize.height) +
+        [NSScroller scrollerWidthForControlSize:NSControlSizeRegular scrollerStyle:NSScrollerStyleLegacy]],
 #endif // macOS]
 
     [fileLabel.topAnchor constraintEqualToAnchor:container.bottomAnchor constant:10],
