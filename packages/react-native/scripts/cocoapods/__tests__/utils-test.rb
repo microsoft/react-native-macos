@@ -5,6 +5,7 @@
 
 require "test/unit"
 require_relative "../utils.rb"
+require_relative "../rncore.rb"
 require_relative "./test_utils/PodMock.rb"
 require_relative "./test_utils/InstallerMock.rb"
 require_relative "./test_utils/EnvironmentMock.rb"
@@ -768,6 +769,41 @@ class UtilsTests < Test::Unit::TestCase
     # ===================== #
     # TEST - Add Dependency #
     # ===================== #
+    data("normal" => [nil, [""]],
+         "single platform" => [["iOS"], [""]],
+         "three platforms" => [["iOS", "macOS", "visionOS"], ["-iOS", "-macOS", "-visionOS"]])
+    def test_addDependency_forDynamicPodDependencies_preservesVersionsAndTargetSettings(platforms_and_suffixes)
+        $RN_PLATFORMS, suffixes = platforms_and_suffixes
+        ENV['USE_FRAMEWORKS'] = 'dynamic'
+
+        [
+            ["React-debug", "React_debug", '1000.0.0'],
+            ["React-utils", "React_utils", '1000.0.0'],
+            ["React-featureflags", "React_featureflags", '1000.0.0'],
+            ["React-RCTFabric", "RCTFabric", nil],
+            ["ReactCodegen", "ReactCodegen", nil],
+        ].each do |pod_name, framework_name, version|
+            spec = SpecMock.new
+            spec.pod_target_xcconfig = {
+                "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\"",
+                "CLANG_CXX_LANGUAGE_STANDARD" => "c++20",
+            }
+
+            ReactNativePodsUtils.add_dependency(spec, pod_name, "PODS_CONFIGURATION_BUILD_DIR", framework_name, :version => version)
+
+            expected_dependency = {:dependency_name => pod_name}
+            expected_dependency["version"] = version if version
+            expected_paths = ["\"$(PODS_TARGET_SRCROOT)/ReactCommon\""] + suffixes.map do |suffix|
+                "\"${PODS_CONFIGURATION_BUILD_DIR}/#{pod_name}#{suffix}/#{framework_name}.framework/Headers\""
+            end
+            assert_equal([expected_dependency], spec.dependencies, pod_name)
+            assert_equal({
+                "HEADER_SEARCH_PATHS" => expected_paths.join(" "),
+                "CLANG_CXX_LANGUAGE_STANDARD" => "c++20",
+            }, spec.to_hash["pod_target_xcconfig"], pod_name)
+        end
+    end
+
     def test_addDependency_whenNoHeaderSearchPathAndNoVersion_addsThem
         spec = SpecMock.new
 
