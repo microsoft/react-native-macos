@@ -21,7 +21,11 @@ function symbolPaths(
   slicePath /*: string */,
   library /*: {DebugSymbolsPath?: string, BitcodeSymbolMapsPath?: string, ...} */,
 ) /*: Array<string> */ {
-  return ['DebugSymbolsPath', 'BitcodeSymbolMapsPath'].flatMap(key => {
+  const keys /*: Array<'DebugSymbolsPath' | 'BitcodeSymbolMapsPath'> */ = [
+    'DebugSymbolsPath',
+    'BitcodeSymbolMapsPath',
+  ];
+  return keys.flatMap(key => {
     if (library[key] == null) {
       return [];
     }
@@ -89,7 +93,7 @@ function recomposeHermesXCFramework(
   const info = JSON.parse(
     execFileSync('plutil', ['-convert', 'json', '-o', '-', infoPath], {
       encoding: 'utf8',
-    }),
+    }).toString(),
   );
   if (
     info.AvailableLibraries.some(
@@ -109,7 +113,7 @@ function recomposeHermesXCFramework(
     return;
   }
 
-  const symbolsByLibrary = new Map();
+  const symbolsByLibrary /*: Map<string, Array<string>> */ = new Map();
   const frameworkArgs = info.AvailableLibraries.flatMap(library => {
     const slicePath = path.join(xcframeworkPath, library.LibraryIdentifier);
     const symbols = symbolPaths(slicePath, library);
@@ -156,7 +160,7 @@ function recomposeHermesXCFramework(
             path.join(replacementPath, 'Info.plist'),
           ],
           {encoding: 'utf8'},
-        ),
+        ).toString(),
       );
       for (const [identifier, symbols] of symbolsByLibrary) {
         const library = replacementInfo.AvailableLibraries.find(
