@@ -93,7 +93,7 @@ function recomposeHermesXCFramework(
   const info = JSON.parse(
     execFileSync('plutil', ['-convert', 'json', '-o', '-', infoPath], {
       encoding: 'utf8',
-    }),
+    }).toString(),
   );
   if (
     info.AvailableLibraries.some(
@@ -160,7 +160,7 @@ function recomposeHermesXCFramework(
             path.join(replacementPath, 'Info.plist'),
           ],
           {encoding: 'utf8'},
-        ),
+        ).toString(),
       );
       for (const [identifier, symbols] of symbolsByLibrary) {
         const library = replacementInfo.AvailableLibraries.find(
