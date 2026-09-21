@@ -168,7 +168,10 @@ async function validateSnapshots(
 
 async function findPackagesWithTypedef() {
   const packagesWithGeneratedTypes = glob
-    .sync(`${PACKAGES_DIR}/**/types_generated`, {nodir: false})
+    .sync(`${PACKAGES_DIR}/**/types_generated`, {
+      nodir: false,
+      ignore: '**/node_modules/**', // [macOS] Use workspaces, not their dependency links.
+    })
     .map(typesPath =>
       path.relative(PACKAGES_DIR, typesPath).split('/').slice(0, -1).join('/'),
     );

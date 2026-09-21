@@ -34,7 +34,7 @@ async function simpleResolve(
   if (cachedProjectInfo == null) {
     cachedProjectInfo = await getPackages({
       includeReactNative: true,
-      includePrivate: false,
+      includePrivate: true, // [macOS] Main keeps the fork's type dependencies private.
     });
   }
 
