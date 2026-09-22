@@ -818,13 +818,10 @@ type RadialGradientValue = {
 
 export type BackgroundImageValue = LinearGradientValue | RadialGradientValue;
 
-export type BackgroundSizeValue =
-  | {
-      x: string | number,
-      y: string | number,
-    }
-  | 'cover'
-  | 'contain';
+export type BackgroundSizeValue = {
+  x: string | number,
+  y: string | number,
+};
 
 export type BackgroundRepeatKeyword =
   | 'repeat'
@@ -880,7 +877,8 @@ type ____BlendMode_Internal =
   | 'hue'
   | 'saturation'
   | 'color'
-  | 'luminosity';
+  | 'luminosity'
+  | 'plus-lighter';
 
 export type ____ViewStyle_InternalBase = Readonly<{
   backfaceVisibility?: 'visible' | 'hidden',
@@ -1142,8 +1140,8 @@ export type ____Styles_Internal = {
 // ____FlattenStyleProp_Helper should be considered internal.
 type FlattenDepthLimiter = [void, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 type ____FlattenStyleProp_Helper<
-  +TStyleProp: StyleProp<unknown>,
-  Depth: Values<FlattenDepthLimiter> = 9,
+  +TStyleProp extends StyleProp<unknown>,
+  Depth extends Values<FlattenDepthLimiter> = 9,
 > = Depth extends 0
   ? empty
   : TStyleProp extends null | void | false | ''
@@ -1155,7 +1153,9 @@ type ____FlattenStyleProp_Helper<
         >
       : TStyleProp;
 
-export type ____FlattenStyleProp_Internal<+TStyleProp: StyleProp<unknown>> =
+export type ____FlattenStyleProp_Internal<
+  +TStyleProp extends StyleProp<unknown>,
+> =
   ____FlattenStyleProp_Helper<TStyleProp> extends empty // $FlowFixMe[unclear-type]
     ? any
     : ____FlattenStyleProp_Helper<TStyleProp>;
