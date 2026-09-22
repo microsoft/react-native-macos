@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<43e301c5028a2ed195e2a3d0a4cd0ab3>>
+ * @generated SignedSource<<ba443ccb843898a70e1968ba5d4ab62c>>
  */
 
 /**
@@ -66,6 +66,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableLayoutAnimationsOnIOS() = 0;
   virtual bool enableMainQueueCoordinatorOnIOS() = 0;
   virtual bool enableModuleArgumentNSNullConversionIOS() = 0;
+  virtual bool enableMutationObserverByDefault() = 0;
   virtual bool enableNativeCSSParsing() = 0;
   virtual bool enableNetworkEventReporting() = 0;
   virtual bool enablePreparedTextLayout() = 0;
@@ -84,13 +85,17 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool fixTextClippingAndroid15useBoundsForWidth() = 0;
   virtual bool fuseboxAssertSingleHostState() = 0;
   virtual bool fuseboxEnabledRelease() = 0;
+  virtual bool fuseboxFrameRecordingEnabled() = 0;
   virtual bool fuseboxNetworkInspectionEnabled() = 0;
+  virtual bool fuseboxScreenshotCaptureEnabled() = 0;
   virtual bool hideOffscreenVirtualViewsOnIOS() = 0;
   virtual bool overrideBySynchronousMountPropsAtMountingAndroid() = 0;
   virtual bool perfIssuesEnabled() = 0;
   virtual bool perfMonitorV2Enabled() = 0;
   virtual double preparedTextCacheSize() = 0;
   virtual bool preventShadowTreeCommitExhaustion() = 0;
+  virtual bool redBoxV2Android() = 0;
+  virtual bool redBoxV2IOS() = 0;
   virtual bool shouldPressibilityUseW3CPointerEventsForHover() = 0;
   virtual bool shouldTriggerResponderTransferOnScrollAndroid() = 0;
   virtual bool skipActivityIdentityAssertionOnHostPause() = 0;
