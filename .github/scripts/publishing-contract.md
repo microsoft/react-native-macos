@@ -14,6 +14,8 @@ Pending Changesets come from the declared `@changesets/get-release-plan` API, wi
 
 Stable branches must already have their initial release version and React Native peer configured. The publication script does not turn `1000.0.0` into a release. All public release packages must match the core version and branch. Private runtime workspace links are invalid; explicit registry references to the separately published upstream `@react-native/*` packages are valid. Development-only private workspace links are allowed.
 
+Main and merge-stage branches keep the `1000.0.0` development graph, including private virtualized-lists and upstream workspace links. Their Changesets config defers `react-native-macos` with `ignore`; `@react-native/tester` is also listed for compatibility with older Changesets' dependent validation. This preserves pending core changesets until stable preparation, without changing package privacy or enabling private versions or tags. The independent init package remains versionable. Stable preparation must clear `ignore`, set the stable `baseBranch`, make virtualized-lists public, and configure the release versions and upstream registry dependencies before versioning. The repository-graph test checks these branch-specific source settings.
+
 ## Publication and tags
 
 Any pending Changeset, including an empty Changeset, skips publication. Registry failures fail the run. The script validates the complete package graph and queries every selected package before publication. It publishes only absent versions in dependency order, so retries skip versions already published. A release consists of multiple npm writes, not an atomic registry transaction.
