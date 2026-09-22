@@ -74,7 +74,7 @@ Pod::Spec.new do |spec|
                       'folly/portability/*.h',
                       'folly/system/*.h',
 
-  # workaround for https://github.com/facebook/react-native/issues/14326
+  # workaround for https://github.com/react/react-native/issues/14326
   spec.preserve_paths = 'folly/*.h',
                         'folly/algorithm/simd/*.h',
                         'folly/algorithm/simd/detail/*.h',

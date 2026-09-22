@@ -626,14 +626,15 @@ internal constructor(
 
   public fun storeSynchronousMountPropsOverride(reactTag: Int, props: ReadableMap): Unit {
     if (ReactNativeFeatureFlags.overrideBySynchronousMountPropsAtMountingAndroid()) {
-      val propsMap = getMapFromPropsReadableMap(props)
-      var synchronousMountProps = tagToSynchronousMountProps[reactTag]
-      if (synchronousMountProps != null) {
-        synchronousMountProps.putAll(propsMap)
+      val propsMap = getAnimatedPropsMap(props)
+      val synchronousMountProps = tagToSynchronousMountProps[reactTag] ?: mutableMapOf()
+      clearAnimatedNullPropsMapKeys(props, synchronousMountProps)
+      synchronousMountProps.putAll(propsMap)
+      if (synchronousMountProps.isEmpty()) {
+        tagToSynchronousMountProps.remove(reactTag)
       } else {
-        synchronousMountProps = propsMap
+        tagToSynchronousMountProps[reactTag] = synchronousMountProps
       }
-      tagToSynchronousMountProps[reactTag] = synchronousMountProps
     }
   }
 
@@ -899,7 +900,16 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
+    val viewState = getNullableViewState(reactTag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException(
+              "Unable to find viewState for tag $reactTag for updateOverflowInset"
+          ),
+      )
+      return
+    }
     // Do not layout Root Views
     if (viewState.isRoot) {
       return
@@ -1069,8 +1079,8 @@ internal constructor(
       // If the view that went offscreen is still being touched, we can't delete it yet.
       // We have to delay the deletion till the touch is completed.
       // This is causing bugs like those otherwise:
-      // - https://github.com/facebook/react-native/issues/44610
-      // - https://github.com/facebook/react-native/issues/45126
+      // - https://github.com/react/react-native/issues/44610
+      // - https://github.com/react/react-native/issues/45126
       viewsToDeleteAfterTouchFinishes.add(reactTag)
     } else {
       // To delete we simply remove the tag from the registry.
@@ -1328,7 +1338,11 @@ internal constructor(
       for ((propKey, propValue) in patchMap) {
         if (outputReadableMap.hasKey(propKey)) {
           if (propKey == PROP_TRANSFORM) {
-            assert(outputReadableMap.getType(propKey) == ReadableType.Array && propValue is List<*>)
+            val outputType = outputReadableMap.getType(propKey)
+            assert(
+                (outputType == ReadableType.Array || outputType == ReadableType.Null) &&
+                    propValue is List<*>
+            )
             val array = WritableNativeArray()
             for (item in propValue as List<*>) {
               if (item is Map<*, *>) {
@@ -1346,14 +1360,18 @@ internal constructor(
             }
             outputReadableMap.putArray(propKey, array)
           } else if (propKey == PROP_OPACITY) {
-            assert(outputReadableMap.getType(propKey) == ReadableType.Number && propValue is Number)
+            val outputType = outputReadableMap.getType(propKey)
+            assert(
+                (outputType == ReadableType.Number || outputType == ReadableType.Null) &&
+                    propValue is Number
+            )
             outputReadableMap.putDouble(propKey, (propValue as Number).toDouble())
           }
         }
       }
     }
 
-    private fun getMapFromPropsReadableMap(readableMap: ReadableMap): MutableMap<String, Any> {
+    private fun getAnimatedPropsMap(readableMap: ReadableMap): MutableMap<String, Any> {
       val outputMap = mutableMapOf<String, Any>()
 
       if (
@@ -1381,6 +1399,25 @@ internal constructor(
       }
 
       return outputMap
+    }
+
+    private fun clearAnimatedNullPropsMapKeys(
+        readableMap: ReadableMap,
+        outputMap: MutableMap<String, Any>,
+    ) {
+      // Native Animated uses synchronous null updates to restore animated-managed props.
+      // Keep this scoped to props stored by this override path today.
+      if (
+          readableMap.hasKey(PROP_TRANSFORM) &&
+              readableMap.getType(PROP_TRANSFORM) == ReadableType.Null
+      ) {
+        outputMap.remove(PROP_TRANSFORM)
+      }
+      if (
+          readableMap.hasKey(PROP_OPACITY) && readableMap.getType(PROP_OPACITY) == ReadableType.Null
+      ) {
+        outputMap.remove(PROP_OPACITY)
+      }
     }
 
     // prevents unchecked conversion warn of the <ViewGroup> type

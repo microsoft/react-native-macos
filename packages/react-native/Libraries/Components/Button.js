@@ -132,7 +132,7 @@ export type ButtonProps = Readonly<{
 
   /**
    * Alias for accessibilityLabel  https://reactnative.dev/docs/view#accessibilitylabel
-   * https://github.com/facebook/react-native/issues/34424
+   * https://github.com/react/react-native/issues/34424
    */
   'aria-label'?: ?string,
   /**
@@ -208,7 +208,7 @@ export type ButtonProps = Readonly<{
   [button:examples].
 
   [button:source]:
-  https://github.com/facebook/react-native/blob/HEAD/Libraries/Components/Button.js
+  https://github.com/react/react-native/blob/HEAD/Libraries/Components/Button.js
 
   ```jsx
   <Button

@@ -56,7 +56,7 @@ describe('UIConsistency', () => {
 
   // TODO: "first access to the tree" returns stale `scrollTop=0` instead
   // of `100` for both `enableFabricCommitBranching` flag values after
-  // https://github.com/facebook/react-native/pull/56513 (Fabric commit
+  // https://github.com/react/react-native/pull/56513 (Fabric commit
   // branching).
   // Likely root cause: `LazyShadowTreeRevisionConsistencyManager` prefers
   // `currentReactRevision_` even when `currentRevision_.number` is newer
