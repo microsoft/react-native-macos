@@ -61,7 +61,13 @@ beforeEach(() => {
     'destroot/Library/Frameworks/universal/hermesvm.xcframework',
   );
   properties = 'HERMES_VERSION_NAME=123.4.56\nHERMES_V1_VERSION_NAME=234.5.67';
-  libraries = [{SupportedPlatform: 'macos'}];
+  libraries = [
+    {
+      LibraryIdentifier: 'macos-arm64_x86_64',
+      LibraryPath: 'hermesvm.framework',
+      SupportedPlatform: 'macos',
+    },
+  ];
   standaloneMacOS = false;
   includeInfo = true;
   jest.spyOn(process, 'cwd').mockReturnValue(tmp);
@@ -91,7 +97,21 @@ beforeEach(() => {
       fs.writeFileSync(args[1], 'mock source archive');
     }
     if (command === 'tar' && args[0] === '-xzf') {
-      populateExtractedFramework();
+      fs.mkdirSync(framework, {recursive: true});
+      if (includeInfo) {
+        fs.writeFileSync(
+          path.join(framework, 'Info.plist'),
+          JSON.stringify({AvailableLibraries: libraries}),
+        );
+      }
+      if (standaloneMacOS) {
+        const macOSFramework = path.resolve(
+          framework,
+          '../../macosx/hermesvm.framework',
+        );
+        fs.mkdirSync(macOSFramework, {recursive: true});
+        fs.writeFileSync(path.join(macOSFramework, 'hermesvm'), 'mock binary');
+      }
     }
     if (command === 'plutil') {
       return readFileSync(args[4], 'utf8');
@@ -124,24 +144,6 @@ afterEach(() => {
 
 function releaseUrl(version, flavor = 'debug') {
   return `https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-${flavor}.tar.gz`;
-}
-
-function populateExtractedFramework() {
-  fs.mkdirSync(framework, {recursive: true});
-  if (includeInfo) {
-    fs.writeFileSync(
-      path.join(framework, 'Info.plist'),
-      JSON.stringify({AvailableLibraries: libraries}),
-    );
-  }
-  if (standaloneMacOS) {
-    const macOSFramework = path.resolve(
-      framework,
-      '../../macosx/hermesvm.framework',
-    );
-    fs.mkdirSync(macOSFramework, {recursive: true});
-    fs.writeFileSync(path.join(macOSFramework, 'hermesvm'), 'macOS binary');
-  }
 }
 
 test.each(['Debug', 'Release'])(
@@ -392,86 +394,157 @@ describe('macOS slice capabilities', () => {
         LibraryPath: 'hermesvm.framework',
         SupportedPlatform: 'ios',
       },
+      {
+        LibraryIdentifier: 'ios-arm64_x86_64-maccatalyst',
+        LibraryPath: 'hermesvm.framework',
+        SupportedPlatform: 'ios',
+        SupportedPlatformVariant: 'maccatalyst',
+      },
+      {
+        LibraryIdentifier: 'xros-arm64',
+        LibraryPath: 'hermesvm.framework',
+        SupportedPlatform: 'xros',
+      },
     ];
   });
 
   test.each(['download', 'cache', 'local'])(
-    'recomposes older artifacts from %s before returning',
+    'recomposes older artifacts from %s and retains every upstream slice',
     async source => {
       standaloneMacOS = true;
       if (source === 'local') {
         process.env.HERMES_ENGINE_TARBALL_PATH = path.join(tmp, 'local.tar.gz');
       }
       if (source === 'cache') {
-        populateExtractedFramework();
+        fs.mkdirSync(framework, {recursive: true});
         fs.writeFileSync(versionFile, '234.5.67-Debug');
+        execFileSync('tar', ['-xzf']);
+        execFileSync.mockClear();
       }
-      await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
+
+      await prepareHermesArtifactsAsync('0.85.0', 'Debug');
+      const replacement = path.resolve(
+        framework,
+        '../hermesvm-new.xcframework',
+      );
       expect(execFileSync).toHaveBeenCalledWith(
         'xcodebuild',
-        expect.arrayContaining(['-create-xcframework']),
+        [
+          '-create-xcframework',
+          ...libraries.flatMap(library => [
+            '-framework',
+            path.join(
+              framework,
+              library.LibraryIdentifier,
+              library.LibraryPath,
+            ),
+          ]),
+          '-framework',
+          path.resolve(framework, '../../macosx/hermesvm.framework'),
+          '-output',
+          replacement,
+          '-allow-internal-distribution',
+        ],
         {stdio: 'inherit'},
       );
+      expect(fs.existsSync(replacement)).toBe(false);
       expect(
         JSON.parse(readFileSync(path.join(framework, 'Info.plist'), 'utf8'))
           .AvailableLibraries,
       ).toEqual([...libraries, {SupportedPlatform: 'macos'}]);
-      if (source !== 'download') {
+      if (source === 'cache' || source === 'local') {
         expect(global.fetch).not.toHaveBeenCalled();
-      }
-      if (source === 'cache') {
-        expect(
-          execFileSync.mock.calls.some(([command]) => command === 'tar'),
-        ).toBe(false);
       }
     },
   );
 
-  test('checks existing macOS support after download and on cache reuse', async () => {
+  test('an existing macOS slice skips recomposition without standalone inputs, including on cache reuse', async () => {
     libraries.push({SupportedPlatform: 'macos'});
-    await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
-    await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
+    await prepareHermesArtifactsAsync('0.85.0', 'Debug');
     expect(execFileSync.mock.calls.map(([command]) => command)).toEqual([
       'tar',
       'plutil',
+    ]);
+    execFileSync.mockClear();
+    global.fetch.mockClear();
+    await prepareHermesArtifactsAsync('0.85.0', 'Debug');
+    expect(execFileSync.mock.calls.map(([command]) => command)).toEqual([
       'plutil',
     ]);
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  test.each(['plist', 'binary'])(
-    'rejects missing required %s after download and on cache reuse',
+  test.each(['plist', 'framework', 'binary'])(
+    'fails a required macOS slice with missing %s before xcodebuild',
     async missing => {
       includeInfo = missing !== 'plist';
+      if (missing === 'binary') {
+        // An empty framework directory is not a usable standalone input.
+        const extract = execFileSync.getMockImplementation();
+        execFileSync.mockImplementation((command, args) => {
+          const result = extract(command, args);
+          if (command === 'tar' && args[0] === '-xzf') {
+            fs.mkdirSync(
+              path.resolve(framework, '../../macosx/hermesvm.framework'),
+              {recursive: true},
+            );
+          }
+          return result;
+        });
+      }
       await expect(
-        prepareHermesArtifactsAsync('1000.0.0', 'Debug'),
+        prepareHermesArtifactsAsync('0.85.0', 'Debug'),
       ).rejects.toThrow('Cannot prepare required macOS slice: missing');
+      expect(
+        execFileSync.mock.calls.some(([cmd]) => cmd === 'xcodebuild'),
+      ).toBe(false);
+      expect(fs.existsSync(framework)).toBe(true);
       global.fetch.mockClear();
-      execFileSync.mockClear();
       await expect(
-        prepareHermesArtifactsAsync('1000.0.0', 'Debug'),
+        prepareHermesArtifactsAsync('0.85.0', 'Debug'),
       ).rejects.toThrow('Cannot prepare required macOS slice: missing');
       expect(global.fetch).not.toHaveBeenCalled();
-      expect(
-        execFileSync.mock.calls.some(([command]) => command === 'tar'),
-      ).toBe(false);
     },
   );
 
   test.each([true, false])(
-    'permits local tarballs without macOS inputs (plist: %s)',
+    'permits local layouts without standalone macOS inputs (plist: %s)',
     async hasInfo => {
       includeInfo = hasInfo;
-      const tarball = path.join(tmp, 'local.tar.gz');
-      fs.writeFileSync(tarball, 'local archive');
-      process.env.HERMES_ENGINE_TARBALL_PATH = tarball;
+      process.env.HERMES_ENGINE_TARBALL_PATH = path.join(tmp, 'local.tar.gz');
       await expect(
-        prepareHermesArtifactsAsync('1000.0.0', 'Debug'),
+        prepareHermesArtifactsAsync('0.85.0', 'Debug'),
       ).resolves.toBe(artifacts);
-      expect(fs.existsSync(tarball)).toBe(true);
-      expect(global.fetch).not.toHaveBeenCalled();
       expect(
-        execFileSync.mock.calls.some(([command]) => command === 'xcodebuild'),
+        execFileSync.mock.calls.some(([cmd]) => cmd === 'xcodebuild'),
       ).toBe(false);
+      expect(global.fetch).not.toHaveBeenCalled();
     },
   );
+
+  test('a source build also requires the macOS binary', async () => {
+    properties = 'HERMES_V1_VERSION_NAME=1000.0.0';
+    await expect(
+      prepareHermesArtifactsAsync('0.85.0', 'Debug'),
+    ).rejects.toThrow('Cannot prepare required macOS slice: missing');
+    expect(hermesCommitAtMergeBase).toHaveBeenCalledTimes(1);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test('a failed recomposition preserves the original XCFramework', async () => {
+    standaloneMacOS = true;
+    const execute = execFileSync.getMockImplementation();
+    execFileSync.mockImplementation((command, args) => {
+      if (command === 'xcodebuild') {
+        throw new Error('unsupported framework input');
+      }
+      return execute(command, args);
+    });
+    await expect(
+      prepareHermesArtifactsAsync('0.85.0', 'Debug'),
+    ).rejects.toThrow('unsupported framework input');
+    expect(
+      JSON.parse(readFileSync(path.join(framework, 'Info.plist'), 'utf8')),
+    ).toEqual({AvailableLibraries: libraries});
+  });
 });
