@@ -28,13 +28,55 @@ function generateUUID(seed /*: string */) /*: string */ {
 }
 
 /**
- * Escapes a string for OpenStep plist format if needed.
+ * Escapes a string for OpenStep plist format if needed. A literal CR or tab in
+ * a quoted value is legal but Xcode rewrites it to its escape on the next save,
+ * planting a spurious diff in the user's repo — so escape those too (a plugin
+ * `script` with CRLF line endings is how one gets in).
  */
 function quoteIfNeeded(s /*: string */) /*: string */ {
   if (/^[a-zA-Z0-9._/]+$/.test(s)) {
     return s;
   }
-  return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
+  return `"${s
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t')}"`;
+}
+
+/**
+ * Normalize an UNTRUSTED label (a plugin's script-phase name, say) for use
+ * inside a pbxproj `/* … *​/` comment. Such a comment is purely cosmetic — Xcode
+ * regenerates it from the object's own fields — while the text AROUND it is
+ * scanned by delimiter, so every character that could be read as structure (or
+ * split the line) becomes a space, and runs of whitespace collapse:
+ * `findObjectByUuid` takes the first `{` after a UUID as that object's body,
+ * `removeArrayMembersByUuid` identifies a member line by its trailing comma, and
+ * `scanToClose` treats a `"` as opening a string. Stable (same input ⇒ same
+ * output), so re-syncing stays byte-identical. Returns '' when nothing survives;
+ * callers supply the fallback label.
+ *
+ * Comments RN writes to Xcode's OWN convention (`XCLocalSwiftPackageReference
+ * "build/xcframeworks"`, `<file> in Sources`) are NOT run through this: they are
+ * fixed strings, and normalizing them would rewrite bytes Xcode itself produces —
+ * a spurious diff in the user's repo on their next save.
+ */
+function commentSafe(s /*: string */) /*: string */ {
+  return s
+    .replace(/[{}(),;="*/\s]/g, ' ')
+    .replace(/ +/g, ' ')
+    .trim();
+}
+
+/**
+ * Format the ` /* … *​/` suffix pbxproj writes after a UUID, omitted entirely for
+ * an empty label (an uncommented UUID is well-formed — Xcode writes those itself
+ * for unnamed groups). Labels that did not originate in this repo must already
+ * have been through `commentSafe`.
+ */
+function uuidComment(comment /*: ?string */) /*: string */ {
+  return comment != null && comment !== '' ? ` /* ${comment} */` : '';
 }
 
 /**
@@ -47,11 +89,7 @@ function quoteIfNeeded(s /*: string */) /*: string */ {
 function serializeEntry(
   entry /*: {readonly uuid: string, readonly comment?: ?string, readonly fields: {readonly [string]: string}, ...} */,
 ) /*: string */ {
-  const comment =
-    entry.comment != null && entry.comment !== ''
-      ? ` /* ${entry.comment} */`
-      : '';
-  let out = `\t\t${entry.uuid}${comment} = {`;
+  let out = `\t\t${entry.uuid}${uuidComment(entry.comment)} = {`;
   const fieldKeys = Object.keys(entry.fields);
   if (
     fieldKeys.length <= 3 &&
@@ -343,8 +381,7 @@ function addArrayMembers(
   const memberIndent = fieldIndent + '\t';
   const line = (
     m /*: {readonly uuid: string, readonly comment?: ?string, ...} */,
-  ) =>
-    `${memberIndent}${m.uuid}${m.comment != null && m.comment !== '' ? ` /* ${m.comment} */` : ''},\n`;
+  ) => `${memberIndent}${m.uuid}${uuidComment(m.comment)},\n`;
 
   const field = findField(text, obj, key);
   if (field != null) {
@@ -368,6 +405,38 @@ function addArrayMembers(
 }
 
 /**
+ * Indices of the `,` separators at an array's top level — a comma inside a
+ * quoted member (`"$(FOO),weird"`) separates nothing.
+ */
+function topLevelCommas(inner /*: string */) /*: Array<number> */ {
+  const out = [];
+  for (let i = 0; i < inner.length; i++) {
+    if (inner[i] === '"') {
+      i = scanString(inner, i);
+    } else if (inner[i] === ',') {
+      out.push(i);
+    }
+  }
+  return out;
+}
+
+/**
+ * The members of an array's inner text (what sits between its parens), trimmed
+ * and with empty slots — e.g. the one a trailing comma leaves — dropped. A bare
+ * scalar value parses as its own single member.
+ */
+function arrayMembers(inner /*: string */) /*: Array<string> */ {
+  const members = [];
+  let start = 0;
+  for (const comma of topLevelCommas(inner)) {
+    members.push(inner.slice(start, comma));
+    start = comma + 1;
+  }
+  members.push(inner.slice(start));
+  return members.map(m => m.trim()).filter(m => m !== '');
+}
+
+/**
  * Append raw string values to a `( … )` array build-setting (e.g.
  * OTHER_LDFLAGS), deduping by exact token. Creates the setting seeded with
  * `"$(inherited)"` when absent. Values must already be plist-quoted by caller.
@@ -385,31 +454,57 @@ function addArrayStringValues(
 
   const field = findField(text, obj, key);
   if (field != null) {
+    const isArray = field.value.trimStart().startsWith('(');
+    const openParen = isArray
+      ? field.valueStart + field.value.indexOf('(')
+      : -1;
+    const closeParen = isArray ? scanToClose(text, openParen) : -1;
+    const inner = isArray ? text.slice(openParen + 1, closeParen) : field.value;
     // Dedup by EXACT existing member, not substring — a substring check would
     // treat `"-ObjC"` as already present when only `"-ObjCFoo"` is there (and
-    // vice-versa). Parse the current members (array `( … )` or bare scalar).
-    const existingMembers = new Set(
-      field.value
-        .replace(/^\s*\(/, '')
-        .replace(/\)\s*$/, '')
-        .split(',')
-        .map(s => s.trim())
-        .filter(s => s.length > 0),
-    );
+    // vice-versa).
+    const existingMembers = new Set(arrayMembers(inner));
     const fresh = values.filter(v => !existingMembers.has(v));
     if (fresh.length === 0) {
       return text;
     }
-    if (field.value.trimStart().startsWith('(')) {
-      // Existing array — splice fresh members before the closing `)`.
-      const lineStart = text.lastIndexOf('\n', field.tokenEnd - 1) + 1;
-      const lines = fresh.map(v => `${memberIndent}${v},\n`).join('');
-      return text.slice(0, lineStart) + lines + text.slice(lineStart);
+    if (isArray) {
+      if (inner.includes('\n')) {
+        // Multi-line array — one member per line, before the closing `)`.
+        const lineStart = text.lastIndexOf('\n', closeParen) + 1;
+        const lines = fresh.map(v => `${memberIndent}${v},\n`).join('');
+        return text.slice(0, lineStart) + lines + text.slice(lineStart);
+      }
+      // One-line array (hand-edited projects, XcodeGen, Tuist) — splice the
+      // members in ahead of the `)`, in the separator style already there.
+      // Reformatting it multi-line instead would have to record the old shape
+      // to stay reversible on deinit.
+      const commas = topLevelCommas(inner);
+      const gapMatch =
+        commas.length > 0 ? /^[\t ]*/.exec(inner.slice(commas[0] + 1)) : null;
+      const gap = gapMatch != null ? gapMatch[0] : ' ';
+      const core = inner.replace(/[\t ]+$/, '');
+      const joined = fresh.join(`,${gap}`);
+      const insertion =
+        core === ''
+          ? joined
+          : core.endsWith(',')
+            ? `${gap}${joined},`
+            : `,${gap}${joined}`;
+      const at = openParen + 1 + core.length;
+      return text.slice(0, at) + insertion + text.slice(at);
     }
-    // Existing scalar — promote to an array preserving the prior value.
+    // Existing scalar — promote to an array preserving the prior value. Skip it
+    // when it IS the `"$(inherited)"` the array is seeded with (emitted twice),
+    // or when it is empty (a bare `,` is not a valid plist element). The seed
+    // test unquotes first: pbxproj accepts `$(inherited)` bare, and Xcode's own
+    // quoted form is the same value to the build system.
+    const prior = field.value.trim();
+    const carriesPrior =
+      prior !== '' && prior.replace(/^"(.*)"$/s, '$1') !== '$(inherited)';
     const replacement = arrayBlock([
       '"$(inherited)"',
-      field.value.trim(),
+      ...(carriesPrior ? [prior] : []),
       ...fresh,
     ]);
     return (
@@ -464,7 +559,12 @@ function setScalarField(
 // ---------------------------------------------------------------------------
 // Surgical removal — the inverse of the additive helpers above. `deinit` uses
 // these to undo exactly what injection added, leaving every other byte (incl.
-// user edits made after injection) untouched. All are pure string transforms.
+// user edits made after injection) untouched. The exception is a scalar that
+// injection promoted to an array: reversing that rewrites the whole field (see
+// removeRecordedBuildSettings), so members added to it afterwards are lost.
+// That is not deinit-only — every re-sync reverts from the recorded baseline
+// before re-injecting, so an `spm update` discards them just the same.
+// All are pure string transforms.
 // ---------------------------------------------------------------------------
 
 /**
@@ -495,7 +595,8 @@ function removeObjectByUuid(
  * `uuids` from every `( … )` list in the file (packageReferences,
  * packageProductDependencies, a Frameworks phase's `files`, buildPhases, …).
  * Only matches member lines (trailing comma), never the object-definition line
- * (which ends in `= {`), so it composes safely with removeObjectByUuid.
+ * (which ends in `= {`), so it composes safely with removeObjectByUuid — which
+ * holds because no comment can contain a comma (see commentSafe).
  */
 function removeArrayMembersByUuid(
   text /*: string */,
@@ -526,6 +627,33 @@ function removeField(
 }
 
 /**
+ * Drop one member from an array field's value text. The patterns mirror the
+ * forms addArrayStringValues inserts, tried in the order that makes the span
+ * removed exactly the span it added: a line of its own (multi-line array), then
+ * after a comma, before a comma, or alone ahead of the `)` (the one-line
+ * shapes). Each is anchored on a delimiter, so a value that is merely a prefix
+ * of a longer member is never mistaken for it.
+ */
+function removeArrayMember(
+  region /*: string */,
+  value /*: string */,
+) /*: string */ {
+  const v = escapeRegExp(value);
+  for (const pattern of [
+    `\\n[\\t ]*${v},`,
+    `,[\\t ]*${v}(?=[\\t ]*[,)])`,
+    `[\\t ]*${v},[\\t ]*`,
+    `[\\t ]*${v}(?=[\\t ]*\\))`,
+  ]) {
+    const shorter = region.replace(new RegExp(pattern), '');
+    if (shorter !== region) {
+      return shorter;
+    }
+  }
+  return region;
+}
+
+/**
  * Remove specific raw string members from an existing `( … )` array field
  * (inverse of addArrayStringValues' append branch). Leaves the field and any
  * other members in place. No-op when the field or a value is absent.
@@ -542,7 +670,7 @@ function removeArrayStringValues(
   }
   let region = text.slice(f.valueStart, f.tokenEnd);
   for (const val of values) {
-    region = region.replace(new RegExp(`\\n[\\t ]*${escapeRegExp(val)},`), '');
+    region = removeArrayMember(region, val);
   }
   return text.slice(0, f.valueStart) + region + text.slice(f.tokenEnd);
 }
@@ -628,6 +756,8 @@ module.exports = {
   namespacedUUID,
   serializeEntry,
   quoteIfNeeded,
+  commentSafe,
+  uuidComment,
   // Surgical-edit toolkit (in-place injection):
   scanString,
   scanToClose,

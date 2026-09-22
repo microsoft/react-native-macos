@@ -12,6 +12,7 @@
 
 const {execSync} = require('child_process');
 const fs = require('fs');
+const path = require('path');
 
 /**
  * Creates a folder if it does not exist
@@ -26,6 +27,31 @@ function createFolderIfNotExists(folderPath /*:string*/) /*: string */ {
     }
   }
   return folderPath;
+}
+
+function findFirst(
+  dir /*: string */,
+  predicate /*: (name: string) => boolean */,
+  depth /*: number */,
+) /*: string | null */ {
+  if (depth <= 0 || !fs.existsSync(dir)) {
+    return null;
+  }
+  for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+    // $FlowFixMe[incompatible-type] Dirent.name is string|Buffer in Flow but always string here
+    const full /*: string */ = path.join(dir, entry.name);
+    // $FlowFixMe[incompatible-type] Dirent.name is string|Buffer in Flow but always string here
+    if (predicate(entry.name)) {
+      return full;
+    }
+    if (entry.isDirectory()) {
+      const hit = findFirst(full, predicate, depth - 1);
+      if (hit != null) {
+        return hit;
+      }
+    }
+  }
+  return null;
 }
 
 function throwIfOnEden() {
@@ -104,6 +130,7 @@ async function computeNightlyTarballURL(
 
 module.exports = {
   createFolderIfNotExists,
+  findFirst,
   throwIfOnEden,
   createLogger,
   computeNightlyTarballURL,

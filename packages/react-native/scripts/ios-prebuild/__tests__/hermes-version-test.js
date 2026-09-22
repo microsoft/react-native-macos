@@ -144,24 +144,3 @@ test('the checked-in compiler and source tag match the single Hermes metadata', 
     ).toBe(`hermes-v${selected.version}`);
   }
 });
-
-test('the default runtime, compiler, and source tag versions agree', () => {
-  const previous = process.env.RCT_HERMES_V1_ENABLED;
-  try {
-    delete process.env.RCT_HERMES_V1_ENABLED;
-    // 0.87 uses a single V1 pin; the shared helper defaults to legacy.
-    const {version, tagFile} = readHermesMetadata('single');
-    const {dependencies} = require('../../../package.json');
-    expect(dependencies['hermes-compiler']).toBe(version);
-    const tag = fs
-      .readFileSync(path.resolve(__dirname, '../../../sdks', tagFile), 'utf8')
-      .trim();
-    expect(tag).toBe(`hermes-v${version}`);
-  } finally {
-    if (previous == null) {
-      delete process.env.RCT_HERMES_V1_ENABLED;
-    } else {
-      process.env.RCT_HERMES_V1_ENABLED = previous;
-    }
-  }
-});

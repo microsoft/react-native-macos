@@ -44,8 +44,10 @@
  * directing you to `--deintegrate`).
  *
  * Options:
- *   --version <ver>             React Native version (default: the resolved
- *                               node_modules/react-native version).
+ *   --version <ver>             React Native version. Pinned into
+ *                               .spm-injected.json and reused by later runs
+ *                               until a new one is passed (default: the
+ *                               resolved node_modules/react-native version).
  *   --yes                       Skip the dirty-pbxproj confirmation prompt.
  *   [add] --xcodeproj <path>    Which .xcodeproj to inject into (when several).
  *   [add] --product-name <name> Which app target to inject into (when several).
@@ -55,6 +57,7 @@
  *                               must contain debug/ and release/ cache slots.
  *   [advanced] --download <auto|skip|force> Artifact policy (default: auto).
  *   [advanced] --skip-codegen   Skip the react-native codegen step.
+ *   [advanced] --config-command <json> Override the autolinking config command.
  *
  * Steps performed (add/update):
  *   1. react-native codegen → build/generated/ios/ + install SPM codegen template
@@ -83,14 +86,20 @@ const {
 } = require('./spm/generate-spm-autolinking');
 const {
   generateAutolinkingConfig,
+  parseConfigCommandJson,
+  readEnvConfigCommand,
+  resolveEnvConfigCommand,
 } = require('./spm/generate-spm-autolinking-config');
 const {main: generatePackage} = require('./spm/generate-spm-package');
 const {findSourcePath} = require('./spm/generate-spm-package');
 const {
+  SPM_INJECTED_MARKER,
   cleanupDanglingJavaScriptCoreRef,
   cleanupLeftoverPodsGroup,
   findInjectedXcodeproj,
   injectSpmIntoExistingXcodeproj,
+  readArtifactsVersionOverride,
+  readPinnedConfigCommand,
   removeSpmInjection,
 } = require('./spm/generate-spm-xcodeproj');
 const {scaffoldAll} = require('./spm/scaffold-package-swift');
@@ -147,7 +156,7 @@ function parseArgs(argv /*: Array<string> */) /*: SetupArgs */ {
     .option('version', {
       type: 'string',
       describe:
-        'React Native version (e.g. 0.80.0). Defaults to the version in node_modules/react-native/package.json',
+        'React Native version (e.g. 0.80.0). Sticks: later runs reuse it until you pass a new one. Defaults to the version in node_modules/react-native/package.json',
     })
     .option('yes', {
       type: 'boolean',
@@ -187,6 +196,11 @@ function parseArgs(argv /*: Array<string> */) /*: SetupArgs */ {
       default: false,
       describe: '[advanced] Skip the react-native codegen step',
     })
+    .option('config-command', {
+      type: 'string',
+      describe:
+        '[advanced] JSON array of the argv used to generate autolinking.json, overriding the default @react-native-community/cli config command. Also settable via RCT_SPM_AUTOLINKING_CONFIG_COMMAND. Either way `add`/`update` remembers the value in .spm-injected.json, so later runs and Xcode builds reuse it. Example: \'["npx","expo-modules-autolinking","react-native-config","--json","--platform","ios"]\'',
+    })
     .usage(
       'Usage: $0 [action] [options]\n\nSets up Swift Package Manager support in a React Native app.',
     )
@@ -214,6 +228,10 @@ function parseArgs(argv /*: Array<string> */) /*: SetupArgs */ {
     version: parsed.version ?? null,
     artifacts: parsed.artifacts ?? null,
     skipCodegen: parsed['skip-codegen'],
+    configCommand:
+      parsed['config-command'] != null
+        ? parseConfigCommandJson(parsed['config-command'], '--config-command')
+        : null,
     downloadPolicy: parsed.download,
     productName: parsed['product-name'] ?? null,
     xcodeprojPath: parsed.xcodeproj ?? null,
@@ -362,19 +380,31 @@ function resolveReactNativeRoot(
   return reactNativeRoot;
 }
 
+// Explicit `--version` → the version an earlier `--version` pinned into the
+// injection marker → node_modules/react-native/package.json. The pin makes
+// `--version` stick for later flagless runs, which would otherwise re-point the
+// project at a different artifact slot than the one it was wired to.
 function determineVersion(
   args /*: SetupArgs */,
   reactNativeRoot /*: string */,
+  appRoot /*: string */,
 ) /*: string */ {
-  let version = args.version;
-  if (version == null) {
-    // $FlowFixMe[incompatible-type] JSON.parse returns any
-    const pkgJson /*: {version: string} */ = JSON.parse(
-      fs.readFileSync(path.join(reactNativeRoot, 'package.json'), 'utf8'),
-    );
-    version = pkgJson.version;
+  if (args.version != null) {
+    return args.version;
   }
-  return version;
+  const pinned = readArtifactsVersionOverride(appRoot);
+  if (pinned != null) {
+    log(
+      `Using version ${pinned} pinned in ${SPM_INJECTED_MARKER} by an earlier ` +
+        '--version. Pass --version to change it.',
+    );
+    return pinned;
+  }
+  // $FlowFixMe[incompatible-type] JSON.parse returns any
+  const pkgJson /*: {version: string} */ = JSON.parse(
+    fs.readFileSync(path.join(reactNativeRoot, 'package.json'), 'utf8'),
+  );
+  return pkgJson.version;
 }
 
 function runCodegenStep(
@@ -427,7 +457,7 @@ async function runScaffold(
   // a comment — that's how SPM's manifest hash bumps on slot transitions.
   let cacheSlotLabel /*: ?string */ = null;
   try {
-    const rawVersion = args.version ?? determineVersion(args, reactNativeRoot);
+    const rawVersion = determineVersion(args, reactNativeRoot, appRoot);
     const slotVersion = await resolveCacheSlotVersion(rawVersion);
     cacheSlotLabel = `${slotVersion}/dual-flavor`;
   } catch {
@@ -833,6 +863,7 @@ async function setupXcodeproj(
     // (injectSpmIntoExistingXcodeproj preserves it — see
     // generate-spm-xcodeproj.js).
     artifactsVersionOverride: args.version ?? null,
+    configCommand: resolveConfigCommandToPin(args),
   });
   if (result.status !== 'injected') {
     logError(`SPM injection failed: ${result.reason}`);
@@ -890,6 +921,88 @@ function logNextSteps(
   log('  • Build and run on Simulator or device');
   log('');
   log('To remove SPM later: `npx react-native spm deinit`');
+}
+
+// The autolinking config command for this run: an explicit `--config-command`
+// first, then the value a previous `add`/`update` pinned into the injection
+// marker. undefined means "no explicit command", which is what makes
+// generateAutolinkingConfig fall back to RCT_SPM_AUTOLINKING_CONFIG_COMMAND and
+// then to the built-in default — so the pin has to be WITHHELD while the env
+// var is set, or a stale pin would outrank a developer's env override.
+function resolveExplicitConfigCommand(
+  args /*: SetupArgs */,
+  appRoot /*: string */,
+) /*: Array<string> | void */ {
+  if (args.configCommand != null) {
+    return args.configCommand;
+  }
+  if (readEnvConfigCommand() != null) {
+    return undefined;
+  }
+  const pinned = readPinnedConfigCommand(appRoot);
+  if (pinned == null) {
+    return undefined;
+  }
+  log(
+    `Autolinking config command (pinned in ${SPM_INJECTED_MARKER}): ` +
+      pinned.join(' '),
+  );
+  return pinned;
+}
+
+// The command to record in the injection marker. The env var is resolved here
+// too, because the Xcode build phase inherits neither the flag nor the shell
+// that set it — an env-only override that went unpinned would leave the build
+// re-deriving autolinking.json with the default command. null pins nothing and
+// preserves any earlier pin. An invalid env value throws, as the flag does,
+// though `add` has already failed closed on it by this point.
+function resolveConfigCommandToPin(
+  args /*: SetupArgs */,
+) /*: ?Array<string> */ {
+  return args.configCommand ?? resolveEnvConfigCommand();
+}
+
+// Generate autolinking.json, failing closed on a config-command error.
+//
+// generateAutolinkingConfig throws ONLY when the config command itself fails —
+// a non-zero exit, unparseable output, or a config missing
+// project.ios.sourceDir. Swallowing that (the old behavior) let the run proceed
+// and emit an empty Autolinked package, which only surfaced much later as an
+// inscrutable `unable to resolve module dependency` at build time. Instead we
+// set process.exitCode = 2 (a hard Xcode build-phase error, matching the
+// RemoteVersionError path) and return null so the caller stops.
+//
+// A genuinely native-module-free app does NOT reach the error path: its command
+// exits 0 with valid, empty-dependency JSON, so generateAutolinkingConfig
+// returns normally and the empty-package path downstream stays valid.
+function generateAutolinkingConfigOrFailClosed(
+  opts /*: {
+    projectRoot: string,
+    configCommand?: Array<string>,
+    generate?: typeof generateAutolinkingConfig,
+  } */,
+) /*: ?AutolinkingConfigResult */ {
+  const generate = opts.generate ?? generateAutolinkingConfig;
+  try {
+    return generate({
+      projectRoot: opts.projectRoot,
+      configCommand: opts.configCommand,
+    });
+  } catch (e) {
+    logError(
+      `Failed to generate autolinking.json: ${e.message}\n` +
+        'The autolinking config command failed. If this app replaces ' +
+        '@react-native-community/cli autolinking (e.g. an Expo app), set ' +
+        'RCT_SPM_AUTOLINKING_CONFIG_COMMAND (or pass --config-command) to a ' +
+        'JSON argv array whose command prints the React Native CLI config, ' +
+        'e.g. \'["npx","expo-modules-autolinking","react-native-config",' +
+        '"--json","--platform","ios"]\'. An earlier `add`/`update` may also ' +
+        `have pinned a command in ${SPM_INJECTED_MARKER}; re-run with ` +
+        '--config-command to replace a stale one.',
+    );
+    process.exitCode = 2;
+    return null;
+  }
 }
 
 async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
@@ -981,22 +1094,22 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
   let autolinkingConfigResult /*: ?AutolinkingConfigResult */ = null;
   if (needsCliConfig) {
     log('Generating autolinking.json (CLI config)...');
-    try {
-      autolinkingConfigResult = generateAutolinkingConfig({projectRoot});
-      log(
-        `Wrote ${path.relative(appRoot, autolinkingConfigResult.outputPath)}`,
-      );
-    } catch (e) {
-      logError(
-        `generate-spm-autolinking-config failed: ${e.message}. External native modules may not be discovered.`,
-      );
+    autolinkingConfigResult = generateAutolinkingConfigOrFailClosed({
+      projectRoot,
+      configCommand: resolveExplicitConfigCommand(args, appRoot),
+    });
+    if (autolinkingConfigResult == null) {
+      // Fail closed: the config command errored and the helper already set
+      // process.exitCode = 2. Stop rather than emit an empty Autolinked package.
+      return;
     }
+    log(`Wrote ${path.relative(appRoot, autolinkingConfigResult.outputPath)}`);
   }
   const reactNativeRoot = resolveReactNativeRoot(
     autolinkingConfigResult,
     projectRoot,
   );
-  const version = determineVersion(args, reactNativeRoot);
+  const version = determineVersion(args, reactNativeRoot, appRoot);
   log(`React Native version: ${version}`);
 
   // Resolve remote SPM mode ONCE up front. remotePackageConfig throws
@@ -1158,8 +1271,13 @@ if (require.main === module) {
 module.exports = {
   main,
   detectStandardRnLayoutRedirect,
+  determineVersion,
   findInjectedXcodeproj,
+  generateAutolinkingConfigOrFailClosed,
+  parseArgs,
   resolveAction,
+  resolveConfigCommandToPin,
+  resolveExplicitConfigCommand,
   shouldAutoDeintegrate,
   ensureBothArtifactFlavors,
 };

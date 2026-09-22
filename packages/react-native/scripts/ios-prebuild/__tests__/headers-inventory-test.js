@@ -24,7 +24,7 @@ test('fork inventory retains stable dispatcher paths and macOS headers without c
     'HostPlatformViewProps',
     'HostPlatformViewTraitsInitializer',
   ]) {
-    expect(byPath.get(`${base}${name}.h`).identities[0].source).toBe(
+    expect(byPath.get(`${base}${name}.h`)?.identities[0].source).toBe(
       `ReactCommon/${base}${name}.h`,
     );
     expect(byPath.has(`${base}platform/macos/${base}${name}.h`)).toBe(true);

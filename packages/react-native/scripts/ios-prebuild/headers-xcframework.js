@@ -41,26 +41,6 @@ export type StubSlice = {
 };
 */
 
-const DEFAULT_STUB_SLICES /*: Array<StubSlice> */ = [
-  {name: 'ios', sdk: 'iphoneos', targets: ['arm64-apple-ios15.0']},
-  {
-    name: 'ios-simulator',
-    sdk: 'iphonesimulator',
-    targets: [
-      'arm64-apple-ios15.0-simulator',
-      'x86_64-apple-ios15.0-simulator',
-    ],
-  },
-];
-
-// Mac Catalyst slice — used by the real compose (the cached-artifact
-// repackage path skips it to stay fast; React.xcframework carries it).
-const CATALYST_STUB_SLICE /*: StubSlice */ = {
-  name: 'mac-catalyst',
-  sdk: 'macosx',
-  targets: ['arm64-apple-ios15.0-macabi', 'x86_64-apple-ios15.0-macabi'],
-};
-
 // SupportedPlatform(+variant) from an xcframework Info.plist -> stub recipe.
 // The min OS version in the triple only shapes the stub object file; slice
 // identity (what create-xcframework groups by) comes from platform + variant
@@ -110,24 +90,60 @@ function stubSlicesFromXcframework(
       `headers-xcframework: failed to parse Info.plist of ${xcfwPath}: ${message}`,
     );
   }
+  if (
+    !Array.isArray(plist?.AvailableLibraries) ||
+    plist.AvailableLibraries.length === 0
+  ) {
+    throw new Error(
+      `headers-xcframework: ${xcfwPath} must have a non-empty AvailableLibraries array.`,
+    );
+  }
+  const seen /*: Set<string> */ = new Set();
   return plist.AvailableLibraries.map(lib => {
+    if (
+      lib == null ||
+      typeof lib.SupportedPlatform !== 'string' ||
+      lib.SupportedPlatform.length === 0 ||
+      (lib.SupportedPlatformVariant !== undefined &&
+        (typeof lib.SupportedPlatformVariant !== 'string' ||
+          lib.SupportedPlatformVariant.length === 0))
+    ) {
+      throw new Error(
+        `headers-xcframework: invalid platform metadata in ${xcfwPath}.`,
+      );
+    }
     const key =
       lib.SupportedPlatformVariant != null
         ? `${lib.SupportedPlatform}-${lib.SupportedPlatformVariant}`
         : lib.SupportedPlatform;
-    const recipe = PLATFORM_STUB_RECIPES[key];
-    if (recipe == null) {
+    if (!Object.hasOwn(PLATFORM_STUB_RECIPES, key)) {
       throw new Error(
         `headers-xcframework: no stub recipe for slice '${key}' of ` +
           `${xcfwPath}. Add it to PLATFORM_STUB_RECIPES.`,
       );
     }
+    const recipe = PLATFORM_STUB_RECIPES[key];
+    const archs = lib.SupportedArchitectures;
+    if (
+      !Array.isArray(archs) ||
+      archs.length === 0 ||
+      archs.some(a => typeof a !== 'string' || !/^[A-Za-z0-9_]+$/.test(a)) ||
+      new Set(archs).size !== archs.length
+    ) {
+      throw new Error(
+        `headers-xcframework: invalid SupportedArchitectures for slice '${key}' of ${xcfwPath}.`,
+      );
+    }
+    if (seen.has(key)) {
+      throw new Error(
+        `headers-xcframework: duplicate slice '${key}' of ${xcfwPath}.`,
+      );
+    }
+    seen.add(key);
     return {
       name: key,
       sdk: recipe.sdk,
-      targets: lib.SupportedArchitectures.map(
-        a => `${a}-apple-${recipe.os}${recipe.suffix}`,
-      ),
+      targets: archs.map(a => `${a}-apple-${recipe.os}${recipe.suffix}`),
     };
   });
 }
@@ -144,6 +160,9 @@ function composeHeadersOnlyXcframework(
   stage /*: string */,
   slices /*: Array<StubSlice> */,
 ) /*: string */ {
+  if (!Array.isArray(slices) || slices.length === 0) {
+    throw new Error(`headers-xcframework: ${name} requires non-empty slices.`);
+  }
   const work = fs.mkdtempSync(path.join(outDir, '.stub-work-'));
   // try/finally so an xcrun/xcodebuild failure mid-compose doesn't leave the
   // .stub-work-* staging dir behind in outDir.
@@ -273,8 +292,6 @@ function buildDepsHeadersXcframework(
 }
 
 module.exports = {
-  CATALYST_STUB_SLICE,
-  DEFAULT_STUB_SLICES,
   DEPS_HEADERS_XCFRAMEWORK_NAME,
   buildDepsHeadersXcframework,
   composeHeadersOnlyXcframework,
