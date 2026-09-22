@@ -53,6 +53,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   savedEnv = Object.fromEntries(envKeys.map(key => [key, process.env[key]]));
   envKeys.forEach(key => delete process.env[key]);
+  process.env.RCT_HERMES_V1_ENABLED = '0';
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-084-test-'));
   artifacts = path.join(tmp, '.build/artifacts/hermes');
   versionFile = path.join(artifacts, 'version.txt');
@@ -122,7 +123,7 @@ function releaseUrl(version) {
   return `https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-debug.tar.gz`;
 }
 
-test.each([undefined, '0', '', 'true'])(
+test.each(['0'])(
   'selected legacy sentinel builds from the merge-base helper with flag %s',
   async flag => {
     if (flag != null) {
@@ -153,18 +154,25 @@ test.each([undefined, '0', '', 'true'])(
   },
 );
 
-test('flag 1 downloads concrete V1 metadata without a source tag lookup', async () => {
-  process.env.RCT_HERMES_V1_ENABLED = '1';
-  await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
-  expect(global.fetch.mock.calls).toEqual([
-    [releaseUrl('250829098.0.1'), {method: 'HEAD'}],
-    [releaseUrl('250829098.0.1')],
-  ]);
-  expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
-  expect(fs.readFileSync.mock.calls.map(([file]) => file)).toEqual([
-    propertiesPath,
-  ]);
-});
+test.each([undefined, '1', '', 'true'])(
+  'flag %s downloads concrete V1 metadata without a source tag lookup',
+  async flag => {
+    if (flag == null) {
+      delete process.env.RCT_HERMES_V1_ENABLED;
+    } else {
+      process.env.RCT_HERMES_V1_ENABLED = flag;
+    }
+    await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
+    expect(global.fetch.mock.calls).toEqual([
+      [releaseUrl('250829098.0.1'), {method: 'HEAD'}],
+      [releaseUrl('250829098.0.1')],
+    ]);
+    expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
+    expect(fs.readFileSync.mock.calls.map(([file]) => file)).toEqual([
+      propertiesPath,
+    ]);
+  },
+);
 
 test('concrete legacy metadata stays an artifact pin on RN main', async () => {
   properties = 'HERMES_VERSION_NAME=0.14.0';

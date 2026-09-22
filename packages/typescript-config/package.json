@@ -1,6 +1,6 @@
 {
   "name": "@react-native/typescript-config",
-  "version": "0.84.0-main",
+  "version": "0.84.1",
   "private": true,
   "description": "Default TypeScript configuration for React Native apps",
   "license": "MIT",
