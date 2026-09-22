@@ -5,11 +5,11 @@ on:
 
 jobs:
   resolve-hermes:
-    name: "Resolve Hermes"
+    name: 'Resolve Hermes'
     uses: ./.github/workflows/microsoft-resolve-hermes.yml
 
   build:
-    name: "Build ${{ matrix.platform }}"
+    name: 'Build ${{ matrix.platform }}'
     needs: [resolve-hermes]
     runs-on: macos-26
     timeout-minutes: 60
@@ -90,7 +90,7 @@ jobs:
           path: packages/react-native/.build/output/spm/Debug/Build/Products
 
   compose-xcframework:
-    name: "Compose XCFramework (Debug)"
+    name: 'Compose XCFramework (Debug)'
     needs: [build]
     if: ${{ always() && !cancelled() && !failure() }}
     runs-on: macos-26

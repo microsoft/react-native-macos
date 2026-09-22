@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ColorValue} from '../../StyleSheet/StyleSheet';
 import type {AccessibilityState} from '../View/ViewAccessibility';
 import type {TouchableWithoutFeedbackProps} from './TouchableWithoutFeedback';
@@ -19,8 +20,11 @@ import Pressability, {
 import {PressabilityDebugView} from '../../Pressability/PressabilityDebug';
 import StyleSheet, {type ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import Platform from '../../Utilities/Platform';
+import warnOnce from '../../Utilities/warnOnce';
 import * as React from 'react';
 import {cloneElement} from 'react';
+
+export type TouchableHighlightInstance = HostInstance;
 
 type AndroidProps = Readonly<{
   nextFocusDown?: ?number,
@@ -39,30 +43,35 @@ type IOSProps = Readonly<{
 
 type TouchableHighlightBaseProps = Readonly<{
   /**
-   * Determines what the opacity of the wrapped view should be when touch is active.
+   * Opacity of the wrapped view when touch is active. Requires `underlayColor` to be set.
+   *
+   * @default `0.85`
    */
   activeOpacity?: ?number,
+
   /**
-   * The color of the underlay that will show through when the touch is active.
+   * Color of the underlay shown when touch is active.
    */
   underlayColor?: ?ColorValue,
-  /**
-   * @see https://reactnative.dev/docs/view#style
-   */
+
   style?: ?ViewStyleProp,
+
   /**
-   * Called immediately after the underlay is shown
+   * Called immediately after the underlay is shown.
    */
   onShowUnderlay?: ?() => void,
+
   /**
-   * Called immediately after the underlay is hidden
+   * Called immediately after the underlay is hidden.
    */
   onHideUnderlay?: ?() => void,
+
   testOnly_pressed?: ?boolean,
 
-  hostRef?: React.RefSetter<React.ElementRef<typeof View>>,
+  hostRef?: React.RefSetter<TouchableHighlightInstance>,
 }>;
 
+/** @build-types emit-as-interface Uniwind compatibility */
 export type TouchableHighlightProps = Readonly<{
   ...TouchableWithoutFeedbackProps,
   ...AndroidProps,
@@ -80,102 +89,6 @@ type TouchableHighlightState = Readonly<{
   extraStyles: ?ExtraStyles,
 }>;
 
-/**
- * A wrapper for making views respond properly to touches.
- * On press down, the opacity of the wrapped view is decreased, which allows
- * the underlay color to show through, darkening or tinting the view.
- *
- * The underlay comes from wrapping the child in a new View, which can affect
- * layout, and sometimes cause unwanted visual artifacts if not used correctly,
- * for example if the backgroundColor of the wrapped view isn't explicitly set
- * to an opaque color.
- *
- * TouchableHighlight must have one child (not zero or more than one).
- * If you wish to have several child components, wrap them in a View.
- *
- * Example:
- *
- * ```
- * renderButton: function() {
- *   return (
- *     <TouchableHighlight onPress={this._onPressButton}>
- *       <Image
- *         style={styles.button}
- *         source={require('./myButton.png')}
- *       />
- *     </TouchableHighlight>
- *   );
- * },
- * ```
- *
- *
- * ### Example
- *
- * ```ReactNativeWebPlayer
- * import React, { Component } from 'react'
- * import {
- *   AppRegistry,
- *   StyleSheet,
- *   TouchableHighlight,
- *   Text,
- *   View,
- * } from 'react-native'
- *
- * class App extends Component {
- *   constructor(props) {
- *     super(props)
- *     this.state = { count: 0 }
- *   }
- *
- *   onPress = () => {
- *     this.setState({
- *       count: this.state.count+1
- *     })
- *   }
- *
- *  render() {
- *     return (
- *       <View style={styles.container}>
- *         <TouchableHighlight
- *          style={styles.button}
- *          onPress={this.onPress}
- *         >
- *          <Text> Touch Here </Text>
- *         </TouchableHighlight>
- *         <View style={[styles.countContainer]}>
- *           <Text style={[styles.countText]}>
- *             { this.state.count !== 0 ? this.state.count: null}
- *           </Text>
- *         </View>
- *       </View>
- *     )
- *   }
- * }
- *
- * const styles = StyleSheet.create({
- *   container: {
- *     flex: 1,
- *     justifyContent: 'center',
- *     paddingHorizontal: 10
- *   },
- *   button: {
- *     alignItems: 'center',
- *     backgroundColor: '#DDDDDD',
- *     padding: 10
- *   },
- *   countContainer: {
- *     alignItems: 'center',
- *     padding: 10
- *   },
- *   countText: {
- *     color: '#FF00FF'
- *   }
- * })
- *
- * AppRegistry.registerComponent('App', () => App)
- * ```
- *
- */
 class TouchableHighlightImpl extends React.Component<
   TouchableHighlightProps,
   TouchableHighlightState,
@@ -304,6 +217,13 @@ class TouchableHighlightImpl extends React.Component<
 
   render(): React.Node {
     const child = React.Children.only<$FlowFixMe>(this.props.children);
+    if (__DEV__ && child.type === React.Fragment) {
+      warnOnce(
+        'TouchableHighlight-fragment',
+        'TouchableHighlight does not support React.Fragment as a child. ' +
+          'Wrap the children in a single host element such as <View>.',
+      );
+    }
 
     // BACKWARD-COMPATIBILITY: Focus and blur events were never supported before
     // adopting `Pressability`, so preserve that behavior.
@@ -395,12 +315,14 @@ class TouchableHighlightImpl extends React.Component<
         // macOS]
         ref={this.props.hostRef}
         {...eventHandlersWithoutBlurAndFocus}>
-        {cloneElement(child, {
-          style: StyleSheet.compose(
-            child.props.style,
-            this.state.extraStyles?.child,
-          ),
-        })}
+        {child.type === React.Fragment
+          ? child
+          : cloneElement(child, {
+              style: StyleSheet.compose(
+                child.props.style,
+                this.state.extraStyles?.child,
+              ),
+            })}
         {__DEV__ ? (
           <PressabilityDebugView color="green" hitSlop={this.props.hitSlop} />
         ) : null}
@@ -429,14 +351,25 @@ class TouchableHighlightImpl extends React.Component<
   }
 }
 
+/**
+ * A wrapper for making views respond properly to touches. On press down, the opacity of the wrapped view is decreased, which allows the underlay color to show through, darkening or tinting the view.
+ *
+ * The underlay comes from wrapping the child in a new View, which can affect layout.
+ *
+ * Must have exactly one child (not zero or more than one). If you wish to have several child components, wrap them in a View.
+ *
+ * If you need more extensive and future-proof touch handling, use `Pressable`.
+ *
+ * @see https://reactnative.dev/docs/touchablehighlight
+ */
 const TouchableHighlight: component(
-  ref?: React.RefSetter<React.ElementRef<typeof View>>,
+  ref?: React.RefSetter<TouchableHighlightInstance>,
   ...props: Readonly<Omit<TouchableHighlightProps, 'hostRef'>>
 ) = ({
   ref: hostRef,
   ...props
 }: {
-  ref?: React.RefSetter<React.ElementRef<typeof View>>,
+  ref?: React.RefSetter<TouchableHighlightInstance>,
   ...Readonly<Omit<TouchableHighlightProps, 'hostRef'>>,
 }) => <TouchableHighlightImpl {...props} hostRef={hostRef} />;
 

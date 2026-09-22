@@ -21,21 +21,21 @@ import * as React from 'react';
 import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
 import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
-type Event = $ReadOnly<{
-  values: $ReadOnlyArray<Int32>,
-  boolValues: $ReadOnlyArray<boolean>,
-  floats: $ReadOnlyArray<Float>,
-  doubles: $ReadOnlyArray<Double>,
-  yesNos: $ReadOnlyArray<'yep' | 'nope'>,
-  strings: $ReadOnlyArray<string>,
-  latLons: $ReadOnlyArray<{lat: Double, lon: Double}>,
-  multiArrays: $ReadOnlyArray<$ReadOnlyArray<Int32>>,
+type Event = Readonly<{
+  values: ReadonlyArray<Int32>,
+  boolValues: ReadonlyArray<boolean>,
+  floats: ReadonlyArray<Float>,
+  doubles: ReadonlyArray<Double>,
+  yesNos: ReadonlyArray<'yep' | 'nope'>,
+  strings: ReadonlyArray<string>,
+  latLons: ReadonlyArray<{lat: Double, lon: Double}>,
+  multiArrays: ReadonlyArray<ReadonlyArray<Int32>>,
 }>;
 
-type NativeProps = $ReadOnly<{
+type NativeProps = Readonly<{
   ...ViewProps,
   opacity?: Float,
-  values: $ReadOnlyArray<Int32>,
+  values: ReadonlyArray<Int32>,
 
   // Events
   onIntArrayChanged?: ?BubblingEventHandler<Event>,
@@ -44,7 +44,7 @@ type NativeProps = $ReadOnly<{
 export type NativeComponentType = HostComponent<NativeProps>;
 
 interface NativeCommands {
-  +changeBackgroundColor: (
+  readonly changeBackgroundColor: (
     viewRef: React.ElementRef<NativeComponentType>,
     color: string,
   ) => void;
@@ -54,6 +54,6 @@ export const Commands: NativeCommands = codegenNativeCommands<NativeCommands>({
   supportedCommands: ['changeBackgroundColor'],
 });
 
-export default (codegenNativeComponent<NativeProps>(
+export default codegenNativeComponent<NativeProps>(
   'SampleNativeComponent',
-): NativeComponentType);
+) as NativeComponentType;

@@ -265,7 +265,7 @@ internal class MountingManager(
       return
     }
 
-    getSurfaceManagerForViewEnforced(reactTag).storeSynchronousMountPropsOverride(reactTag, props)
+    getSurfaceManagerForView(reactTag)?.storeSynchronousMountPropsOverride(reactTag, props)
   }
 
   @UiThread
@@ -275,7 +275,7 @@ internal class MountingManager(
       return
     }
 
-    getSurfaceManagerForViewEnforced(reactTag).updatePropsSynchronously(reactTag, props)
+    getSurfaceManagerForView(reactTag)?.updatePropsSynchronously(reactTag, props)
   }
 
   /**
@@ -327,7 +327,7 @@ internal class MountingManager(
               attachmentsPositions,
           )
 
-  fun enqueuePendingEvent(
+  fun dispatchEvent(
       surfaceId: Int,
       reactTag: Int,
       eventName: String,
@@ -338,22 +338,16 @@ internal class MountingManager(
   ) {
     val smm = getSurfaceMountingManager(surfaceId, reactTag)
     if (smm == null) {
-      FLog.d(
+      FLog.i(
           TAG,
-          "Cannot queue event without valid surface mounting manager for tag: %d, surfaceId: %d",
+          "Unable to invoke event %s for tag [%d] in surfaceId [%d]",
+          eventName,
           reactTag,
           surfaceId,
       )
       return
     }
-    smm.enqueuePendingEvent(
-        reactTag,
-        eventName,
-        canCoalesceEvent,
-        params,
-        eventCategory,
-        eventTimestamp,
-    )
+    smm.dispatchEvent(reactTag, eventName, canCoalesceEvent, params, eventCategory, eventTimestamp)
   }
 
   private fun getSurfaceMountingManager(surfaceId: Int, reactTag: Int): SurfaceMountingManager? =

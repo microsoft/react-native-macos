@@ -140,14 +140,14 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
 
 #if !TARGET_OS_TV
 // Required for the remoteNotificationsRegistered event.
-- (void)application:(__unused RCTPlatformApplication *)application
+- (void)application:(__unused UIApplication *)application
     didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
   [RCTPushNotificationManager didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
 }
 
 // Required for the remoteNotificationRegistrationError event.
-- (void)application:(__unused RCTPlatformApplication *)application
+- (void)application:(__unused UIApplication *)application
     didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
 {
   [RCTPushNotificationManager didFailToRegisterForRemoteNotificationsWithError:error];
@@ -183,13 +183,6 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
   completionHandler();
 }
 #endif
-
-#pragma mark - New Arch Enabled settings
-
-- (BOOL)newArchEnabled
-{
-  return YES;
-}
 
 #pragma mark - RCTComponentViewFactoryComponentProvider
 

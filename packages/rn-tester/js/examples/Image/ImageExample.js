@@ -11,25 +11,43 @@
 'use strict';
 
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
+import type {PlatformTestComponentBaseProps} from '../Experimental/PlatformTest/RNTesterPlatformTestTypes';
 import type {ImageProps, LayoutChangeEvent} from 'react-native';
 
 import RNTesterButton from '../../components/RNTesterButton';
 import RNTesterText from '../../components/RNTesterText';
+import RNTesterPlatformTest from '../Experimental/PlatformTest/RNTesterPlatformTest';
 import ImageCapInsetsExample from './ImageCapInsetsExample';
 import * as React from 'react';
 import {useEffect, useState} from 'react';
-import {Image, ImageBackground, StyleSheet, Text, View} from 'react-native';
-import {Platform} from 'react-native'; // [macOS]
+import {
+  Image,
+  ImageBackground,
+  PixelRatio,
+  Platform,
+  // [macOS]
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+const ALPHA_PNG_ASSET = require('../../assets/alpha-hotdog.png');
 
 const IMAGE1 =
   'https://www.facebook.com/assets/fb_lite_messaging/E2EE-settings@3x.png';
 const IMAGE2 =
   'https://www.facebook.com/ar_effect/external_textures/648609739826677.png';
-
 const base64Icon =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEsAAABLCAQAAACSR7JhAAADtUlEQVR4Ac3YA2Bj6QLH0XPT1Fzbtm29tW3btm3bfLZtv7e2ObZnms7d8Uw098tuetPzrxv8wiISrtVudrG2JXQZ4VOv+qUfmqCGGl1mqLhoA52oZlb0mrjsnhKpgeUNEs91Z0pd1kvihA3ULGVHiQO2narKSHKkEMulm9VgUyE60s1aWoMQUbpZOWE+kaqs4eLEjdIlZTcFZB0ndc1+lhB1lZrIuk5P2aib1NBpZaL+JaOGIt0ls47SKzLC7CqrlGF6RZ09HGoNy1lYl2aRSWL5GuzqWU1KafRdoRp0iOQEiDzgZPnG6DbldcomadViflnl/cL93tOoVbsOLVM2jylvdWjXolWX1hmfZbGR/wjypDjFLSZIRov09BgYmtUqPQPlQrPapecLgTIy0jMgPKtTeob2zWtrGH3xvjUkPCtNg/tm1rjwrMa+mdUkPd3hWbH0jArPGiU9ufCsNNWFZ40wpwn+62/66R2RUtoso1OB34tnLOcy7YB1fUdc9e0q3yru8PGM773vXsuZ5YIZX+5xmHwHGVvlrGPN6ZSiP1smOsMMde40wKv2VmwPPVXNut4sVpUreZiLBHi0qln/VQeI/LTMYXpsJtFiclUN+5HVZazim+Ky+7sAvxWnvjXrJFneVtLWLyPJu9K3cXLWeOlbMTlrIelbMDlrLenrjEQOtIF+fuI9xRp9ZBFp6+b6WT8RrxEpdK64BuvHgDk+vUy+b5hYk6zfyfs051gRoNO1usU12WWRWL73/MMEy9pMi9qIrR4ZpV16Rrvduxazmy1FSvuFXRkqTnE7m2kdb5U8xGjLw/spRr1uTov4uOgQE+0N/DvFrG/Jt7i/FzwxbA9kDanhf2w+t4V97G8lrT7wc08aA2QNUkuTfW/KimT01wdlfK4yEw030VfT0RtZbzjeMprNq8m8tnSTASrTLti64oBNdpmMQm0eEwvfPwRbUBywG5TzjPCsdwk3IeAXjQblLCoXnDVeoAz6SfJNk5TTzytCNZk/POtTSV40NwOFWzw86wNJRpubpXsn60NJFlHeqlYRbslqZm2jnEZ3qcSKgm0kTli3zZVS7y/iivZTweYXJ26Y+RTbV1zh3hYkgyFGSTKPfRVbRqWWVReaxYeSLarYv1Qqsmh1s95S7G+eEWK0f3jYKTbV6bOwepjfhtafsvUsqrQvrGC8YhmnO9cSCk3yuY984F1vesdHYhWJ5FvASlacshUsajFt2mUM9pqzvKGcyNJW0arTKN1GGGzQlH0tXwLDgQTurS8eIQAAAABJRU5ErkJggg==';
 const IMAGE_PREFETCH_URL = `${IMAGE1}?r=1&t=${Date.now()}`;
 const prefetchTask = Image.prefetch(IMAGE_PREFETCH_URL);
+// Remote JPEG (RN OSS test fixture) used by the progressive example. Trusted by
+// the API 24 Android CI emulator and reachable on both platforms.
+const LARGE_JPEG =
+  'https://www.facebook.com/assets/react_native_oss_tests/large-image@1x.jpg';
+// Display-P3 wide-gamut sample (WebKit color-gamut test image).
+const WIDE_GAMUT_P3_URL =
+  'https://webkit.org/blog-files/color-gamut/Webkit-logo-P3.png';
 
 type ImageSource = Readonly<{
   uri: string,
@@ -568,7 +586,7 @@ class OnPartialLoadExample extends React.Component<
         </RNTesterText>
         <Image
           source={{
-            uri: `https://images.pexels.com/photos/671557/pexels-photo-671557.jpeg?&buster=${Math.random()}`,
+            uri: `https://www.facebook.com/assets/react_native_oss_tests/large-image@1x.jpg&buster=${Math.random()}`,
           }}
           onPartialLoad={this.partialLoadHandler}
           style={styles.base}
@@ -592,6 +610,76 @@ const VectorDrawableExample = () => {
           tintColor="red"
         />
       </View>
+    </View>
+  );
+};
+
+const VectorDrawableGetSizeExample = () => {
+  const [results, setResults] = useState<
+    Array<{name: string, status: string, width?: number, height?: number}>,
+  >([]);
+
+  const testResources = [
+    {name: 'ic_vector_test_24', label: 'VectorDrawable (24dp circle)'},
+    {
+      name: 'ic_launcher_foreground',
+      label: 'VectorDrawable (108dp React logo)',
+    },
+    {name: 'ic_launcher_background', label: 'VectorDrawable (108dp grid)'},
+    {name: 'ic_menu_black_24dp', label: 'PNG drawable (24dp menu icon)'},
+    {
+      name: 'ic_settings_black_48dp',
+      label: 'PNG drawable (48dp settings icon)',
+    },
+    {name: 'nonexistent_drawable', label: 'Non-existent resource'},
+  ];
+
+  const runTest = () => {
+    setResults([]);
+    const scale = PixelRatio.get();
+    testResources.forEach(({name, label}) => {
+      Image.getSize(
+        name,
+        (width, height) => {
+          setResults(prev => [
+            ...prev,
+            {
+              name: label,
+              status: 'success',
+              width: Math.round(width / scale),
+              height: Math.round(height / scale),
+            },
+          ]);
+        },
+        (error: unknown) => {
+          setResults(prev => [
+            ...prev,
+            {name: label, status: `error: ${String(error)}`},
+          ]);
+        },
+      );
+    });
+  };
+
+  return (
+    <View testID="vector-drawable-getsize-example">
+      <RNTesterButton onPress={runTest}>
+        Run Image.getSize on local drawable resources
+      </RNTesterButton>
+      {results.map((result, index) => (
+        <View key={index} style={styles.getSizeRow}>
+          <RNTesterText style={styles.getSizeLabel}>{result.name}</RNTesterText>
+          {result.status === 'success' ? (
+            <RNTesterText style={styles.getSizeSuccess}>
+              {result.width}x{result.height} dp
+            </RNTesterText>
+          ) : (
+            <RNTesterText style={styles.getSizeError}>
+              {result.status}
+            </RNTesterText>
+          )}
+        </View>
+      ))}
     </View>
   );
 };
@@ -673,6 +761,235 @@ const fullImage: ImageSource = {
 const smallImage = {
   uri: IMAGE1,
 };
+
+const GET_SIZE_TEST_IMAGES: ReadonlyArray<{
+  expectedHeight: number,
+  expectedWidth: number,
+  uri: string,
+  name: string,
+}> = [
+  {
+    expectedHeight: 492,
+    expectedWidth: 960,
+    uri: IMAGE1,
+    name: 'large PNG',
+  },
+  {
+    expectedHeight: 3000,
+    expectedWidth: 4500,
+    uri: 'https://www.facebook.com/assets/react_native_oss_tests/large-image@1x.jpg',
+    name: 'large JPEG with density 2',
+  },
+  {
+    expectedHeight: 1200,
+    expectedWidth: 1800,
+    // Rotated 90 degrees counter-clockwise
+    uri: 'https://www.facebook.com/assets/react_native_oss_tests/exif-6@1x.jpg',
+    name: 'EXIF rotated JPEG',
+  },
+];
+
+function getImageSize(uri: string): Promise<{height: number, width: number}> {
+  return new Promise((resolve, reject) => {
+    Image.getSize(uri, (width, height) => resolve({height, width}), reject);
+  });
+}
+
+function ImageGetSizePlatformTest(props: PlatformTestComponentBaseProps) {
+  const {harness} = props;
+  const asyncTest = harness.useAsyncTest(
+    'Image.getSize resolves source dimensions',
+    30000,
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all(
+      GET_SIZE_TEST_IMAGES.map(image =>
+        getImageSize(image.uri).then(size => ({image, size})),
+      ),
+    )
+      .then(results => {
+        if (cancelled) {
+          return;
+        }
+
+        for (const result of results) {
+          asyncTest.step(({assert_equals}) => {
+            assert_equals(
+              result.size.width,
+              result.image.expectedWidth,
+              `${result.image.name} width`,
+            );
+            assert_equals(
+              result.size.height,
+              result.image.expectedHeight,
+              `${result.image.name} height`,
+            );
+          });
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          asyncTest.step(({assert_true}) => {
+            assert_true(false, `Image.getSize failed: ${String(error)}`);
+          });
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          asyncTest.done();
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [asyncTest]);
+
+  return (
+    <RNTesterText>
+      Calling Image.getSize for {GET_SIZE_TEST_IMAGES.length} remote images.
+    </RNTesterText>
+  );
+}
+
+function ProgressiveJpegExample(): React.Node {
+  const [loadStarted, setLoadStarted] = useState(false);
+  const [progress, setProgress] = useState<?number>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [uri] = useState(() => `${LARGE_JPEG}?progressive=${Date.now()}`);
+  return (
+    <View testID="image-progressive-jpeg">
+      <Image
+        testID="progressive-jpeg-image"
+        style={styles.base}
+        source={{uri}}
+        progressiveRenderingEnabled={true}
+        onLoadStart={() => setLoadStarted(true)}
+        onProgress={event => {
+          const {loaded: bytesLoaded, total} = event.nativeEvent;
+          if (total > 0) {
+            setProgress(Math.round((bytesLoaded / total) * 100));
+          }
+        }}
+        onLoad={() => setLoaded(true)}
+      />
+      {loadStarted ? (
+        <RNTesterText testID="progressive-jpeg-loadstart">
+          loadStart
+        </RNTesterText>
+      ) : null}
+      {progress != null ? (
+        <RNTesterText testID="progressive-jpeg-progress">
+          progress {progress}%
+        </RNTesterText>
+      ) : null}
+      {loaded ? (
+        <RNTesterText testID="progressive-jpeg-load">load</RNTesterText>
+      ) : null}
+    </View>
+  );
+}
+
+function BlurRadiusPrefetchExample(): React.Node {
+  const [uri] = useState(() => `${IMAGE2}?blurPrefetch=${Date.now()}`);
+  const [prefetchStatus, setPrefetchStatus] = useState('pending');
+  const [loadStatus, setLoadStatus] = useState('pending');
+
+  useEffect(() => {
+    let cancelled = false;
+    void Image.prefetch(uri).then(
+      () => {
+        if (!cancelled) {
+          setPrefetchStatus('ok');
+        }
+      },
+      () => {
+        if (!cancelled) {
+          setPrefetchStatus('failed');
+        }
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [uri]);
+
+  return (
+    <View testID="image-blur-prefetch">
+      <RNTesterText testID="blur-prefetch-prefetch-status">
+        prefetch: {prefetchStatus}
+      </RNTesterText>
+      {prefetchStatus === 'ok' ? (
+        <Image
+          testID="blur-prefetch-image"
+          style={styles.base}
+          source={{uri}}
+          blurRadius={15}
+          onLoad={() => setLoadStatus('loaded')}
+          onError={() => setLoadStatus('error')}
+        />
+      ) : null}
+      <RNTesterText testID="blur-prefetch-load-status">
+        blurred image: {loadStatus}
+      </RNTesterText>
+    </View>
+  );
+}
+
+function WideGamutTransparencyExample(): React.Node {
+  const [alphaStatus, setAlphaStatus] = useState('loading');
+  const [srgbStatus, setSrgbStatus] = useState('loading');
+  const [p3Status, setP3Status] = useState('loading');
+  return (
+    <View testID="image-wide-gamut">
+      <RNTesterText style={styles.sectionText}>
+        Alpha / transparency
+      </RNTesterText>
+      <View style={styles.checkerBackground}>
+        <Image
+          testID="wide-gamut-alpha-image"
+          style={styles.base}
+          source={ALPHA_PNG_ASSET}
+          onLoad={() => setAlphaStatus('loaded')}
+          onError={() => setAlphaStatus('error')}
+        />
+      </View>
+      <RNTesterText testID="wide-gamut-alpha-status">
+        alpha: {alphaStatus}
+      </RNTesterText>
+      <RNTesterText style={styles.sectionText}>sRGB vs Display-P3</RNTesterText>
+      <View style={styles.horizontal}>
+        <View>
+          <RNTesterText style={styles.resizeModeText}>sRGB</RNTesterText>
+          <Image
+            testID="wide-gamut-srgb-image"
+            style={styles.base}
+            source={smallImage}
+            onLoad={() => setSrgbStatus('loaded')}
+            onError={() => setSrgbStatus('error')}
+          />
+        </View>
+        <View style={styles.leftMargin}>
+          <RNTesterText style={styles.resizeModeText}>Display-P3</RNTesterText>
+          <Image
+            testID="wide-gamut-p3-image"
+            style={styles.base}
+            source={{uri: WIDE_GAMUT_P3_URL}}
+            onLoad={() => setP3Status('loaded')}
+            onError={() => setP3Status('error')}
+          />
+        </View>
+      </View>
+      <RNTesterText testID="wide-gamut-srgb-status">
+        sRGB: {srgbStatus}
+      </RNTesterText>
+      <RNTesterText testID="wide-gamut-p3-status">P3: {p3Status}</RNTesterText>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   base: {
@@ -899,6 +1216,22 @@ const styles = StyleSheet.create({
     height: 64,
     width: 64,
   },
+  getSizeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  getSizeLabel: {
+    flex: 1,
+  },
+  getSizeSuccess: {
+    color: 'green',
+    fontWeight: 'bold',
+  },
+  getSizeError: {
+    color: 'red',
+  },
   resizedImage: {
     height: 100,
     width: '500%',
@@ -907,6 +1240,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     marginTop: 10,
+  },
+  checkerBackground: {
+    backgroundColor: '#cccccc',
+    padding: 4,
+    alignSelf: 'flex-start',
   },
 });
 
@@ -1566,6 +1904,18 @@ exports.examples = [
     },
   },
   {
+    title: 'Image.getSize',
+    render: function (): React.Node {
+      return (
+        <RNTesterPlatformTest
+          title="Image.getSize"
+          description="Calls Image.getSize and verifies the source dimensions returned by native image metadata."
+          component={ImageGetSizePlatformTest}
+        />
+      );
+    },
+  },
+  {
     title: 'MultipleSourcesExample',
     description:
       ('The `source` prop allows passing in an array of uris, so that native to choose which image ' +
@@ -1711,6 +2061,16 @@ exports.examples = [
     platform: 'android',
   },
   {
+    title: 'Image.getSize with local drawables',
+    name: 'vector-drawable-getsize',
+    description:
+      'Calls Image.getSize() on Android drawable resource names (both VectorDrawable and raster PNG) and displays dimensions in density-independent pixels (dp).',
+    render: function (): React.Node {
+      return <VectorDrawableGetSizeExample />;
+    },
+    platform: 'android',
+  },
+  {
     title: 'Large image with different resize methods',
     name: 'resize-method',
     description:
@@ -1749,5 +2109,33 @@ exports.examples = [
       );
     },
     platform: 'android',
+  },
+  {
+    title: 'Progressive JPEG',
+    name: 'progressive-jpeg',
+    description:
+      'Loads a JPEG with progressiveRenderingEnabled and logs progress/load events.',
+    render: function (): React.Node {
+      return <ProgressiveJpegExample />;
+    },
+    platform: 'android',
+  },
+  {
+    title: 'Blur Radius with Prefetch',
+    name: 'blur-radius-prefetch',
+    description:
+      'Prefetches then renders the same URI with blurRadius to ensure the blur postprocessor is applied on prefetched images.',
+    render: function (): React.Node {
+      return <BlurRadiusPrefetchExample />;
+    },
+  },
+  {
+    title: 'Wide Gamut and Transparency',
+    name: 'wide-gamut',
+    description:
+      'Alpha transparency and sRGB vs Display-P3 comparison targets for screenshot tests.',
+    render: function (): React.Node {
+      return <WideGamutTransparencyExample />;
+    },
   },
 ] as Array<RNTesterModuleExample>;
