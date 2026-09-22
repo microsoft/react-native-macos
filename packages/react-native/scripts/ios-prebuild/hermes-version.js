@@ -41,8 +41,8 @@ function selectHermesMetadata(
       useV1 = hermesV1Enabled !== '0';
       break;
     case 'single':
-      useV1 = false;
-      break;
+      // 0.87 uses one artifact key but retains upstream's V1 source tag file.
+      return {versionKey: 'HERMES_VERSION_NAME', tagFile: '.hermesv1version'};
     default:
       throw new Error(`Unknown Hermes metadata policy: ${policy}`);
   }

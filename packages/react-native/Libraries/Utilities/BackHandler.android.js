@@ -37,41 +37,25 @@ RCTDeviceEventEmitter.addListener(DEVICE_BACK_EVENT, function (nativeEvent) {
 });
 
 /**
- * Detect hardware button presses for back navigation.
+ * Detects hardware button presses for back navigation and lets you register
+ * event listeners for the system's back action. Event subscriptions are called
+ * in reverse order (i.e. last registered subscription first). If one
+ * subscription returns `true`, earlier subscriptions are not called.
  *
- * Android: Detect hardware back button presses, and programmatically invoke the default back button
- * functionality to exit the app if there are no listeners or if none of the listeners return true.
- *
- * iOS: Not applicable.
- *
- * macOS: Not applicable.
- *
- * The event subscriptions are called in reverse order (i.e. last registered subscription first),
- * and if one subscription returns true then subscriptions registered earlier will not be called.
- *
- * Example:
- *
- * ```javascript
- * BackHandler.addEventListener('hardwareBackPress', function() {
- *  // this.onMainScreen and this.goBack are just examples, you need to use your own implementation here
- *  // Typically you would use the navigator here to go to the last state.
- *
- *  if (!this.onMainScreen()) {
- *    this.goBack();
- *    return true;
- *  }
- *  return false;
- * });
- * ```
+ * @see https://reactnative.dev/docs/backhandler
+ * @platform android
  */
 type TBackHandler = {
-  +exitApp: () => void,
-  +addEventListener: (
+  readonly exitApp: () => void,
+  readonly addEventListener: (
     eventName: BackPressEventName,
     handler: BackPressHandler,
   ) => {remove: () => void, ...},
 };
 const BackHandler: TBackHandler = {
+  /**
+   * Programmatically exit the app.
+   */
   exitApp: function (): void {
     if (!NativeDeviceEventManager) {
       return;
@@ -81,9 +65,8 @@ const BackHandler: TBackHandler = {
   },
 
   /**
-   * Adds an event handler. Supported events:
-   *
-   * - `hardwareBackPress`: Fires when the Android hardware back button is pressed.
+   * Listen for the `hardwareBackPress` event. The handler should return `true`
+   * to prevent the event from bubbling to earlier registered listeners.
    */
   addEventListener: function (
     eventName: BackPressEventName,

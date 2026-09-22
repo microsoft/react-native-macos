@@ -9,7 +9,6 @@
 
 #include <algorithm>
 
-#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/components/view/accessibilityPropsConversions.h>
 #include <react/renderer/components/view/conversions.h>
 #include <react/renderer/components/view/propsConversions.h>
@@ -25,151 +24,84 @@ HostPlatformViewProps::HostPlatformViewProps(
     const RawProps& rawProps,
     const std::function<bool(const std::string&)>& filterObjectKeys)
     : BaseViewProps(context, sourceProps, rawProps, filterObjectKeys),
-      elevation(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.elevation
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "elevation",
-                    sourceProps.elevation,
-                    {})),
-      nativeBackground(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.nativeBackground
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "nativeBackgroundAndroid",
-                    sourceProps.nativeBackground,
-                    {})),
-      nativeForeground(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.nativeForeground
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "nativeForegroundAndroid",
-                    sourceProps.nativeForeground,
-                    {})),
-      focusable(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.focusable
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "focusable",
-                    sourceProps.focusable,
-                    {})),
-      hasTVPreferredFocus(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.hasTVPreferredFocus
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "hasTVPreferredFocus",
-                    sourceProps.hasTVPreferredFocus,
-                    {})),
-      needsOffscreenAlphaCompositing(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.needsOffscreenAlphaCompositing
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "needsOffscreenAlphaCompositing",
-                    sourceProps.needsOffscreenAlphaCompositing,
-                    {})),
-      renderToHardwareTextureAndroid(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.renderToHardwareTextureAndroid
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "renderToHardwareTextureAndroid",
-                    sourceProps.renderToHardwareTextureAndroid,
-                    {})),
-      screenReaderFocusable(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.screenReaderFocusable
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "screenReaderFocusable",
-                    sourceProps.screenReaderFocusable,
-                    {})),
-      nextFocusDown(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.nextFocusDown
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "nextFocusDown",
-                    sourceProps.nextFocusDown,
-                    {})),
-      nextFocusForward(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.nextFocusForward
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "nextFocusForward",
-                    sourceProps.nextFocusForward,
-                    {})),
-      nextFocusLeft(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.nextFocusLeft
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "nextFocusLeft",
-                    sourceProps.nextFocusLeft,
-                    {})),
-      nextFocusRight(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.nextFocusRight
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "nextFocusRight",
-                    sourceProps.nextFocusRight,
-                    {})),
-      nextFocusUp(
-          ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-              ? sourceProps.nextFocusUp
-              : convertRawProp(
-                    context,
-                    rawProps,
-                    "nextFocusUp",
-                    sourceProps.nextFocusUp,
-                    {})) {
-  if (!ReactNativeFeatureFlags::enableCppPropsIteratorSetter()) {
-    if (ReactNativeFeatureFlags::enableNativeViewPropTransformations()) {
-      // tabIndex -> focusable
-      auto* tabIndexValue = rawProps.at("tabIndex", nullptr, nullptr);
-      if (tabIndexValue != nullptr) {
-        if (tabIndexValue->hasValue()) {
-          int tabIndex = 0;
-          fromRawValue(context, *tabIndexValue, tabIndex);
-          focusable = tabIndex == 0;
-        } else {
-          focusable = {};
-        }
-      }
-    }
-  }
-}
-
-#define VIEW_EVENT_CASE(eventType)                      \
-  case CONSTEXPR_RAW_PROPS_KEY_HASH("on" #eventType): { \
-    const auto offset = ViewEvents::Offset::eventType;  \
-    ViewEvents defaultViewEvents{};                     \
-    bool res = defaultViewEvents[offset];               \
-    if (value.hasValue()) {                             \
-      fromRawValue(context, value, res);                \
-    }                                                   \
-    events[offset] = res;                               \
-    return;                                             \
-  }
+      elevation(convertRawProp(
+          context,
+          rawProps,
+          "elevation",
+          sourceProps.elevation,
+          {})),
+      nativeBackground(convertRawProp(
+          context,
+          rawProps,
+          "nativeBackgroundAndroid",
+          sourceProps.nativeBackground,
+          {})),
+      nativeForeground(convertRawProp(
+          context,
+          rawProps,
+          "nativeForegroundAndroid",
+          sourceProps.nativeForeground,
+          {})),
+      focusable(convertRawProp(
+          context,
+          rawProps,
+          "focusable",
+          sourceProps.focusable,
+          {})),
+      hasTVPreferredFocus(convertRawProp(
+          context,
+          rawProps,
+          "hasTVPreferredFocus",
+          sourceProps.hasTVPreferredFocus,
+          {})),
+      needsOffscreenAlphaCompositing(convertRawProp(
+          context,
+          rawProps,
+          "needsOffscreenAlphaCompositing",
+          sourceProps.needsOffscreenAlphaCompositing,
+          {})),
+      renderToHardwareTextureAndroid(convertRawProp(
+          context,
+          rawProps,
+          "renderToHardwareTextureAndroid",
+          sourceProps.renderToHardwareTextureAndroid,
+          {})),
+      screenReaderFocusable(convertRawProp(
+          context,
+          rawProps,
+          "screenReaderFocusable",
+          sourceProps.screenReaderFocusable,
+          {})),
+      nextFocusDown(convertRawProp(
+          context,
+          rawProps,
+          "nextFocusDown",
+          sourceProps.nextFocusDown,
+          {})),
+      nextFocusForward(convertRawProp(
+          context,
+          rawProps,
+          "nextFocusForward",
+          sourceProps.nextFocusForward,
+          {})),
+      nextFocusLeft(convertRawProp(
+          context,
+          rawProps,
+          "nextFocusLeft",
+          sourceProps.nextFocusLeft,
+          {})),
+      nextFocusRight(convertRawProp(
+          context,
+          rawProps,
+          "nextFocusRight",
+          sourceProps.nextFocusRight,
+          {})),
+      nextFocusUp(convertRawProp(
+          context,
+          rawProps,
+          "nextFocusUp",
+          sourceProps.nextFocusUp,
+          {})) {}
 
 void HostPlatformViewProps::setProp(
     const PropsParserContext& context,
@@ -197,19 +129,6 @@ void HostPlatformViewProps::setProp(
     RAW_SET_PROP_SWITCH_CASE_BASIC(nextFocusLeft);
     RAW_SET_PROP_SWITCH_CASE_BASIC(nextFocusRight);
     RAW_SET_PROP_SWITCH_CASE_BASIC(nextFocusUp);
-    case CONSTEXPR_RAW_PROPS_KEY_HASH("tabIndex"): {
-      if (!ReactNativeFeatureFlags::enableNativeViewPropTransformations()) {
-        return;
-      }
-      if (value.hasValue()) {
-        int tabIndex = 0;
-        fromRawValue(context, value, tabIndex);
-        focusable = tabIndex == 0;
-      } else {
-        focusable = defaults.focusable;
-      }
-      return;
-    }
   }
 }
 
@@ -450,8 +369,25 @@ inline static void updateNativeDrawableProp(
       nativeDrawableResult["rippleRadius"] =
           nativeDrawableValue.ripple.rippleRadius.value();
     }
-    if (nativeDrawableValue.ripple.color.has_value()) {
-      nativeDrawableResult["color"] = nativeDrawableValue.ripple.color.value();
+    if (nativeDrawableValue.ripple.color.has_value() ||
+        nativeDrawableValue.ripple.colorResourcePaths.has_value()) {
+      if (nativeDrawableValue.ripple.colorResourcePaths.has_value()) {
+        folly::dynamic resourcePaths = folly::dynamic::array();
+        for (const auto& path :
+             nativeDrawableValue.ripple.colorResourcePaths.value()) {
+          resourcePaths.push_back(path);
+        }
+        folly::dynamic platformColorMap = folly::dynamic::object();
+        platformColorMap["resource_paths"] = resourcePaths;
+        nativeDrawableResult["color"] = platformColorMap;
+      } else {
+        nativeDrawableResult["color"] =
+            toAndroidRepr(nativeDrawableValue.ripple.color.value());
+      }
+      if (nativeDrawableValue.ripple.alpha.has_value()) {
+        nativeDrawableResult["alpha"] =
+            nativeDrawableValue.ripple.alpha.value();
+      }
     }
     nativeDrawableResult["borderless"] = nativeDrawableValue.ripple.borderless;
   } else {
@@ -485,8 +421,9 @@ inline static void updateAccessibilityStateProp(
   }
 
   if (!oldState.has_value() || newState->expanded != oldState->expanded) {
-    resultState["expanded"] =
-        newState->expanded.has_value() && newState->expanded.value();
+    if (newState->expanded.has_value()) {
+      resultState["expanded"] = newState->expanded.value();
+    }
   }
 
   if (!oldState.has_value() || newState->checked != oldState->checked) {
@@ -636,7 +573,7 @@ folly::dynamic HostPlatformViewProps::getDiffProps(
   }
 
   if (backgroundImage != oldProps->backgroundImage) {
-    result["experimental_backgroundImage"] = toDynamic(backgroundImage);
+    result["backgroundImage"] = toDynamic(backgroundImage);
   }
 
   if (mixBlendMode != oldProps->mixBlendMode) {

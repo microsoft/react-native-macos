@@ -544,7 +544,7 @@ const textInputExamples: Array<RNTesterModuleExample> = [
     title: 'Colored highlight/cursor for text input',
     // [macOS
     description:
-      ('Note: On macOS, the selectionColor prop does not change the cursor color.': string),
+      'Note: On macOS, the selectionColor prop does not change the cursor color.' as string,
     // macOS]
     render: function (): React.Node {
       return (

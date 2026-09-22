@@ -61,7 +61,7 @@ function get_mac_deployment_target {
 function build_host_hermesc {
   echo "Building hermesc"
   pushd "$HERMES_PATH" > /dev/null || exit 1
-    cmake -S . -B build_host_hermesc -DJSI_DIR="$JSI_PATH"
+    cmake -S . -B build_host_hermesc -DJSI_DIR="$JSI_PATH" -DCMAKE_BUILD_TYPE="$BUILD_TYPE" # [macOS]
     cmake --build ./build_host_hermesc --target hermesc -j "${NUM_CORES}"
   popd > /dev/null || exit 1
 }
@@ -163,11 +163,15 @@ function build_apple_framework {
     mkdir -p destroot/include/hermes/cdp
     cp API/hermes/cdp/*.h destroot/include/hermes/cdp
 
-    mkdir -p destroot/include/hermes/inspector
-    cp API/hermes/inspector/*.h destroot/include/hermes/inspector
-
-    mkdir -p destroot/include/hermes/inspector/chrome
-    cp API/hermes/inspector/chrome/*.h destroot/include/hermes/inspector/chrome
+    # [macOS] Newer Hermes tags removed the legacy inspector headers; copy only when present.
+    if compgen -G "API/hermes/inspector/*.h" > /dev/null; then
+      mkdir -p destroot/include/hermes/inspector
+      cp API/hermes/inspector/*.h destroot/include/hermes/inspector
+    fi
+    if compgen -G "API/hermes/inspector/chrome/*.h" > /dev/null; then
+      mkdir -p destroot/include/hermes/inspector/chrome
+      cp API/hermes/inspector/chrome/*.h destroot/include/hermes/inspector/chrome
+    fi
 
     mkdir -p destroot/include/jsi
     cp "$JSI_PATH"/jsi/*.h destroot/include/jsi
@@ -193,11 +197,15 @@ function prepare_dest_root_for_ci {
   mkdir -p destroot/include/hermes/cdp
   cp API/hermes/cdp/*.h destroot/include/hermes/cdp
 
-  mkdir -p destroot/include/hermes/inspector
-  cp API/hermes/inspector/*.h destroot/include/hermes/inspector
-
-  mkdir -p destroot/include/hermes/inspector/chrome
-  cp API/hermes/inspector/chrome/*.h destroot/include/hermes/inspector/chrome
+  # [macOS] Newer Hermes tags removed the legacy inspector headers; copy only when present.
+  if compgen -G "API/hermes/inspector/*.h" > /dev/null; then
+    mkdir -p destroot/include/hermes/inspector
+    cp API/hermes/inspector/*.h destroot/include/hermes/inspector
+  fi
+  if compgen -G "API/hermes/inspector/chrome/*.h" > /dev/null; then
+    mkdir -p destroot/include/hermes/inspector/chrome
+    cp API/hermes/inspector/chrome/*.h destroot/include/hermes/inspector/chrome
+  fi
 
   mkdir -p destroot/include/jsi
   cp "$JSI_PATH"/jsi/*.h destroot/include/jsi

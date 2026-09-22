@@ -10,8 +10,8 @@
 #include <react/renderer/core/propsConversions.h>
 
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <react/renderer/core/DynamicPropsUtilities.h>
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
-#include "DynamicPropsUtilities.h"
 
 namespace facebook::react {
 
@@ -19,39 +19,14 @@ Props::Props(
     const PropsParserContext& context,
     const Props& sourceProps,
     const RawProps& rawProps,
-    const std::function<bool(const std::string&)>& filterObjectKeys) {
-  initialize(context, sourceProps, rawProps, filterObjectKeys);
-}
-
-void Props::initialize(
-    const PropsParserContext& context,
-    const Props& sourceProps,
-    const RawProps& rawProps,
     [[maybe_unused]] const std::function<bool(const std::string&)>&
-        filterObjectKeys) {
-  nativeId = ReactNativeFeatureFlags::enableCppPropsIteratorSetter()
-      ? sourceProps.nativeId
-      : convertRawProp(context, rawProps, "nativeID", sourceProps.nativeId, {});
-
-  if (!ReactNativeFeatureFlags::enableCppPropsIteratorSetter()) {
-    if (ReactNativeFeatureFlags::enableNativeViewPropTransformations()) {
-      // id -> nativeId
-      auto* idValue = rawProps.at("id", nullptr, nullptr);
-      if (idValue != nullptr) {
-        if (idValue->hasValue()) {
-          fromRawValue(context, *idValue, nativeId);
-        } else {
-          nativeId = {};
-        }
-      }
-    }
-  }
-#ifdef RN_SERIALIZABLE_STATE
-  if (!ReactNativeFeatureFlags::enableExclusivePropsUpdateAndroid()) {
-    initializeDynamicProps(sourceProps, rawProps, filterObjectKeys);
-  }
-#endif
-}
+        filterObjectKeys)
+    : nativeId(convertRawProp(
+          context,
+          rawProps,
+          "nativeID",
+          sourceProps.nativeId,
+          {})) {}
 
 void Props::setProp(
     const PropsParserContext& context,
@@ -60,12 +35,6 @@ void Props::setProp(
     const RawValue& value) {
   switch (hash) {
     case CONSTEXPR_RAW_PROPS_KEY_HASH("nativeID"):
-      fromRawValue(context, value, nativeId, {});
-      return;
-    case CONSTEXPR_RAW_PROPS_KEY_HASH("id"):
-      if (!ReactNativeFeatureFlags::enableNativeViewPropTransformations()) {
-        return;
-      }
       fromRawValue(context, value, nativeId, {});
       return;
   }

@@ -43,27 +43,17 @@ Pod::Spec.new do |s|
   s.subspec "turbomodule" do |ss|
     ss.dependency "React-callinvoker", version
     ss.dependency "React-perflogger", version
-    ss.dependency "React-cxxreact", version
     ss.dependency "React-jsi", version
     ss.dependency "React-logger", version
     if use_hermes()
       ss.dependency "hermes-engine"
     end
 
-    ss.subspec "bridging" do |sss|
-      sss.dependency           "React-jsi", version
-      sss.source_files         = podspec_sources("react/bridging/**/*.{cpp,h}", "react/bridging/**/*.h")
-      sss.exclude_files        = "react/bridging/tests"
-      sss.header_dir           = "react/bridging"
-      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\"" }
-      if use_hermes()
-        sss.dependency "hermes-engine"
-      end
-    end
-
     ss.subspec "core" do |sss|
       sss.source_files = podspec_sources("react/nativemodule/core/ReactCommon/**/*.{cpp,h}", "react/nativemodule/core/ReactCommon/**/*.h")
       sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\"" }
+      sss.dependency "React-bridging"
+      sss.dependency "React-cxxreact", version
       add_dependency(sss, "React-debug", :version => version)
       add_dependency(sss, "React-featureflags", :version => version)
       add_dependency(sss, "React-utils", :version => version)

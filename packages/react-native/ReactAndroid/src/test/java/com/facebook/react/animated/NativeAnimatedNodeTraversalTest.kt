@@ -27,8 +27,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.kotlin.atMost
 import org.mockito.kotlin.mock
@@ -45,6 +45,12 @@ import org.robolectric.annotation.Config
 @Config(shadows = [ShadowArguments::class])
 @RunWith(RobolectricTestRunner::class)
 class NativeAnimatedNodeTraversalTest {
+
+  @Suppress("UNCHECKED_CAST")
+  private fun <T> capture(captor: ArgumentCaptor<T>): T = captor.capture() ?: null as T
+
+  @Suppress("UNCHECKED_CAST")
+  private fun <T> anyNonNull(): T = org.mockito.ArgumentMatchers.any<T>() ?: null as T
 
   private var frameTimeNanos: Long = 0L
   private lateinit var reactApplicationContextMock: ReactApplicationContext
@@ -97,8 +103,7 @@ class NativeAnimatedNodeTraversalTest {
         }
       }
     }
-    whenever(uiManagerMock.resolveCustomDirectEventName(any(String::class.java))).thenAnswer {
-        invocation ->
+    whenever(uiManagerMock.resolveCustomDirectEventName(anyString())).thenAnswer { invocation ->
       val arg = invocation.arguments[0].toString()
       "on${arg.substring(3)}"
     }
@@ -150,13 +155,32 @@ class NativeAnimatedNodeTraversalTest {
     for (i in 0 until frames.size()) {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
       assertThat(stylesCaptor.value.getDouble("opacity")).isEqualTo(frames.getDouble(i))
     }
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
     verifyNoMoreInteractions(uiManagerMock)
+  }
+
+  @Test
+  fun testUpdateViewSkipsDroppedMappedNode() {
+    // Regression test for #37267: a mapped child node can be dropped (e.g. its
+    // component unmounts during navigation) while the props node still has an
+    // in-flight update. updateView() must skip the missing node instead of
+    // throwing "Mapped property node does not exist".
+    createSimpleAnimatedViewWithOpacity()
+
+    // Drop the mapped style node (id 2) that the props node (id 3) references,
+    // reproducing the teardown race.
+    nativeAnimatedNodesManager.dropAnimatedNode(2)
+    assertThat(nativeAnimatedNodesManager.getNodeById(2)).isNull()
+
+    val propsNode = nativeAnimatedNodesManager.getNodeById(3) as PropsAnimatedNode
+
+    // The missing mapped node is skipped: updateView completes without throwing.
+    propsNode.updateView()
   }
 
   @Test
@@ -179,7 +203,7 @@ class NativeAnimatedNodeTraversalTest {
       for (i in 0 until frames.size()) {
         reset(uiManagerMock)
         nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-        verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+        verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
 
         if (i < frames.size() - 1 || iteration == 1) {
           assertThat(stylesCaptor.value.getDouble("opacity")).isEqualTo(frames.getDouble(i))
@@ -213,7 +237,7 @@ class NativeAnimatedNodeTraversalTest {
       for (i in 0 until frames.size()) {
         reset(uiManagerMock)
         nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-        verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+        verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
         assertThat(stylesCaptor.value.getDouble("opacity")).isEqualTo(frames.getDouble(i))
       }
     }
@@ -294,7 +318,7 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("opacity")).isEqualTo(0.0)
 
     var previousValue: Double = 0.0
@@ -305,7 +329,7 @@ class NativeAnimatedNodeTraversalTest {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
       verify(uiManagerMock, atMost(1))
-          .synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+          .synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
       val currentValue: Double = stylesCaptor.value.getDouble("opacity")
       if (currentValue > 1.0) {
         wasGreaterThanOne = true
@@ -419,7 +443,7 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("opacity")).isEqualTo(0.0)
 
     var previousValue = 0.0
@@ -431,7 +455,7 @@ class NativeAnimatedNodeTraversalTest {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
       verify(uiManagerMock, atMost(1))
-          .synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+          .synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
       val currentValue: Double = stylesCaptor.value.getDouble("opacity")
       if (currentValue > 1.0) {
         wasGreaterThanOne = true
@@ -482,7 +506,7 @@ class NativeAnimatedNodeTraversalTest {
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
     verify(uiManagerMock, atMost(1))
-        .synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+        .synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
     var previousValue: Double = stylesCaptor.value.getDouble("opacity")
     var previousDiff: Double = Double.POSITIVE_INFINITY
     /* run 3 secs of animation */
@@ -490,7 +514,7 @@ class NativeAnimatedNodeTraversalTest {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
       verify(uiManagerMock, atMost(1))
-          .synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+          .synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
       val currentValue: Double = stylesCaptor.value.getDouble("opacity")
       val currentDiff: Double = currentValue - previousValue
       // verify monotonicity
@@ -533,7 +557,7 @@ class NativeAnimatedNodeTraversalTest {
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
     verify(uiManagerMock, atMost(1))
-        .synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+        .synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
     var previousValue: Double = stylesCaptor.value.getDouble("opacity")
     val initialValue: Double = stylesCaptor.value.getDouble("opacity")
     var didComeToRest = false
@@ -543,7 +567,7 @@ class NativeAnimatedNodeTraversalTest {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
       verify(uiManagerMock, atMost(1))
-          .synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+          .synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
       val currentValue: Double = stylesCaptor.value.getDouble("opacity")
       val currentDiff: Double = currentValue - previousValue
       // Test to see if it reset after coming to rest (i.e. dropped back to )
@@ -591,7 +615,7 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(animationCallback)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(animationCallback).invoke(callbackResponseCaptor.capture())
+    verify(animationCallback).invoke(capture(callbackResponseCaptor))
 
     assertThat(callbackResponseCaptor.value.hasKey("finished")).isTrue
     assertThat(callbackResponseCaptor.value.getBoolean("finished")).isTrue
@@ -665,12 +689,12 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("translateX")).isEqualTo(1100.0)
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("translateX")).isEqualTo(1111.0)
 
     reset(uiManagerMock)
@@ -703,12 +727,12 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("translateX")).isEqualTo(1100.0)
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("translateX")).isEqualTo(1101.0)
 
     reset(uiManagerMock)
@@ -752,13 +776,13 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("translateX")).isEqualTo(1100.0)
 
     for (i in 1 until secondFrames.size()) {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture())
+      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), capture(stylesCaptor))
       assertThat(stylesCaptor.value.getDouble("translateX"))
           .isEqualTo(1200.0 + secondFrames.getDouble(i) * 10.0)
     }
@@ -818,12 +842,12 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("translateX")).isEqualTo(5.0)
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("translateX")).isEqualTo(20.0)
 
     reset(uiManagerMock)
@@ -857,13 +881,13 @@ class NativeAnimatedNodeTraversalTest {
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
     verify(uiManagerMock, times(2))
-        .synchronouslyUpdateViewOnUIThread(anyInt(), any(ReadableMap::class.java))
+        .synchronouslyUpdateViewOnUIThread(anyInt(), anyNonNull<ReadableMap>())
     verifyNoMoreInteractions(animationCallback)
 
     reset(animationCallback)
     reset(uiManagerMock)
     nativeAnimatedNodesManager.stopAnimation(404)
-    verify(animationCallback).invoke(callbackResponseCaptor.capture())
+    verify(animationCallback).invoke(capture(callbackResponseCaptor))
     verifyNoMoreInteractions(animationCallback)
     verifyNoMoreInteractions(uiManagerMock)
 
@@ -947,7 +971,7 @@ class NativeAnimatedNodeTraversalTest {
     for (i in 0 until frames.size()) {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture())
+      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), capture(stylesCaptor))
       assertThat(stylesCaptor.value.getDouble("opacity")).isEqualTo(frames.getDouble(i))
     }
 
@@ -998,7 +1022,7 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(viewTag), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(viewTag), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("opacity")).isEqualTo(10.0)
   }
 
@@ -1036,7 +1060,7 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(viewTag), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(viewTag), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("opacity")).isEqualTo(0.0)
   }
 
@@ -1071,7 +1095,7 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(viewTag), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(viewTag), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("opacity")).isEqualTo(10.0)
   }
 
@@ -1097,7 +1121,8 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.restoreDefaultValues(propsNodeTag)
-    verify(uiManagerMock, never()).synchronouslyUpdateViewOnUIThread(anyInt(), any<ReadableMap>())
+    verify(uiManagerMock, never())
+        .synchronouslyUpdateViewOnUIThread(anyInt(), anyNonNull<ReadableMap>())
   }
 
   /**
@@ -1166,7 +1191,7 @@ class NativeAnimatedNodeTraversalTest {
 
     reset(uiManagerMock)
     nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+    verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
     assertThat(stylesCaptor.value.getDouble("translateX")).isEqualTo(0.0)
 
     // update "toValue" to 100, we expect tracking animation to animate now from 0 to 100 in 5
@@ -1178,7 +1203,7 @@ class NativeAnimatedNodeTraversalTest {
     for (i in 0 until frames.size()) {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
       assertThat(stylesCaptor.value.getDouble("translateX")).isEqualTo(frames.getDouble(i) * 100.0)
     }
 
@@ -1191,7 +1216,7 @@ class NativeAnimatedNodeTraversalTest {
     for (i in 0 until 2) {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
       assertThat(stylesCaptor.value.getDouble("translateX"))
           .isEqualTo(100 * (1 - frames.getDouble(i)))
     }
@@ -1209,7 +1234,7 @@ class NativeAnimatedNodeTraversalTest {
     for (i in 0 until frames.size()) {
       reset(uiManagerMock)
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
-      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), stylesCaptor.capture())
+      verify(uiManagerMock).synchronouslyUpdateViewOnUIThread(eq(1000), capture(stylesCaptor))
       assertThat(stylesCaptor.value.getDouble("translateX"))
           .isEqualTo(50.0 + 50.0 * frames.getDouble(i))
     }
@@ -1238,7 +1263,7 @@ class NativeAnimatedNodeTraversalTest {
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
     }
     verify(uiManagerMock, times(frames.size()))
-        .synchronouslyUpdateViewOnUIThread(eq(1000), any(ReadableMap::class.java))
+        .synchronouslyUpdateViewOnUIThread(eq(1000), anyNonNull<ReadableMap>())
 
     // the animation has completed, we expect no updates to be done
     reset(uiManagerMock)
@@ -1257,7 +1282,7 @@ class NativeAnimatedNodeTraversalTest {
       nativeAnimatedNodesManager.runUpdates(nextFrameTime())
     }
     verify(uiManagerMock, times(frames.size()))
-        .synchronouslyUpdateViewOnUIThread(eq(1000), any(ReadableMap::class.java))
+        .synchronouslyUpdateViewOnUIThread(eq(1000), anyNonNull<ReadableMap>())
 
     // the animation has completed, we expect no updates to be done
     reset(uiManagerMock)
