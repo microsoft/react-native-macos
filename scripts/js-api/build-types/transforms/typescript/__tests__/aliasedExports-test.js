@@ -22,11 +22,19 @@ async function exportsAfterPipeline(code: string) {
   return ast.program.body
     .filter(node => node.type === 'ExportNamedDeclaration')
     .flatMap(node => node.specifiers)
-    .map(specifier => ({
-      local: specifier.local.name,
-      public: specifier.exported.name,
-      comment: specifier.trailingComments?.[0]?.value,
-    }));
+    .map(specifier => {
+      if (
+        specifier?.type !== 'ExportSpecifier' ||
+        specifier.exported.type !== 'Identifier'
+      ) {
+        throw new Error('Expected a named export with an identifier alias');
+      }
+      return {
+        local: specifier.local.name,
+        public: specifier.exported.name,
+        comment: specifier.trailingComments?.[0]?.value,
+      };
+    });
 }
 
 describe('organizeDeclarations and versionExportedApis pipeline', () => {

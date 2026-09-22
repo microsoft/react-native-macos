@@ -147,9 +147,11 @@ async function prepareReactNativeDependenciesArtifactsAsync(
     'ReactNativeDependenciesHeaders.xcframework',
   );
   if (fs.existsSync(headersSidecarSource)) {
-    execSync(`cp -R "${headersSidecarSource}" "${artifactsPath}"`, {
-      stdio: 'inherit',
-    });
+    fs.cpSync(
+      headersSidecarSource,
+      path.join(artifactsPath, path.basename(headersSidecarSource)),
+      {recursive: true},
+    );
   } else {
     dependencyLog(
       'ReactNativeDependenciesHeaders.xcframework not present in the tarball ' +

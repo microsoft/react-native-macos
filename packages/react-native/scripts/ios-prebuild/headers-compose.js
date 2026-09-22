@@ -35,8 +35,6 @@ const {
   renderUmbrellaHeader,
 } = require('./headers-spec');
 const {
-  CATALYST_STUB_SLICE,
-  DEFAULT_STUB_SLICES,
   buildDepsHeadersXcframework,
   composeHeadersOnlyXcframework,
   stubSlicesFromXcframework,
@@ -78,6 +76,7 @@ function composeToolingHash() /*: string */ {
 }
 
 /*:: import type {HeadersSpecPlan, SpecEntry} from './headers-spec'; */
+/*:: import type {StubSlice} from './headers-xcframework'; */
 
 /**
  * Computes the spec plan from the live source tree. Throws on collisions
@@ -115,6 +114,7 @@ function stageEntries(
   stage /*: string */,
   entries /*: Array<SpecEntry> */,
   rnRoot /*: string */,
+  overlayDir /*: ?string */ = null,
 ) /*: void */ {
   for (const e of entries) {
     const dest = path.join(stage, e.relPath);
@@ -130,7 +130,24 @@ function stageEntries(
           `#import <${e.redirectTo}>\n`,
       );
     } else {
-      fs.copyFileSync(path.join(rnRoot, e.source), dest);
+      // ReactNativeVersion.h is the one shipped header STAMPED at build time:
+      // the slice job runs set-rn-artifacts-version before building, while the
+      // source tree keeps the 1000.0.0 dev sentinel. Take just this file's
+      // content from the built header tree (`overlayDir`, i.e. `.build/headers`)
+      // when present, so the compose ships the real version without re-stamping
+      // its own checkout. Every OTHER header is authoritative in the source
+      // tree (only the layout is spec-derived), so it always copies from
+      // source — never from a build tree that could be stale relative to it.
+      const isStamped = path.basename(e.source) === 'ReactNativeVersion.h';
+      const overlaySource =
+        isStamped && overlayDir != null
+          ? path.join(overlayDir, e.source)
+          : null;
+      const src =
+        overlaySource != null && fs.existsSync(overlaySource)
+          ? overlaySource
+          : path.join(rnRoot, e.source);
+      fs.copyFileSync(src, dest);
     }
   }
 }
@@ -146,11 +163,12 @@ function emitReactFrameworkHeaders(
   xcfwPath /*: string */,
   plan /*: HeadersSpecPlan */,
   rnRoot /*: string */,
+  overlayDir /*: ?string */ = null,
 ) /*: void */ {
   const stage = fs.mkdtempSync(
     path.join(path.dirname(xcfwPath), '.react-stage-'),
   );
-  stageEntries(stage, plan.react, rnRoot);
+  stageEntries(stage, plan.react, rnRoot, overlayDir);
   fs.writeFileSync(
     path.join(stage, 'React-umbrella.h'),
     renderUmbrellaHeader(plan.umbrella),
@@ -240,18 +258,17 @@ function buildReactNativeHeadersXcframework(
   outDir /*: string */,
   plan /*: HeadersSpecPlan */,
   rnRoot /*: string */,
-  includeCatalyst /*: boolean */ = false,
+  slices /*: Array<StubSlice> */,
   // Optional dir containing a `hermes/` namespace (Hermes public headers from
   // the hermes-ios tarball's destroot/include). Folded in as a textual
   // namespace so `<hermes/...>` resolves without per-library wiring. null
   // when unstaged — then `<hermes/...>` stays unavailable.
   hermesHeaders /*: ?string */ = null,
-  // [macOS] Derive sidecar platforms from the binary whenever one is available.
-  binaryXcfw /*: ?string */ = null,
+  overlayDir /*: ?string */ = null,
 ) /*: string */ {
   // ---- stage headers ----
   const stage = fs.mkdtempSync(path.join(outDir, '.rnh-stage-'));
-  stageEntries(stage, plan.reactNativeHeaders, rnRoot);
+  stageEntries(stage, plan.reactNativeHeaders, rnRoot, overlayDir);
   // Hermes public headers (separate source from the deps namespaces — they
   // come from the hermes-ios tarball, not ReactNativeDependencies). Vend only
   // the `hermes/` namespace; `jsi/` is already provided elsewhere, so copying
@@ -285,12 +302,6 @@ function buildReactNativeHeadersXcframework(
   );
 
   // ---- compose (stub archives + create-xcframework) ----
-  const slices =
-    binaryXcfw != null
-      ? stubSlicesFromXcframework(binaryXcfw)
-      : includeCatalyst
-        ? [...DEFAULT_STUB_SLICES, CATALYST_STUB_SLICE]
-        : DEFAULT_STUB_SLICES;
   const outXcfw = composeHeadersOnlyXcframework(
     outDir,
     'ReactNativeHeaders',
@@ -329,11 +340,13 @@ function ensureHeadersLayout(
   const sourceXcfw = fs.realpathSync(
     path.join(artifactsDir, 'React.xcframework'),
   );
-  const depsHeaders = path.join(
+  const depsXcfw = path.join(
     artifactsDir,
     'ReactNativeDependencies.xcframework',
-    'Headers',
   );
+  const depsHeaders = path.join(depsXcfw, 'Headers');
+  const reactSlices = stubSlicesFromXcframework(sourceXcfw);
+  const depsSlices = stubSlicesFromXcframework(depsXcfw);
   // Hermes public headers staged into the slot by download-spm-artifacts
   // (the hermes-ios tarball ships them in destroot/include, which the
   // xcframework extraction otherwise discards). null when absent — then
@@ -356,7 +369,9 @@ function ensureHeadersLayout(
   // recomposes instead of reusing a hermes-less ReactNativeHeaders. The
   // compose-tooling hash makes a local edit to headers-{inventory,spec,compose}
   // recompose too (the source xcframework's Info.plist mtime can't detect that).
-  const marker = `${sourceXcfw}\n${sourceStat.mtimeMs}\n${hermesHeaders ?? 'no-hermes'}\ntooling:${composeToolingHash()}\n`;
+  // Include both binary slice sets so a changed deps platform set also
+  // invalidates the cached sidecars, even when React itself is unchanged.
+  const marker = `${sourceXcfw}\n${sourceStat.mtimeMs}\n${hermesHeaders ?? 'no-hermes'}\ntooling:${composeToolingHash()}\nslices:${JSON.stringify([reactSlices, depsSlices])}\n`;
   if (
     !force &&
     fs.existsSync(reactXcfw) &&
@@ -386,18 +401,15 @@ function ensureHeadersLayout(
     outDir,
     plan,
     rnRoot,
-    false,
+    reactSlices,
     hermesHeaders,
-    sourceXcfw, // [macOS]
   );
-  // [macOS] Match each sidecar to its own binary's actual platform slices.
+  // Each sidecar matches its own binary, which may carry a different slice set.
   buildDepsHeadersXcframework(
     outDir,
     depsHeaders,
     plan.depsNamespaces,
-    stubSlicesFromXcframework(
-      path.join(artifactsDir, 'ReactNativeDependencies.xcframework'),
-    ),
+    depsSlices,
   );
   fs.writeFileSync(markerPath, marker);
   return {reactXcfw, headersXcfw, depsHeadersXcfw};
