@@ -568,6 +568,7 @@ class ReactNativeCoreUtils
         # Quoted so a $(PODS_ROOT) containing spaces stays a single clang argument.
         module_map_flag = " \"-fmodule-map-file=$(PODS_ROOT)/React-Core-prebuilt/Headers/module.modulemap\""
         ReactNativePodsUtils.add_flag_to_map_with_inheritance(attributes, "OTHER_CFLAGS", module_map_flag)
+        ReactNativePodsUtils.add_flag_to_map_with_inheritance(attributes, "OTHER_CPLUSPLUSFLAGS", module_map_flag)
         ReactNativePodsUtils.add_flag_to_map_with_inheritance(attributes, "OTHER_SWIFT_FLAGS", " -Xcc" + module_map_flag)
     end
 end

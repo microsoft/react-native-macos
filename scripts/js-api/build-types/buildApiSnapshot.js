@@ -263,7 +263,7 @@ async function rewriteLocalImports(
 async function getProcessedSnapshotResult(
   tempDirectory: string,
   options: BuildApiSnapshotOptions,
-  packages: $ReadOnlyArray<{directory: string, name: string}>,
+  packages: ReadonlyArray<{directory: string, name: string}>,
 ): Promise<string> {
   const rollupPath = path.join(
     tempDirectory,

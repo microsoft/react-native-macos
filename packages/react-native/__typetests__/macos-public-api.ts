@@ -8,6 +8,7 @@
  */
 
 // Use the actual package export conditions, without the react-native test alias.
+import {Animated} from 'react-native-macos';
 import type {
   SystemEffectMacOS,
   TextInputMacOSProps,
@@ -28,6 +29,22 @@ import type {
 } from '../Libraries/Types/CoreEventTypes';
 
 type Assert<T extends true> = T;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type AnimatedEventIsNotAny = Assert<
+  IsAny<ReturnType<typeof Animated.event>> extends false ? true : false
+>;
+const animatedValue = new Animated.Value(0);
+const animatedHandler: (...args: any[]) => void = Animated.event(
+  [{nativeEvent: {value: animatedValue}}],
+  {useNativeDriver: false},
+);
+animatedValue.addListener(state => {
+  const value: number = state.value;
+  // @ts-expect-error The callback payload is typed rather than any.
+  const invalidValue: string = state.value;
+  // @ts-expect-error The callback exposes only its numeric value.
+  state.missing;
+});
 type Equal<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
     ? true

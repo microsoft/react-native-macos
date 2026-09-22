@@ -77,6 +77,7 @@ async function main() {
         frameworkPaths,
         buildType,
         cli.identity,
+        cli.requireHermes,
       );
     }
 
