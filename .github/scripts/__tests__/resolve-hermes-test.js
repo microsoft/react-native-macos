@@ -19,7 +19,8 @@ const {
 } = require('../../../packages/react-native/scripts/ios-prebuild/hermes-version');
 
 const root = path.resolve(__dirname, '../../..');
-const {version: v1Version} = readHermesMetadata('legacy-default', '1');
+const {version: v0Version} = readHermesMetadata('v1-default', '0');
+const {version: v1Version} = readHermesMetadata('v1-default', '1');
 const script = path.join(root, '.github/scripts/resolve-hermes.mts');
 const preload = path.join(__dirname, '__fixtures__/resolve-hermes.cjs');
 const sourceCommit = '1234567890abcdef1234567890abcdef12345678';
@@ -43,6 +44,7 @@ function run(command, overrides = {}) {
     'HERMES_TEST_DOWNLOAD',
     'HERMES_TEST_COMMIT',
     'HERMES_TEST_SOURCE_ERROR',
+    'HERMES_TEST_REFS',
   ]) {
     delete env[key];
   }
@@ -75,9 +77,11 @@ function run(command, overrides = {}) {
 }
 
 test.each([
-  [undefined, '123.4.56', 'HERMES_VERSION_NAME', 'Debug'],
-  ['0', '123.4.56', 'HERMES_VERSION_NAME', 'Debug'],
+  [undefined, v1Version, 'HERMES_V1_VERSION_NAME', 'Debug'],
+  ['0', v0Version, 'HERMES_VERSION_NAME', 'Debug'],
   ['1', v1Version, 'HERMES_V1_VERSION_NAME', 'Release'],
+  ['', v1Version, 'HERMES_V1_VERSION_NAME', 'Debug'],
+  ['true', v1Version, 'HERMES_V1_VERSION_NAME', 'Debug'],
 ])(
   'CI downloads flag %s with the selected key and version',
   (flag, version, key, flavor) => {
@@ -112,11 +116,30 @@ test.each([
   },
 );
 
-test('CI snapshot fallback uses the five-argument URL helper contract', () => {
+test.each([
+  [undefined, '250829098.0.9'],
+  ['0', '0.15.1'],
+  ['1', '250829098.0.9'],
+])('CI downloads checked-in stable metadata with flag %s', (flag, version) => {
+  const result = run(['download-hermes'], {
+    ...(flag == null ? {} : {RCT_HERMES_V1_ENABLED: flag}),
+    HERMES_TEST_DOWNLOAD: 'release',
+  });
+  expect(result.status).toBe(0);
+  expect(result.output).toContain(`version=${version}\n`);
+  expect(result.output).toMatch(/^tarball=.+$/m);
+  expect(result.urls).toEqual([
+    `https://central.sonatype.com/repository/maven-snapshots/com/facebook/hermes/hermes-ios/${version}-SNAPSHOT/maven-metadata.xml`,
+    `https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-debug.tar.gz`,
+  ]);
+  expect(result.calls.source).toEqual([]);
+});
+
+test('CI snapshot fallback uses the five-argument Hermes URL helper contract', () => {
   const version = '123.4.56';
   const result = run(['download-hermes'], {
     HERMES_TEST_DOWNLOAD: 'snapshot',
-    HERMES_TEST_PROPERTIES: `HERMES_VERSION_NAME=${version}`,
+    HERMES_TEST_PROPERTIES: `HERMES_V1_VERSION_NAME=${version}`,
   });
   expect(result.status).toBe(0);
   expect(result.output).toContain(`version=${version}\n`);
@@ -135,7 +158,7 @@ test('CI snapshot fallback uses the five-argument URL helper contract', () => {
 
 test('CI can still select source when valid pinned artifacts are unavailable', () => {
   const result = run(['download-hermes'], {
-    HERMES_TEST_PROPERTIES: 'HERMES_VERSION_NAME=123.4.56',
+    HERMES_TEST_PROPERTIES: 'HERMES_V1_VERSION_NAME=123.4.56',
   });
   expect(result.status).toBe(0);
   expect(result.output).toBe('');
@@ -145,12 +168,16 @@ test('CI can still select source when valid pinned artifacts are unavailable', (
 });
 
 const invalidMetadata = [
-  ['', 'Expected one exact HERMES_VERSION_NAME'],
+  ['', 'Expected one exact HERMES_V1_VERSION_NAME'],
   ['UNREADABLE', 'EACCES'],
-  ['HERMES_VERSION_NAME=^1.2.3', 'Expected one exact HERMES_VERSION_NAME'],
   [
-    'HERMES_VERSION_NAME=1.2.3\nHERMES_VERSION_NAME=1.2.3',
-    'Expected one exact HERMES_VERSION_NAME',
+    'HERMES_V1_VERSION_NAME=^1.2.3',
+    'Expected one exact HERMES_V1_VERSION_NAME',
+  ],
+  ['HERMES_VERSION_NAME=1.2.3', 'Expected one exact HERMES_V1_VERSION_NAME'],
+  [
+    'HERMES_V1_VERSION_NAME=1.2.3\nHERMES_V1_VERSION_NAME=1.2.3',
+    'Expected one exact HERMES_V1_VERSION_NAME',
   ],
 ];
 
@@ -193,17 +220,17 @@ test('CI selects source without a download when version.properties is missing', 
 });
 
 test.each([
-  [undefined, 'HERMES_VERSION_NAME', undefined],
-  ['0', 'HERMES_VERSION_NAME', undefined],
-  [
-    '1',
-    'HERMES_V1_VERSION_NAME',
-    'HERMES_VERSION_NAME=123.4.56\nHERMES_V1_VERSION_NAME=1000.0.0',
-  ],
-])('CI selected sentinel for flag %s', (flag, key, properties) => {
+  [undefined, 'HERMES_V1_VERSION_NAME'],
+  ['0', 'HERMES_VERSION_NAME'],
+  ['1', 'HERMES_V1_VERSION_NAME'],
+  ['', 'HERMES_V1_VERSION_NAME'],
+  ['true', 'HERMES_V1_VERSION_NAME'],
+])('CI selected sentinel for flag %s', (flag, key) => {
   const overrides = {
     ...(flag == null ? {} : {RCT_HERMES_V1_ENABLED: flag}),
-    ...(properties == null ? {} : {HERMES_TEST_PROPERTIES: properties}),
+    HERMES_TEST_PROPERTIES:
+      `${key}=1000.0.0\n` +
+      `${key === 'HERMES_VERSION_NAME' ? 'HERMES_V1_VERSION_NAME' : 'HERMES_VERSION_NAME'}=123.4.56`,
   };
 
   const download = run(['download-hermes'], overrides);
@@ -224,7 +251,10 @@ test.each([
 
 test('CI source resolution uses the current helper SHA for the cache output', () => {
   const commit = 'abcdef1234567890abcdef1234567890abcdef12';
-  const result = run(['resolve-commit'], {HERMES_TEST_COMMIT: commit});
+  const result = run(['resolve-commit'], {
+    HERMES_TEST_COMMIT: commit,
+    HERMES_TEST_PROPERTIES: 'HERMES_V1_VERSION_NAME=1000.0.0',
+  });
   expect(result.status).toBe(0);
   expect(result.output).toBe(`hermes-commit=${commit}\n`);
   expect(result.calls).toEqual({source: [[]], nightly: []});
@@ -232,6 +262,7 @@ test('CI source resolution uses the current helper SHA for the cache output', ()
 
 test('CI fails source resolution without falling back to a tag', () => {
   const result = run(['resolve-commit'], {
+    HERMES_TEST_PROPERTIES: 'HERMES_V1_VERSION_NAME=1000.0.0',
     HERMES_TEST_SOURCE_ERROR: 'Cannot resolve merge-base timestamp',
   });
   expect(result.status).toBe(1);
@@ -241,15 +272,15 @@ test('CI fails source resolution without falling back to a tag', () => {
   expect(result.calls).toEqual({source: [[]], nightly: []});
 });
 
-test('CI resolve-commit emits the checked-in V1 SHA for concrete metadata', () => {
+test('CI resolve-commit emits the checked-in stable V1 tag', () => {
   const ref = fs
     .readFileSync(
       path.join(root, 'packages/react-native/sdks/.hermesv1version'),
       'utf8',
     )
     .trim();
-  expect(ref).toMatch(/^[0-9a-fA-F]{40}$/);
-  expect(v1Version).not.toBe('1000.0.0');
+  expect(ref).toBe('hermes-v250829098.0.9');
+  expect(v1Version).toBe('250829098.0.9');
 
   const result = run(['resolve-commit'], {RCT_HERMES_V1_ENABLED: '1'});
   expect(result.status).toBe(0);
@@ -259,17 +290,51 @@ test('CI resolve-commit emits the checked-in V1 SHA for concrete metadata', () =
   expect(result.calls).toEqual({source: [], nightly: []});
 });
 
+describe.each(['release/custom-hermes', sourceCommit])('source ref %s', ref => {
+  test.each([
+    [undefined, '.hermesv1version'],
+    ['0', '.hermesversion'],
+    ['1', '.hermesv1version'],
+    ['', '.hermesv1version'],
+    ['true', '.hermesv1version'],
+  ])('CI reads the selected file for flag %s', (flag, tagFile) => {
+    const result = run(['resolve-commit'], {
+      ...(flag == null ? {} : {RCT_HERMES_V1_ENABLED: flag}),
+      HERMES_TEST_PROPERTIES:
+        'HERMES_VERSION_NAME=123.4.56\nHERMES_V1_VERSION_NAME=234.5.67',
+      HERMES_TEST_REFS: JSON.stringify({
+        '.hermesversion': 'unselected-legacy-ref',
+        '.hermesv1version': 'unselected-v1-ref',
+        [tagFile]: ` ${ref}\n`,
+      }),
+    });
+    expect(result.status).toBe(0);
+    expect(result.output).toBe(`hermes-commit=${ref}\n`);
+    expect(result.urls).toEqual([]);
+    expect(result.calls).toEqual({source: [], nightly: []});
+  });
+});
+
 test.each([
-  [undefined, '.hermesversion', 'MISSING'],
+  [undefined, '.hermesv1version', 'MISSING'],
   ['0', '.hermesversion', 'MISSING'],
   ['1', '.hermesv1version', 'MISSING'],
-  [undefined, '.hermesversion', 'HERMES_VERSION_NAME=123.4.56'],
+  [undefined, '.hermesv1version', 'HERMES_V1_VERSION_NAME=123.4.56'],
+  [
+    undefined,
+    '.hermesv1version',
+    'HERMES_VERSION_NAME=1000.0.0\nHERMES_V1_VERSION_NAME=123.4.56',
+  ],
   [
     '0',
     '.hermesversion',
     'HERMES_VERSION_NAME=123.4.56\nHERMES_V1_VERSION_NAME=1000.0.0',
   ],
+  [undefined, '.hermesv1version', undefined],
+  ['0', '.hermesversion', undefined],
   ['1', '.hermesv1version', undefined],
+  ['', '.hermesv1version', undefined],
+  ['true', '.hermesv1version', undefined],
 ])(
   'CI resolve-commit reads flag %s tag %s independently of metadata %s',
   (flag, tagFile, properties) => {
