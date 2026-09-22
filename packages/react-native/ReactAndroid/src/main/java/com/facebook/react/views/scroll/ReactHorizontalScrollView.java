@@ -136,6 +136,7 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
   private int mFadingEdgeLengthStart = 0;
   private int mFadingEdgeLengthEnd = 0;
   private boolean mEmittedOverScrollSinceScrollBegin = false;
+  private boolean mScrollsChildToFocus = true;
 
   public ReactHorizontalScrollView(Context context) {
     this(context, null);
@@ -199,6 +200,7 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
     mMaintainVisibleContentPositionHelper = null;
     mFadingEdgeLengthStart = 0;
     mFadingEdgeLengthEnd = 0;
+    mScrollsChildToFocus = true;
   }
 
   /* package */ void recycleView() {
@@ -322,6 +324,10 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
 
   public void setPagingEnabled(boolean pagingEnabled) {
     mPagingEnabled = pagingEnabled;
+  }
+
+  public void setScrollsChildToFocus(boolean scrollsChildToFocus) {
+    mScrollsChildToFocus = scrollsChildToFocus;
   }
 
   public void setDecelerationRate(float decelerationRate) {
@@ -455,6 +461,14 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
   }
 
   @Override
+  public boolean getClipToPadding() {
+    if (ReactNativeFeatureFlags.syncAndroidClipToPaddingWithOverflow()) {
+      return mOverflow != Overflow.VISIBLE;
+    }
+    return super.getClipToPadding();
+  }
+
+  @Override
   public void onDraw(Canvas canvas) {
     if (mOverflow != Overflow.VISIBLE) {
       BackgroundStyleApplicator.clipToPaddingBox(this, canvas);
@@ -545,7 +559,7 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
    */
   @Override
   public void requestChildFocus(View child, View focused) {
-    if (focused != null && !mPagingEnabled) {
+    if (focused != null && !mPagingEnabled && mScrollsChildToFocus) {
       scrollToChild(focused);
     }
     requestChildFocusWithoutScroll(child, focused);
@@ -558,6 +572,14 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
    */
   protected void requestChildFocusWithoutScroll(View child, View focused) {
     super.requestChildFocus(child, focused);
+  }
+
+  @Override
+  public boolean requestChildRectangleOnScreen(View child, Rect rectangle, boolean immediate) {
+    if (!mScrollsChildToFocus) {
+      return false;
+    }
+    return super.requestChildRectangleOnScreen(child, rectangle, immediate);
   }
 
   @Override
@@ -829,6 +851,11 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
 
   @Override
   public boolean dispatchGenericMotionEvent(MotionEvent ev) {
+    // Ignore generic motion events (joystick, mouse wheel, trackpad) if scrolling is disabled
+    if (!mScrollEnabled) {
+      return false;
+    }
+
     // We do not dispatch the motion event if its children are not supposed to receive it
     if (!PointerEvents.canChildrenBeTouchTarget(mPointerEvents)) {
       return false;
@@ -967,9 +994,6 @@ public class ReactHorizontalScrollView extends HorizontalScrollView
     super.onDetachedFromWindow();
     if (mMaintainVisibleContentPositionHelper != null) {
       mMaintainVisibleContentPositionHelper.stop();
-    }
-    if (mVirtualViewContainerState != null) {
-      mVirtualViewContainerState.cleanup();
     }
   }
 

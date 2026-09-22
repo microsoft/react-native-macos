@@ -85,7 +85,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   if (self = [super initWithFrame:frame]) {
     _props = ViewShadowNode::defaultSharedProps();
     _reactSubviews = [NSMutableArray new];
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
     self.multipleTouchEnabled = YES;
 #endif // [macOS]
     _useCustomContainerView = NO;
@@ -161,7 +161,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 }
 #endif // macOS]
 
-#if !TARGET_OS_OSX
+#if !TARGET_OS_OSX // [macOS]
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
 {
   [super traitCollectionDidChange:previousTraitCollection];
@@ -453,6 +453,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
 
   // `accessibilityShowsLargeContentViewer`
   if (oldViewProps.accessibilityShowsLargeContentViewer != newViewProps.accessibilityShowsLargeContentViewer) {
+#if !TARGET_OS_TV
     if (@available(iOS 13.0, *)) {
       if (newViewProps.accessibilityShowsLargeContentViewer) {
         self.showsLargeContentViewer = YES;
@@ -462,13 +463,16 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
         self.showsLargeContentViewer = NO;
       }
     }
+#endif
   }
 
   // `accessibilityLargeContentTitle`
   if (oldViewProps.accessibilityLargeContentTitle != newViewProps.accessibilityLargeContentTitle) {
+#if !TARGET_OS_TV
     if (@available(iOS 13.0, *)) {
       self.largeContentTitle = RCTNSStringFromStringNilIfEmpty(newViewProps.accessibilityLargeContentTitle);
     }
+#endif
   }
 #endif // [macOS]
 
@@ -701,6 +705,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   // re-applying individual sub-values which weren't changed.
   [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:_layoutMetrics];
 
+  // Capture the frame size that was used by updateProps to resolve the
+  // transform, before overwriting _layoutMetrics. This is important because
+  // _layoutMetrics may be stale (e.g., from a recycled view) and differ from
+  // the oldLayoutMetrics parameter (which comes from the shadow tree).
+  auto previousFrameSize = _layoutMetrics.frame.size;
+
   _layoutMetrics = layoutMetrics;
   _needsInvalidateLayer = YES;
 
@@ -718,8 +728,12 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     _backgroundColorLayer.frame = CGRectMake(0, 0, self.layer.bounds.size.width, self.layer.bounds.size.height);
   }
 
+  // Recompute the transform whenever the layout size differs from what was
+  // used in updateProps. Using previousFrameSize (the stored _layoutMetrics)
+  // instead of the oldLayoutMetrics parameter ensures correctness even when
+  // the view was recycled with stale dimensions.
   if ((_props->transformOrigin.isSet() || !_props->transform.operations.empty()) &&
-      layoutMetrics.frame.size != oldLayoutMetrics.frame.size) {
+      layoutMetrics.frame.size != previousFrameSize) {
     auto newTransform = _props->resolveTransform(layoutMetrics);
 #if !TARGET_OS_OSX // [macOS]
     self.layer.transform = RCTCATransform3DFromTransformMatrix(newTransform);
@@ -798,6 +812,7 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
   _isJSResponder = NO;
   _removeClippedSubviews = NO;
   _reactSubviews = [NSMutableArray new];
+  _layoutMetrics = {};
 }
 
 - (void)setPropKeysManagedByAnimated_DO_NOT_USE_THIS_IS_BROKEN:(NSSet<NSString *> *_Nullable)props
@@ -1187,34 +1202,8 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
     layer.shadowPath = nil;
   }
 
-#if !TARGET_OS_OSX // [visionOS]
-  // Stage 1.5. Cursor / Hover Effects
-  if (@available(iOS 17.0, *)) {
-    UIHoverStyle *hoverStyle = nil;
-    if (_props->cursor == Cursor::Pointer) {
-      const RCTCornerInsets cornerInsets =
-          RCTGetCornerInsets(RCTCornerRadiiFromBorderRadii(borderMetrics.borderRadii), UIEdgeInsetsZero);
-#if TARGET_OS_IOS
-      // Due to an Apple bug, it seems on iOS, UIShapes made with `[UIShape shapeWithBezierPath:]`
-      // evaluate their shape on the superviews' coordinate space. This leads to the hover shape
-      // rendering incorrectly on iOS, iOS apps in compatibility mode on visionOS, but not on visionOS.
-      // To work around this, for iOS, we can calculate the border path based on `view.frame` (the
-      // superview's coordinate space) instead of view.bounds.
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.frame, cornerInsets, NULL, NO);
-#else // TARGET_OS_VISION
-      CGPathRef borderPath = RCTPathCreateWithRoundedRect(self.bounds, cornerInsets, NULL, NO);
-#endif
-      UIBezierPath *bezierPath = [UIBezierPath bezierPathWithCGPath:borderPath];
-      CGPathRelease(borderPath);
-      UIShape *shape = [UIShape shapeWithBezierPath:bezierPath];
-
-      hoverStyle = [UIHoverStyle styleWithEffect:[UIHoverAutomaticEffect effect] shape:shape];
-    }
-    [self setHoverStyle:hoverStyle];
-  }
-#endif // [visionOS]
-
-#if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 /* __IPHONE_17_0 */
+#if !TARGET_OS_TV && defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && \
+    __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000 /* __IPHONE_17_0 */
   // Stage 1.5. Cursor / Hover Effects
   if (@available(iOS 17.0, *)) {
     UIHoverStyle *hoverStyle = nil;
@@ -1604,7 +1593,7 @@ static RCTBorderStyle RCTBorderStyleFromOutlineStyle(OutlineStyle outlineStyle)
 #if !TARGET_OS_OSX // [macOS]
 - (NSObject *)accessibilityElement
 #else // [macOS
-- (NSView *)accessibilityElement // macOS]
+- (NSView *)accessibilityElement // [macOS]
 #endif // macOS]
 {
   return self;

@@ -255,7 +255,7 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
           }
           return strongSelf->_inspectorTarget->connect(std::move(remote));
         },
-        {.nativePageReloads = true, .prefersFuseboxFrontend = true});
+        {.nativePageReloads = true});
   }
   if (_instance) {
     RCTLogWarn(
@@ -371,7 +371,14 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
 
 - (void)instance:(RCTInstance *)instance didInitializeRuntime:(facebook::jsi::Runtime &)runtime
 {
+  if ([_hostDelegate respondsToSelector:@selector(host:didInitializeRuntime:)]) {
+    [_hostDelegate host:self didInitializeRuntime:runtime];
+  }
+  // Runtime delegate is deprecated as of 0.84
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   [self.runtimeDelegate host:self didInitializeRuntime:runtime];
+#pragma clang diagnostic pop
 }
 
 - (void)loadBundleAtURL:(NSURL *)sourceURL
