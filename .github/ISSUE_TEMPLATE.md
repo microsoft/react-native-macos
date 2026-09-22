@@ -1,1 +1,1 @@
-GitHub Issues in the `microsoft/react-native-macos` repository are used exclusively for tracking bugs in the Microsoft/React Native for macOS fork.  If the issue concerns Facebook's react-native, submit the issue to `facebook/react-native`.
+GitHub Issues in the `microsoft/react-native-macos` repository are used exclusively for tracking bugs in the Microsoft/React Native for macOS fork.  If the issue concerns upstream React Native, submit the issue to `react/react-native`.

@@ -20,7 +20,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 
 /**
- * Regression tests for facebook/react-native#50797: a view with a non-invertible transform (e.g.
+ * Regression tests for react/react-native#50797: a view with a non-invertible transform (e.g.
  * `scaleX: 0` or `scaleY: 0`) must not receive touches, and must not silently reuse the cached
  * inverse matrix of a previously-processed view.
  */

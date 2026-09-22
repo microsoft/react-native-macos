@@ -355,7 +355,9 @@ test('reuses only the matching Hermes version, flag and flavor cache', async () 
   execFileSync.mockClear();
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
   expect(global.fetch).not.toHaveBeenCalled();
-  expect(execFileSync.mock.calls.map(([command]) => command)).toEqual(['plutil']);
+  expect(execFileSync.mock.calls.map(([command]) => command)).toEqual([
+    'plutil',
+  ]);
   properties = 'HERMES_VERSION_NAME=123.4.56\nHERMES_V1_VERSION_NAME=234.5.68';
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
   expect(global.fetch).toHaveBeenCalledWith(releaseUrl('234.5.68'));
