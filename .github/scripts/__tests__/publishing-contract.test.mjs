@@ -182,6 +182,10 @@ const repositoryRoot = new URL('../../../', import.meta.url).pathname;
 const releasePolicy = JSON.parse(readFileSync(join(repositoryRoot, '.changeset/config.json'), 'utf8'));
 const getReleasePlan = require('@changesets/get-release-plan').default;
 const semver = require('semver');
+// Stable preparation clears main's deferral of the unreleasable development graph.
+const stablePolicy = {...releasePolicy, baseBranch: `origin/${branch}`, ignore: []};
+// Older Changesets also requires private dependents of ignored packages here.
+const mainPolicy = {...releasePolicy, baseBranch: 'origin/main', ignore: [core, '@react-native/tester']};
 
 test('repository Changesets policy disables private versions and tags and fixes core with lists', () => {
   assert.deepEqual(releasePolicy.privatePackages, {version: false, tag: false});
@@ -194,18 +198,72 @@ test('repository Changesets policy follows the actual public and private workspa
   const listsPackage = workspaces.find(pkg => pkg.name === lists);
   assert.ok(corePackage && !corePackage.private, 'Missing public core workspace');
   assert.ok(listsPackage, 'Missing lists workspace');
-  const publicPackages = listsPackage.private ? [corePackage] : [corePackage, listsPackage];
+  const main = corePackage.version === '1000.0.0';
+  assert.deepEqual(releasePolicy.ignore, main ? mainPolicy.ignore : []);
+  assert.equal(releasePolicy.baseBranch, main ? 'origin/main'
+    : `origin/${semver.major(corePackage.version)}.${semver.minor(corePackage.version)}-stable`);
+  assert.equal(Boolean(listsPackage.private), main, 'Lists must be public on stable and private on main');
+  assert.equal(listsPackage.version, corePackage.version);
+  const publicPackages = [corePackage, listsPackage];
   // Derive expectations from manifests, never from the policy or release-plan output.
   const nextVersion = semver.inc(publicPackages.map(pkg => pkg.version).sort(semver.rcompare)[0], 'patch');
-  const expected = publicPackages.map(pkg => [pkg.name, nextVersion]).sort();
+  const expected = main ? [] : publicPackages.map(pkg => [pkg.name, nextVersion]).sort();
   const {root} = releaseFixture(t, {workspaces, config: releasePolicy});
   assert.deepEqual((await getReleasePlan(root)).releases, []);
   for (const changed of [core, lists]) {
     writeFileSync(join(root, '.changeset/fix.md'), `---\n"${changed}": patch\n---\n\nFix package.\n`);
     const bumped = (await getReleasePlan(root)).releases.filter(pkg => pkg.type !== 'none');
-    assert.deepEqual(bumped.map(pkg => [pkg.name, pkg.newVersion]).sort(),
-      changed === lists && listsPackage.private ? [] : expected);
+    assert.deepEqual(bumped.map(pkg => [pkg.name, pkg.newVersion]).sort(), expected);
   }
+});
+
+test('main defers the private runtime graph, preserves pending core changes, and releases them after stable preparation', async t => {
+  const workspaces = graph('1000.0.0');
+  workspaces[1].private = true;
+  workspaces[0].dependencies['@react-native/codegen'] = 'workspace:*';
+  workspaces.push({name: '@react-native/tester', version: '1000.0.0', private: true,
+    devDependencies: {[core]: 'workspace:*'}});
+  const {root} = releaseFixture(t, {workspaces, config: mainPolicy});
+  const coreChange = '---\n"react-native-macos": patch\n---\n\nFix core.\n';
+  writeFileSync(join(root, '.changeset/core.md'), coreChange);
+  writeFileSync(join(root, '.changeset/init.md'), '---\n"react-native-macos-init": patch\n---\n\nFix init.\n');
+  assert.deepEqual((await getReleasePlan(root)).releases.map(pkg => [pkg.name, pkg.newVersion]),
+    [['react-native-macos-init', '2.1.4']]);
+  const version = () => execFileSync(process.execPath, [require.resolve('@changesets/cli/bin.js'), 'version'], {
+    cwd: root, encoding: 'utf8', env: {...process.env, CI: 'true'},
+  });
+  version();
+  for (const [index, pkg] of workspaces.entries()) {
+    const expected = pkg.name === 'react-native-macos-init' ? {...pkg, version: '2.1.4'} : pkg;
+    assert.deepEqual(JSON.parse(readFileSync(join(root, `packages/p${index}/package.json`), 'utf8')), expected);
+  }
+  assert.equal(readFileSync(join(root, '.changeset/core.md'), 'utf8'), coreChange);
+  assert.deepEqual((await getReleasePlan(root)).releases, []);
+
+  // Model the committed stable preparation: public coupled versions and registry
+  // inputs for upstream packages, with no ignored public release packages.
+  workspaces[0].version = workspaces[1].version = '0.83.0';
+  workspaces[0].dependencies['@react-native/codegen'] = '0.83.1';
+  delete workspaces[1].private;
+  for (const index of [0, 1]) {
+    writeFileSync(join(root, `packages/p${index}/package.json`), JSON.stringify(workspaces[index]));
+  }
+  writeFileSync(join(root, '.changeset/config.json'), JSON.stringify(stablePolicy));
+  assert.deepEqual((await getReleasePlan(root)).releases.filter(pkg => pkg.type !== 'none').map(pkg => [pkg.name, pkg.newVersion]).sort(),
+    [[core, '0.83.1'], [lists, '0.83.1']].sort());
+  version();
+  for (const index of [0, 1]) {
+    const pkg = JSON.parse(readFileSync(join(root, `packages/p${index}/package.json`), 'utf8'));
+    assert.equal(pkg.version, '0.83.1');
+    assert.ok(!pkg.private);
+    assert.match(readFileSync(join(root, `packages/p${index}/CHANGELOG.md`), 'utf8'), /^## 0\.83\.1$/m);
+  }
+  for (const [index, pkg] of workspaces.entries()) {
+    if (pkg.private) {
+      assert.deepEqual(JSON.parse(readFileSync(join(root, `packages/p${index}/package.json`), 'utf8')), pkg);
+    }
+  }
+  assert.deepEqual((await getReleasePlan(root)).changesets, []);
 });
 
 test('repository Changesets policy accepts a private lists fixture and skips its release', async t => {
@@ -214,7 +272,7 @@ test('repository Changesets policy accepts a private lists fixture and skips its
   // A public package can use skipped private packages as development dependencies.
   workspaces[0].devDependencies = {[lists]: workspaces[0].dependencies[lists]};
   delete workspaces[0].dependencies[lists];
-  const {root} = releaseFixture(t, {workspaces, config: releasePolicy});
+  const {root} = releaseFixture(t, {workspaces, config: stablePolicy});
   assert.deepEqual((await getReleasePlan(root)).releases, []);
   writeFileSync(join(root, '.changeset/fix.md'), `---\n"${core}": patch\n---\n\nFix core.\n`);
   const bumped = (await getReleasePlan(root)).releases.filter(pkg => pkg.type !== 'none');
@@ -224,7 +282,7 @@ test('repository Changesets policy accepts a private lists fixture and skips its
 });
 
 test('repository Changesets policy couples public stable packages without registry or private release edges', async t => {
-  const {root, workspaces} = releaseFixture(t, {config: releasePolicy});
+  const {root, workspaces} = releaseFixture(t, {config: stablePolicy});
   for (const changed of [core, lists, '@react-native/codegen', 'react-native-macos-init']) {
     writeFileSync(join(root, '.changeset/fix.md'), `---\n"${changed}": patch\n---\n\nFix package.\n`);
     const releases = (await getReleasePlan(root)).releases.map(pkg => [pkg.name, pkg.newVersion]).sort();
@@ -638,6 +696,23 @@ test('every changed public package needs its own new nonempty version section', 
       writeChangelog(index, '# Changelog\n\n## 0.83.2\n\nExisting release.\n');
     }});
     await assert.rejects(fixture.validate(), /new changelog section/);
+  }
+});
+
+test('reconstructed HTML comments are not release evidence, but visible notes remain valid', async t => {
+  for (const comment of [
+    '<!-- first --><!-- second -->',
+    '<<!-- removed -->!-- hidden -->',
+    '<<!-- removed -->!-- hidden --<!-- removed -->>',
+    '<<<!---->!---->!-- hidden -->',
+  ]) {
+    for (const notes of ['', '- Visible release note.']) {
+      const fixture = preparedFixture(t, {editHead: ({writeChangelog}) => {
+        writeChangelog(0, `# Changelog\n\n## 0.83.2\n\n${comment}\n${notes}\n`);
+      }});
+      if (notes) assert.equal(await fixture.validate(), true);
+      else await assert.rejects(fixture.validate(), /Missing nonempty new changelog section/);
+    }
   }
 });
 

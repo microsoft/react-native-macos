@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 import {execFileSync, fork} from 'node:child_process';
 import {once} from 'node:events';
-import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
 import {test} from 'node:test';
+import {stripVTControlCharacters} from 'node:util';
 
 const require = createRequire(import.meta.url);
 const {load} = createRequire(require.resolve('eslint'))('js-yaml');
-// An optional root lets the shared test check an equivalent release worktree.
+// An optional trusted root lets the shared test execute an equivalent release worktree's workflows.
 const repositoryRoot = resolve(process.env.PUBLISH_WORKFLOW_ROOT ?? new URL('../../../', import.meta.url).pathname);
 const yarnPath = join(repositoryRoot, '.yarn/releases/yarn-4.12.0.cjs');
 const core = 'react-native-macos';
@@ -18,7 +19,7 @@ const workflow = name => load(readFileSync(join(repositoryRoot, `.github/workflo
 const publishSteps = workflow('microsoft-npm-publish').jobs.publish.steps;
 const dryRunSteps = workflow('microsoft-pr').jobs['npm-publish-dry-run'].steps;
 
-async function fixture(t, {eligible = '1', fail = '', privateLists = false} = {}) {
+async function fixture(t, {eligible = '1', fail = '', privateLists = false, enableColors} = {}) {
   const root = mkdtempSync(join(tmpdir(), 'rnm-publish-workflow-'));
   t.after(() => rmSync(root, {recursive: true, force: true}));
   const write = (path, contents) => {
@@ -114,9 +115,11 @@ async function fixture(t, {eligible = '1', fail = '', privateLists = false} = {}
     YARN_ENABLE_HARDENED_MODE: '0', YARN_NPM_AUTH_TOKEN: 'fixture-only',
     YARN_NPM_REGISTRY_SERVER: `http://127.0.0.1:${port}`,
     YARN_NPM_PUBLISH_REGISTRY: `http://127.0.0.1:${port}`,
+    ...(enableColors === undefined ? {} : {FORCE_COLOR: enableColors, YARN_ENABLE_COLORS: enableColors}),
   };
   const run = command => execFileSync('bash', ['--noprofile', '--norc', '-eo', 'pipefail', '-c',
-    `yarn() { ${JSON.stringify(process.execPath)} ${JSON.stringify(yarnPath)} "$@"; }\n${command}`],
+    `node_path=$1\nyarn_path=$2\nyarn() { "$node_path" "$yarn_path" "$@"; }\n${command}`,
+    'publishing-workflow', process.execPath, yarnPath],
   {cwd: root, env, encoding: 'utf8', stdio: 'pipe'});
   run('yarn install');
   const events = () => existsSync(join(root, 'events')) ? readFileSync(join(root, 'events'), 'utf8').trim().split('\n') : [];
@@ -127,12 +130,12 @@ async function fixture(t, {eligible = '1', fail = '', privateLists = false} = {}
         assert.ok(existsSync(env.GITHUB_OUTPUT), 'Preparation ran before eligibility');
         if (!readFileSync(env.GITHUB_OUTPUT, 'utf8').includes('publish_react_native_macos=1\n')) continue;
       }
-      const output = run(step.run);
+      const output = stripVTControlCharacters(run(step.run));
       if (step.run.includes('npm publish')) {
         assert.match(step.run, /--dry-run\b/);
         for (const name of privateLists ? [core] : [lists, core]) {
           assert.ok(output.includes(`[${name}]: ➤ YN0000: types_generated/index.d.ts`),
-            `Dry-run package omitted generated types: ${name}`);
+            `Dry-run package omitted generated types: ${name}\n${output}`);
         }
       }
     }
@@ -169,11 +172,35 @@ test('build and snapshot validation failures stop release and dry-run publicatio
 });
 
 test('PR dry run packs only public coupled workspaces with generated types from a clean fixture', async t => {
-  for (const privateLists of [false, true]) {
-    const f = await fixture(t, {privateLists});
-    f.execute(dryRunPreparation);
-    assert.deepEqual(f.events(), ['tooling', 'codegen', 'types',
-      ...(privateLists ? [] : ['pack lists']), 'pack core']);
-    assert.equal(readFileSync(join(f.root, 'snapshot'), 'utf8'), 'checked-in API\n');
+  for (const enableColors of ['0', '1']) {
+    for (const privateLists of [false, true]) {
+      const f = await fixture(t, {privateLists, enableColors});
+      f.execute(dryRunPreparation);
+      assert.deepEqual(f.events(), ['tooling', 'codegen', 'types',
+        ...(privateLists ? [] : ['pack lists']), 'pack core']);
+      assert.equal(readFileSync(join(f.root, 'snapshot'), 'utf8'), 'checked-in API\n');
+    }
   }
+});
+
+test('PR dry run rejects generated types omitted from the package file list', async t => {
+  const f = await fixture(t, {enableColors: '1'});
+  const path = join(f.root, 'packages/lists/package.json');
+  const pkg = JSON.parse(readFileSync(path, 'utf8'));
+  writeFileSync(path, JSON.stringify({...pkg, files: ['package.json']}));
+  assert.throws(() => f.execute(dryRunPreparation), /Dry-run package omitted generated types/);
+});
+
+test('workflow root paths with shell syntax remain literal arguments', t => {
+  const root = mkdtempSync(join(tmpdir(), 'rnm-workflow-path-'));
+  t.after(() => rmSync(root, {recursive: true, force: true}));
+  const literalRoot = join(root, 'repository with spaces \' " $HOME $(exit 97) `exit 98`');
+  symlinkSync(repositoryRoot, literalRoot, 'dir');
+  const env = {...process.env, PUBLISH_WORKFLOW_ROOT: literalRoot};
+  delete env.NODE_TEST_CONTEXT;
+  const output = execFileSync(process.execPath, ['--test', '--test-reporter=tap', '--test-name-pattern=^ineligible publication',
+    new URL(import.meta.url).pathname], {
+    env, encoding: 'utf8', stdio: 'pipe',
+  });
+  assert.match(output, /# pass 1\b/);
 });

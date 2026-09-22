@@ -118,8 +118,12 @@ function changelogSection(changelog, version) {
   if (!matches.length) return undefined;
   const heading = matches[0];
   const next = headings[headings.indexOf(heading) + 1];
-  return changelog.slice(heading.index + heading[0].length, next?.index)
-    .replace(/<!--[^]*?-->/g, '').replace(/^#{1,6} .+$/gm, '').trim();
+  let section = changelog.slice(heading.index + heading[0].length, next?.index);
+  // Removing a comment can reconstruct another comment delimiter.
+  while (/<!--[^]*?-->/.test(section)) {
+    section = section.replace(/<!--[^]*?-->/g, '');
+  }
+  return section.replace(/^#{1,6} .+$/gm, '').trim();
 }
 
 // A consumed Changeset is valid only when the PR contains the complete release
