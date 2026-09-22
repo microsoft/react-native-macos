@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <hermes/hermes.h>
+#include <jsi/hermes-interfaces.h>
 #include <jsi/jsi.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlagsDefaults.h>
@@ -26,20 +27,27 @@ namespace facebook::react {
 
 using namespace std::chrono_literals;
 
-static bool forcedBatchRenderingUpdatesInEventLoop = false;
-
 class RuntimeSchedulerTestFeatureFlags
     : public ReactNativeFeatureFlagsDefaults {
  public:
-  explicit RuntimeSchedulerTestFeatureFlags(bool enableEventLoop)
-      : enableEventLoop_(enableEventLoop) {}
+  explicit RuntimeSchedulerTestFeatureFlags(
+      bool enableEventLoop,
+      bool enableRuntimeSchedulerQueueClearingOnError = false)
+      : enableEventLoop_(enableEventLoop),
+        enableRuntimeSchedulerQueueClearingOnError_(
+            enableRuntimeSchedulerQueueClearingOnError) {}
 
   bool enableBridgelessArchitecture() override {
     return enableEventLoop_;
   }
 
+  bool enableRuntimeSchedulerQueueClearingOnError() override {
+    return enableRuntimeSchedulerQueueClearingOnError_;
+  }
+
  private:
   bool enableEventLoop_;
+  bool enableRuntimeSchedulerQueueClearingOnError_;
 };
 
 class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
@@ -47,8 +55,7 @@ class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
   void SetUp() override {
     hostFunctionCallCount_ = 0;
 
-    ReactNativeFeatureFlags::override(
-        std::make_unique<RuntimeSchedulerTestFeatureFlags>(GetParam()));
+    setUpFeatureFlags();
 
     // Configuration that enables microtasks
     ::hermes::vm::RuntimeConfig::Builder runtimeConfigBuilder =
@@ -84,6 +91,14 @@ class RuntimeSchedulerTest : public testing::TestWithParam<bool> {
 
   void TearDown() override {
     ReactNativeFeatureFlags::dangerouslyReset();
+  }
+
+  void setUpFeatureFlags(
+      bool enableRuntimeSchedulerQueueClearingOnError = false) {
+    ReactNativeFeatureFlags::dangerouslyReset();
+    ReactNativeFeatureFlags::override(
+        std::make_unique<RuntimeSchedulerTestFeatureFlags>(
+            GetParam(), enableRuntimeSchedulerQueueClearingOnError));
   }
 
   jsi::Function createHostFunctionFromLambda(
@@ -156,6 +171,31 @@ TEST_P(RuntimeSchedulerTest, scheduleSingleTask) {
   EXPECT_EQ(stubQueue_->size(), 0);
 }
 
+TEST_P(RuntimeSchedulerTest, scheduleTaskViaEventLoopControl) {
+  // The RuntimeScheduler proxy is what gets registered with Hermes as an
+  // IEventLoopControl. scheduleTask() forwards to the selected fork, which
+  // schedules the work as an idle task.
+  facebook::hermes::IEventLoopControl& eventLoopControl = *runtimeScheduler_;
+
+  bool didRunTask = false;
+  eventLoopControl.scheduleTask([&didRunTask]() { didRunTask = true; });
+
+  if (GetParam()) {
+    // Modern scheduler: the task is queued on the event loop and runs on tick.
+    EXPECT_FALSE(didRunTask);
+    EXPECT_EQ(stubQueue_->size(), 1);
+
+    stubQueue_->tick();
+
+    EXPECT_TRUE(didRunTask);
+    EXPECT_EQ(stubQueue_->size(), 0);
+  } else {
+    // Legacy scheduler: idle tasks are not supported, so this is a no-op.
+    EXPECT_FALSE(didRunTask);
+    EXPECT_EQ(stubQueue_->size(), 0);
+  }
+}
+
 TEST_P(
     RuntimeSchedulerTest,
     scheduleSingleTaskWithMicrotasksAndBatchedRenderingUpdate) {
@@ -163,8 +203,6 @@ TEST_P(
   if (!GetParam()) {
     return;
   }
-
-  forcedBatchRenderingUpdatesInEventLoop = true;
 
   uint nextOperationPosition = 1;
 
@@ -877,6 +915,46 @@ TEST_P(RuntimeSchedulerTest, handlingError) {
   EXPECT_EQ(stubErrorUtils_->getReportFatalCallCount(), 1);
 }
 
+TEST_P(RuntimeSchedulerTest, clearsQueuesOnError) {
+  // Only for event loop
+  if (!GetParam()) {
+    return;
+  }
+
+  setUpFeatureFlags(/*enableRuntimeSchedulerQueueClearingOnError=*/true);
+
+  bool didRunThrowingTask = false;
+  bool didRunQueuedTask = false;
+  bool didRunRenderingUpdate = false;
+
+  auto throwingCallback =
+      createHostFunctionFromLambda([&](bool /*unused*/) -> jsi::Value {
+        didRunThrowingTask = true;
+        runtimeScheduler_->scheduleRenderingUpdate(
+            0, [&]() { didRunRenderingUpdate = true; });
+        throw jsi::JSError(*runtime_, "Test error");
+      });
+
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::ImmediatePriority, std::move(throwingCallback));
+  runtimeScheduler_->scheduleTask(
+      SchedulerPriority::LowPriority,
+      [&](jsi::Runtime& /*runtime*/) { didRunQueuedTask = true; });
+
+  EXPECT_FALSE(didRunThrowingTask);
+  EXPECT_FALSE(didRunQueuedTask);
+  EXPECT_FALSE(didRunRenderingUpdate);
+  EXPECT_EQ(stubQueue_->size(), 1);
+
+  stubQueue_->tick();
+
+  EXPECT_TRUE(didRunThrowingTask);
+  EXPECT_FALSE(didRunQueuedTask);
+  EXPECT_FALSE(didRunRenderingUpdate);
+  EXPECT_EQ(stubQueue_->size(), 0);
+  EXPECT_EQ(stubErrorUtils_->getReportFatalCallCount(), 1);
+}
+
 TEST_P(RuntimeSchedulerTest, basicSameThreadExecution) {
   bool didRunSynchronousTask = false;
   std::thread t1([this, &didRunSynchronousTask]() {
@@ -895,6 +973,29 @@ TEST_P(RuntimeSchedulerTest, basicSameThreadExecution) {
   stubQueue_->tick();
 
   t1.join();
+
+  EXPECT_TRUE(didRunSynchronousTask);
+}
+
+// Mirror of `basicSameThreadExecution` for the production call pattern: the
+// caller is the UI thread (XCTest test methods run on the main NSThread on
+// Apple), so `executeNowOnTheSameThread` routes through the coordinator path
+// in `executeSynchronouslyOnSameThread_CAN_DEADLOCK`. The off-main `driver`
+// thread drives the stub queue ("JS thread") so the main thread can wake up.
+TEST_P(RuntimeSchedulerTest, basicUIThreadExecution) {
+  bool didRunSynchronousTask = false;
+
+  std::thread driver([this]() {
+    stubQueue_->waitForTask();
+    stubQueue_->tick();
+  });
+
+  runtimeScheduler_->executeNowOnTheSameThread(
+      [&didRunSynchronousTask](jsi::Runtime& /*rt*/) {
+        didRunSynchronousTask = true;
+      });
+
+  driver.join();
 
   EXPECT_TRUE(didRunSynchronousTask);
 }
@@ -1356,6 +1457,10 @@ TEST_P(RuntimeSchedulerTest, reportsLongTasksWithYielding) {
 INSTANTIATE_TEST_SUITE_P(
     UseModernRuntimeScheduler,
     RuntimeSchedulerTest,
+#ifdef RCT_REMOVE_LEGACY_ARCH
+    testing::Values(true));
+#else
     testing::Values(false, true));
+#endif
 
 } // namespace facebook::react

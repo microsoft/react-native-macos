@@ -32,11 +32,13 @@ test.each([
   ['single', undefined, false],
   ['single', '0', false],
   ['single', '1', false],
+  ['single', '', false],
+  ['single', 'true', false],
 ])('%s with flag %s selects the exact key and tag file', (policy, flag, v1) => {
   expect(parseHermesMetadata(properties, policy, flag)).toEqual({
     version: v1 ? '234.5.67' : '123.4.56',
     versionKey: v1 ? 'HERMES_V1_VERSION_NAME' : 'HERMES_VERSION_NAME',
-    tagFile: v1 ? '.hermesv1version' : '.hermesversion',
+    tagFile: v1 || policy === 'single' ? '.hermesv1version' : '.hermesversion',
   });
 });
 
@@ -117,19 +119,30 @@ test('rejects an unknown policy', () => {
   );
 });
 
-test('reads checked-in metadata relative to the helper', () => {
+test('the checked-in compiler and source tag match the single Hermes metadata', () => {
+  const compilerVersion = require('../../../package.json').dependencies[
+    'hermes-compiler'
+  ];
   const metadata = ini.parse(
     fs.readFileSync(
       path.resolve(__dirname, '../../../sdks/hermes-engine/version.properties'),
       'utf8',
     ),
   );
-  expect(readHermesMetadata('legacy-default', '0').version).toBe(
-    metadata.HERMES_VERSION_NAME,
-  );
-  expect(readHermesMetadata('legacy-default', '1').version).toBe(
-    metadata.HERMES_V1_VERSION_NAME,
-  );
+  for (const flag of [undefined, '0', '1', '', 'true']) {
+    const selected = readHermesMetadata('single', flag);
+    expect(selected.version).toBe(metadata.HERMES_VERSION_NAME);
+    expect(selected.tagFile).toBe('.hermesv1version');
+    expect(compilerVersion).toBe(selected.version);
+    expect(
+      fs
+        .readFileSync(
+          path.resolve(__dirname, '../../../sdks', selected.tagFile),
+          'utf8',
+        )
+        .trim(),
+    ).toBe(`hermes-v${selected.version}`);
+  }
 });
 
 test('the default runtime, compiler, and source tag versions agree', () => {

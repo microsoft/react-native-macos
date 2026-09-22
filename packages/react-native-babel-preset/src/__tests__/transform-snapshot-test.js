@@ -26,20 +26,6 @@ const inputCode = fs.readFileSync(INPUT_FILE, 'utf-8');
 
 const testConfigs = [
   {
-    name: 'default-dev',
-    options: {
-      dev: true,
-    },
-    description: 'Default transform profile in development mode',
-  },
-  {
-    name: 'default-prod',
-    options: {
-      dev: false,
-    },
-    description: 'Default transform profile in production mode',
-  },
-  {
     name: 'hermes-stable-dev',
     options: {
       dev: true,
@@ -51,9 +37,24 @@ const testConfigs = [
     name: 'hermes-stable-prod',
     options: {
       dev: false,
-      unstable_transformProfile: 'hermes-stable',
     },
     description: 'Hermes stable transform profile in production mode',
+  },
+  {
+    name: 'hermes-legacy-dev',
+    options: {
+      dev: true,
+      unstable_transformProfile: 'hermes-legacy',
+    },
+    description: 'Default transform profile in development mode',
+  },
+  {
+    name: 'hermes-legacy-prod',
+    options: {
+      dev: false,
+      unstable_transformProfile: 'hermes-legacy',
+    },
+    description: 'Default transform profile in production mode',
   },
   {
     name: 'hermes-canary-dev',
@@ -128,6 +129,30 @@ const testConfigs = [
     },
     description:
       'Hermes stable transform profile in development mode with unstable_preserveAsync enabled',
+  },
+  {
+    name: 'hermes-stable-dev-preserve-block-scoping',
+    options: {
+      dev: true,
+      unstable_transformProfile: 'hermes-stable',
+      customTransformOptions: {
+        unstable_preserveBlockScoping: true,
+      },
+    },
+    description:
+      'Hermes stable transform profile in development mode with unstable_preserveBlockScoping enabled',
+  },
+  {
+    name: 'hermes-stable-dev-preserve-destructuring',
+    options: {
+      dev: true,
+      unstable_transformProfile: 'hermes-stable',
+      customTransformOptions: {
+        unstable_preserveDestructuring: true,
+      },
+    },
+    description:
+      'Hermes stable transform profile in development mode with unstable_preserveDestructuring enabled',
   },
 ];
 
@@ -242,18 +267,6 @@ describe('react-native-babel-preset transform snapshots', () => {
   );
 
   describe('specific feature transformations', () => {
-    it('handles private class fields', () => {
-      const code = `
-        class Counter {
-          #count = 0;
-          increment() { this.#count++; }
-          get value() { return this.#count; }
-        }
-      `;
-      const result = transformCode(code, {dev: false});
-      expect(result).not.toContain('#count');
-    });
-
     it('handles async generators', () => {
       const code = `
         async function* gen() {
@@ -323,8 +336,26 @@ describe('react-native-babel-preset transform snapshots', () => {
           }
         }
       `;
-      const result = transformCode(code, {dev: false});
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-legacy',
+      });
       expect(result).not.toContain('class Animal');
+    });
+
+    it('does not transform classes with default profile', () => {
+      const code = `
+        class Animal {
+          constructor(name) {
+            this.name = name;
+          }
+          speak() {
+            return this.name;
+          }
+        }
+      `;
+      const result = transformCode(code, {dev: false});
+      expect(result).toContain('class Animal');
     });
 
     it('handles named capturing groups in regex', () => {
@@ -450,6 +481,77 @@ describe('react-native-babel-preset transform snapshots', () => {
         unstable_transformProfile: 'hermes-stable',
       });
       expect(result).toContain('_asyncToGenerator');
+    });
+
+    it('preserves block scoping with unstable_preserveBlockScoping', () => {
+      const code = `
+        let x = 1;
+        const y = 2;
+        {
+          let x = 3;
+          const z = 4;
+        }
+      `;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-stable',
+        customTransformOptions: {
+          unstable_preserveBlockScoping: true,
+        },
+      });
+      expect(result).toContain('let x = 1');
+      expect(result).toContain('const y = 2');
+      expect(result).toContain('let x = 3');
+      expect(result).toContain('const z = 4');
+    });
+
+    it('transforms block scoping without unstable_preserveBlockScoping', () => {
+      const code = `
+        let x = 1;
+        const y = 2;
+        {
+          let x = 3;
+        }
+      `;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-stable',
+      });
+      expect(result).toContain('var ');
+      expect(result).not.toContain('let ');
+      expect(result).not.toContain('const ');
+    });
+
+    it('preserves destructuring with unstable_preserveDestructuring', () => {
+      const code = `
+        const {a, b, ...rest} = obj;
+        const [x, y, z = 10] = arr;
+        const {nested: {value}} = data;
+      `;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-stable',
+        customTransformOptions: {
+          unstable_preserveDestructuring: true,
+        },
+      });
+      // Check that destructuring syntax is preserved (not transformed)
+      expect(result).toContain('...rest');
+      expect(result).toContain('z = 10');
+      expect(result).toContain('nested:');
+      expect(result).not.toContain('_objectWithoutProperties');
+      expect(result).not.toContain('_slicedToArray');
+    });
+
+    it('transforms destructuring without unstable_preserveDestructuring', () => {
+      const code = `
+        const {a, b, ...rest} = obj;
+      `;
+      const result = transformCode(code, {
+        dev: false,
+        unstable_transformProfile: 'hermes-stable',
+      });
+      expect(result).toContain('_objectWithoutProperties');
     });
   });
 });
