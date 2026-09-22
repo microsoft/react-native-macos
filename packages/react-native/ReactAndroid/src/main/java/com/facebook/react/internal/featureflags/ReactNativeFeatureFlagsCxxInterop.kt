@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<8916e9f4a938a69ff175c806db9835d4>>
+ * @generated SignedSource<<a737810bf0211590401c2afb464aaf37>>
  */
 
 /**
@@ -86,10 +86,6 @@ public object ReactNativeFeatureFlagsCxxInterop {
 
   @DoNotStrip @JvmStatic public external fun enableImagePrefetchingAndroid(): Boolean
 
-  @DoNotStrip @JvmStatic public external fun enableImagePrefetchingJNIBatchingAndroid(): Boolean
-
-  @DoNotStrip @JvmStatic public external fun enableImagePrefetchingOnUiThreadAndroid(): Boolean
-
   @DoNotStrip @JvmStatic public external fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableImperativeFocus(): Boolean
@@ -119,6 +115,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun enablePreparedTextLayout(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enablePropsUpdateReconciliationAndroid(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun enableSchedulerDelegateInvalidation(): Boolean
 
   @DoNotStrip @JvmStatic public external fun enableSwiftUIBasedFilters(): Boolean
 
@@ -195,6 +193,8 @@ public object ReactNativeFeatureFlagsCxxInterop {
   @DoNotStrip @JvmStatic public external fun useNativeViewConfigsInBridgelessMode(): Boolean
 
   @DoNotStrip @JvmStatic public external fun useNestedScrollViewAndroid(): Boolean
+
+  @DoNotStrip @JvmStatic public external fun useOptimizedViewRegistryOnAndroid(): Boolean
 
   @DoNotStrip @JvmStatic public external fun useSharedAnimatedBackend(): Boolean
 

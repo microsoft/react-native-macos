@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<b99eaffc2d11a08a6efe32b2e2732965>>
+ * @generated SignedSource<<d9ed25122f1ff64122bfc83f8e5e9545>>
  */
 
 /**
@@ -213,18 +213,6 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
-  bool enableImagePrefetchingJNIBatchingAndroid() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImagePrefetchingJNIBatchingAndroid");
-    return method(javaProvider_);
-  }
-
-  bool enableImagePrefetchingOnUiThreadAndroid() override {
-    static const auto method =
-        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImagePrefetchingOnUiThreadAndroid");
-    return method(javaProvider_);
-  }
-
   bool enableImmediateUpdateModeForContentOffsetChanges() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableImmediateUpdateModeForContentOffsetChanges");
@@ -312,6 +300,12 @@ class ReactNativeFeatureFlagsJavaProvider
   bool enablePropsUpdateReconciliationAndroid() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enablePropsUpdateReconciliationAndroid");
+    return method(javaProvider_);
+  }
+
+  bool enableSchedulerDelegateInvalidation() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("enableSchedulerDelegateInvalidation");
     return method(javaProvider_);
   }
 
@@ -543,6 +537,12 @@ class ReactNativeFeatureFlagsJavaProvider
     return method(javaProvider_);
   }
 
+  bool useOptimizedViewRegistryOnAndroid() override {
+    static const auto method =
+        getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("useOptimizedViewRegistryOnAndroid");
+    return method(javaProvider_);
+  }
+
   bool useSharedAnimatedBackend() override {
     static const auto method =
         getReactNativeFeatureFlagsProviderJavaClass()->getMethod<jboolean()>("useSharedAnimatedBackend");
@@ -740,16 +740,6 @@ bool JReactNativeFeatureFlagsCxxInterop::enableImagePrefetchingAndroid(
   return ReactNativeFeatureFlags::enableImagePrefetchingAndroid();
 }
 
-bool JReactNativeFeatureFlagsCxxInterop::enableImagePrefetchingJNIBatchingAndroid(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::enableImagePrefetchingJNIBatchingAndroid();
-}
-
-bool JReactNativeFeatureFlagsCxxInterop::enableImagePrefetchingOnUiThreadAndroid(
-    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
-  return ReactNativeFeatureFlags::enableImagePrefetchingOnUiThreadAndroid();
-}
-
 bool JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForContentOffsetChanges(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enableImmediateUpdateModeForContentOffsetChanges();
@@ -823,6 +813,11 @@ bool JReactNativeFeatureFlagsCxxInterop::enablePreparedTextLayout(
 bool JReactNativeFeatureFlagsCxxInterop::enablePropsUpdateReconciliationAndroid(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::enablePropsUpdateReconciliationAndroid();
+}
+
+bool JReactNativeFeatureFlagsCxxInterop::enableSchedulerDelegateInvalidation(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::enableSchedulerDelegateInvalidation();
 }
 
 bool JReactNativeFeatureFlagsCxxInterop::enableSwiftUIBasedFilters(
@@ -1015,6 +1010,11 @@ bool JReactNativeFeatureFlagsCxxInterop::useNestedScrollViewAndroid(
   return ReactNativeFeatureFlags::useNestedScrollViewAndroid();
 }
 
+bool JReactNativeFeatureFlagsCxxInterop::useOptimizedViewRegistryOnAndroid(
+    facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
+  return ReactNativeFeatureFlags::useOptimizedViewRegistryOnAndroid();
+}
+
 bool JReactNativeFeatureFlagsCxxInterop::useSharedAnimatedBackend(
     facebook::jni::alias_ref<JReactNativeFeatureFlagsCxxInterop> /*unused*/) {
   return ReactNativeFeatureFlags::useSharedAnimatedBackend();
@@ -1174,12 +1174,6 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
         "enableImagePrefetchingAndroid",
         JReactNativeFeatureFlagsCxxInterop::enableImagePrefetchingAndroid),
       makeNativeMethod(
-        "enableImagePrefetchingJNIBatchingAndroid",
-        JReactNativeFeatureFlagsCxxInterop::enableImagePrefetchingJNIBatchingAndroid),
-      makeNativeMethod(
-        "enableImagePrefetchingOnUiThreadAndroid",
-        JReactNativeFeatureFlagsCxxInterop::enableImagePrefetchingOnUiThreadAndroid),
-      makeNativeMethod(
         "enableImmediateUpdateModeForContentOffsetChanges",
         JReactNativeFeatureFlagsCxxInterop::enableImmediateUpdateModeForContentOffsetChanges),
       makeNativeMethod(
@@ -1224,6 +1218,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "enablePropsUpdateReconciliationAndroid",
         JReactNativeFeatureFlagsCxxInterop::enablePropsUpdateReconciliationAndroid),
+      makeNativeMethod(
+        "enableSchedulerDelegateInvalidation",
+        JReactNativeFeatureFlagsCxxInterop::enableSchedulerDelegateInvalidation),
       makeNativeMethod(
         "enableSwiftUIBasedFilters",
         JReactNativeFeatureFlagsCxxInterop::enableSwiftUIBasedFilters),
@@ -1338,6 +1335,9 @@ void JReactNativeFeatureFlagsCxxInterop::registerNatives() {
       makeNativeMethod(
         "useNestedScrollViewAndroid",
         JReactNativeFeatureFlagsCxxInterop::useNestedScrollViewAndroid),
+      makeNativeMethod(
+        "useOptimizedViewRegistryOnAndroid",
+        JReactNativeFeatureFlagsCxxInterop::useOptimizedViewRegistryOnAndroid),
       makeNativeMethod(
         "useSharedAnimatedBackend",
         JReactNativeFeatureFlagsCxxInterop::useSharedAnimatedBackend),

@@ -37,8 +37,8 @@
   "dependencies": {
     "@react-native/js-polyfills": "workspace:*",
     "@react-native/metro-babel-transformer": "workspace:*",
-    "metro-config": "^0.84.2",
-    "metro-runtime": "^0.84.2"
+    "metro-config": "^0.84.3",
+    "metro-runtime": "^0.84.3"
   },
   "private": true
 }

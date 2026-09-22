@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4f9f5c1c46217ed6802abd5f786aac19>>
+ * @generated SignedSource<<76d977ea53cb2a37fc2ea8549e31cebd>>
  */
 
 /**
@@ -49,8 +49,6 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableIOSTextBaselineOffsetPerLineCache: Boolean? = null
   private var enableIOSViewClipToPaddingBoxCache: Boolean? = null
   private var enableImagePrefetchingAndroidCache: Boolean? = null
-  private var enableImagePrefetchingJNIBatchingAndroidCache: Boolean? = null
-  private var enableImagePrefetchingOnUiThreadAndroidCache: Boolean? = null
   private var enableImmediateUpdateModeForContentOffsetChangesCache: Boolean? = null
   private var enableImperativeFocusCache: Boolean? = null
   private var enableInteropViewManagerClassLookUpOptimizationIOSCache: Boolean? = null
@@ -66,6 +64,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var enableNetworkEventReportingCache: Boolean? = null
   private var enablePreparedTextLayoutCache: Boolean? = null
   private var enablePropsUpdateReconciliationAndroidCache: Boolean? = null
+  private var enableSchedulerDelegateInvalidationCache: Boolean? = null
   private var enableSwiftUIBasedFiltersCache: Boolean? = null
   private var enableViewCullingCache: Boolean? = null
   private var enableViewRecyclingCache: Boolean? = null
@@ -104,6 +103,7 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
   private var useLISAlgorithmInDifferentiatorCache: Boolean? = null
   private var useNativeViewConfigsInBridgelessModeCache: Boolean? = null
   private var useNestedScrollViewAndroidCache: Boolean? = null
+  private var useOptimizedViewRegistryOnAndroidCache: Boolean? = null
   private var useSharedAnimatedBackendCache: Boolean? = null
   private var useTraitHiddenOnAndroidCache: Boolean? = null
   private var useTurboModuleInteropCache: Boolean? = null
@@ -374,24 +374,6 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     return cached
   }
 
-  override fun enableImagePrefetchingJNIBatchingAndroid(): Boolean {
-    var cached = enableImagePrefetchingJNIBatchingAndroidCache
-    if (cached == null) {
-      cached = ReactNativeFeatureFlagsCxxInterop.enableImagePrefetchingJNIBatchingAndroid()
-      enableImagePrefetchingJNIBatchingAndroidCache = cached
-    }
-    return cached
-  }
-
-  override fun enableImagePrefetchingOnUiThreadAndroid(): Boolean {
-    var cached = enableImagePrefetchingOnUiThreadAndroidCache
-    if (cached == null) {
-      cached = ReactNativeFeatureFlagsCxxInterop.enableImagePrefetchingOnUiThreadAndroid()
-      enableImagePrefetchingOnUiThreadAndroidCache = cached
-    }
-    return cached
-  }
-
   override fun enableImmediateUpdateModeForContentOffsetChanges(): Boolean {
     var cached = enableImmediateUpdateModeForContentOffsetChangesCache
     if (cached == null) {
@@ -523,6 +505,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.enablePropsUpdateReconciliationAndroid()
       enablePropsUpdateReconciliationAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun enableSchedulerDelegateInvalidation(): Boolean {
+    var cached = enableSchedulerDelegateInvalidationCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.enableSchedulerDelegateInvalidation()
+      enableSchedulerDelegateInvalidationCache = cached
     }
     return cached
   }
@@ -865,6 +856,15 @@ internal class ReactNativeFeatureFlagsCxxAccessor : ReactNativeFeatureFlagsAcces
     if (cached == null) {
       cached = ReactNativeFeatureFlagsCxxInterop.useNestedScrollViewAndroid()
       useNestedScrollViewAndroidCache = cached
+    }
+    return cached
+  }
+
+  override fun useOptimizedViewRegistryOnAndroid(): Boolean {
+    var cached = useOptimizedViewRegistryOnAndroidCache
+    if (cached == null) {
+      cached = ReactNativeFeatureFlagsCxxInterop.useOptimizedViewRegistryOnAndroid()
+      useOptimizedViewRegistryOnAndroidCache = cached
     }
     return cached
   }
