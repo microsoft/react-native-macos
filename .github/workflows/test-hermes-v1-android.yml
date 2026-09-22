@@ -12,7 +12,7 @@ on:
 jobs:
   test-hermes-v1-android:
     name: Test Hermes V1 on Android
-    runs-on: 4-core-ubuntu
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         flavor: [debug, release]
