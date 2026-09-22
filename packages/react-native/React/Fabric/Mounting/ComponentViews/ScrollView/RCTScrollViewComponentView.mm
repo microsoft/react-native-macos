@@ -48,7 +48,7 @@ static UIScrollViewKeyboardDismissMode RCTUIKeyboardDismissModeFromProps(const S
 }
 #endif // [macOS] [visionOS]
 
-#if !TARGET_OS_OSX // [macOS
+#if !TARGET_OS_OSX // [macOS]
 static UIScrollViewIndicatorStyle RCTUIScrollViewIndicatorStyleFromProps(const ScrollViewProps &props)
 {
   switch (props.indicatorStyle) {
@@ -408,7 +408,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   MAP_SCROLL_VIEW_PROP(minimumZoomScale);
 #endif // [macOS]
   MAP_SCROLL_VIEW_PROP(scrollEnabled);
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
   MAP_SCROLL_VIEW_PROP(pagingEnabled);
   MAP_SCROLL_VIEW_PROP(pinchGestureEnabled);
   MAP_SCROLL_VIEW_PROP(scrollsToTop);
@@ -789,6 +789,11 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   _scrollView.contentOffset = RCTCGPointFromPoint(props.contentOffset);
   // Reset zoom scale to default
   _scrollView.zoomScale = 1.0;
+  // Invalidate cached content size so that updateState: recalculates the
+  // container frame after zoomScale reset (which may have mutated it in RTL).
+  _contentSize = CGSizeZero;
+  // Reset contentInset to prevent stale insets leaking into recycled scroll views.
+  _scrollView.contentInset = UIEdgeInsetsZero;
   // We set the default behavior to "never" so that iOS
   // doesn't do weird things to UIScrollView insets automatically
   // and keeps it as an opt-in behavior.
@@ -964,7 +969,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 - (void)viewDidMoveToWindow // [macOS]
 {
   [super viewDidMoveToWindow];
-#endif // [macOS]
+#endif // macOS]
 
 #if TARGET_OS_OSX // [macOS
   NSNotificationCenter *defaultCenter = [NSNotificationCenter defaultCenter];
@@ -1073,7 +1078,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [_scrollView flashScrollIndicators];
 #else // [macOS
   [(RCTEnhancedScrollView *)_scrollView flashScrollers];
-#endif // [macOS]
+#endif // macOS]
 }
 
 - (void)scrollTo:(double)x y:(double)y animated:(BOOL)animated
@@ -1199,7 +1204,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [_scrollView zoomToRect:rect animated:animated];
 #else // [macOS
   [(RCTEnhancedScrollView *)_scrollView zoomToRect:rect animated:animated];
-#endif // [macOS]
+#endif // macOS]
 }
 
 - (void)addScrollListener:(NSObject<RCTUIScrollViewDelegate> *)scrollListener // [macOS]

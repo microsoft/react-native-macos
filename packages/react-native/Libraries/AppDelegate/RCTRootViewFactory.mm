@@ -195,7 +195,11 @@
       [[RCTSurfaceHostingProxyRootView alloc] initWithSurface:surface];
 
 #if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_TV
+  surfaceHostingProxyRootView.backgroundColor = [UIColor clearColor];
+#else
   surfaceHostingProxyRootView.backgroundColor = [UIColor systemBackgroundColor];
+#endif
 #endif // [macOS]
 
 #if RCT_DEV_MENU // [macOS
@@ -204,7 +208,6 @@
     surfaceHostingProxyRootView.devMenu = devMenu;
   }
 #endif // macOS]
-
   if (_configuration.customizeRootView != nil) {
     _configuration.customizeRootView(surfaceHostingProxyRootView);
   }
@@ -221,7 +224,7 @@
                                     initProps:(NSDictionary *)initProps
 {
   RCTPlatformView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, YES); // [macOS]
-  
+
 #if RCT_DEV_MENU // [macOS
   if ([rootView isKindOfClass:[RCTSurfaceHostingView class]]) {
     RCTDevMenu *devMenu = [bridge moduleForClass:[RCTDevMenu class]];
@@ -230,9 +233,13 @@
     }
   }
 #endif // macOS]
-  
+
 #if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_TV
   rootView.backgroundColor = [UIColor systemBackgroundColor];
+#else
+  rootView.backgroundColor = [UIColor blackColor];
+#endif
 #endif // [macOS]
   return rootView;
 }

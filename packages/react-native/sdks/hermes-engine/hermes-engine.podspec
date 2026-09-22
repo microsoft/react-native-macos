@@ -21,30 +21,12 @@ end
 
 # package.json
 package = JSON.parse(File.read(File.join(react_native_path, "package.json")))
-version = findMatchingHermesVersion(package) # [macOS] Use special logic instead of just package['version']
-
-if version.nil?
-  versionProperties = Hash[*File.read("version.properties").split(/[=\n]+/)]
-
-  if ENV['RCT_HERMES_V1_ENABLED'] == "1"
-    version = versionProperties['HERMES_V1_VERSION_NAME']
-  else
-    version = versionProperties['HERMES_VERSION_NAME']
-  end
-
-  # Local monorepo build
-  if package['version'] == "1000.0.0" then
-    hermesCompilerVersion = package['dependencies']['hermes-compiler']
-    if hermesCompilerVersion != "0.0.0" then
-      version = hermesCompilerVersion
-    end
-  end
-end
+versionProperties = Hash[*File.read(File.join(__dir__, "version.properties")).split(/[=\n]+/)]
+versionKey = hermes_v1_enabled() ? 'HERMES_V1_VERSION_NAME' : 'HERMES_VERSION_NAME'
+version = versionProperties.fetch(versionKey)
 
 source_type = hermes_source_type(version, react_native_path)
 source = podspec_source(source_type, version, react_native_path)
-
-version = version || package['version'] # [macOS] If version is nil, fall back to package version so CocoaPods doesn't fail
 
 Pod::Spec.new do |spec|
   spec.name        = "hermes-engine"
@@ -75,7 +57,15 @@ Pod::Spec.new do |spec|
 
     spec.subspec 'Pre-built' do |ss|
       ss.preserve_paths = ["destroot/bin/*"].concat(["**/*.{h,c,cpp}"])
-      ss.source_files = "destroot/include/hermes/**/*.h"
+      if ENV["RCT_HERMES_V1_ENABLED"] == "0"
+        ss.source_files = "destroot/include/hermes/**/*.h"
+      else
+        # Hermes v1 is shipping a jsi/hermes.h header which is imported by the hermes.h header
+        # and that file is not present in React Native's JSI
+        # (see https://github.com/facebook/react-native/tree/main/packages/react-native/ReactCommon/jsi/jsi/ where there is
+        # hermes-interface.h but not hermes.h)
+        ss.source_files = ["destroot/include/hermes/**/*.h", "destroot/include/jsi/hermes.h"]
+      end
       ss.header_mappings_dir = "destroot/include"
       ss.ios.vendored_frameworks = "destroot/Library/Frameworks/universal/hermesvm.xcframework"
       ss.visionos.vendored_frameworks = "destroot/Library/Frameworks/universal/hermesvm.xcframework"
@@ -138,7 +128,7 @@ Pod::Spec.new do |spec|
       ss.header_dir = 'hermes/Public'
     end
 
-    if ENV['RCT_HERMES_V1_ENABLED'] != "1"
+    if ENV['RCT_HERMES_V1_ENABLED'] == "0"
       spec.subspec 'inspector' do |ss|
         ss.source_files = ''
         ss.public_header_files = 'API/hermes/inspector/*.h'
