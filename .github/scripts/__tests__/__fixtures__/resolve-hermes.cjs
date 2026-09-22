@@ -54,6 +54,13 @@ const propertiesPath = path.resolve(
 );
 const readFileSync = fs.readFileSync;
 fs.readFileSync = function (file, ...args) {
+  if (
+    (file === path.resolve(helpersPath, '../../sdks/.hermesversion') ||
+      file === path.resolve(helpersPath, '../../sdks/.hermesv1version')) &&
+    process.env.HERMES_TEST_REF != null
+  ) {
+    return process.env.HERMES_TEST_REF;
+  }
   if (file === propertiesPath && process.env.HERMES_TEST_PROPERTIES != null) {
     if (process.env.HERMES_TEST_PROPERTIES === 'MISSING') {
       throw Object.assign(new Error(`ENOENT: ${propertiesPath}`), {

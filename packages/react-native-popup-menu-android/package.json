@@ -1,7 +1,6 @@
 {
   "name": "@react-native/popup-menu-android",
-  "version": "0.84.0-main",
-  "private": true,
+  "version": "0.85.0-main",
   "description": "PopupMenu for the Android platform",
   "main": "index.js",
   "files": [
@@ -48,5 +47,6 @@
     "android": {
       "javaPackageName": "com.facebook.react.viewmanagers"
     }
-  }
+  },
+  "private": true
 }

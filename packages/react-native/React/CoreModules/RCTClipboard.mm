@@ -28,25 +28,27 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_METHOD(setString : (NSString *)content)
 {
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
   UIPasteboard *clipboard = [UIPasteboard generalPasteboard];
   clipboard.string = (content ?: @"");
-#else // [macOS
+#elif TARGET_OS_OSX // [macOS
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
   [pasteboard clearContents];
-  [pasteboard setString:(content ? : @"") forType:NSPasteboardTypeString];
+  [pasteboard setString:(content ?: @"") forType:NSPasteboardTypeString];
 #endif // macOS]
 }
 
 RCT_EXPORT_METHOD(getString : (RCTPromiseResolveBlock)resolve reject : (__unused RCTPromiseRejectBlock)reject)
 {
-#if !TARGET_OS_OSX // [macOS]
+#if !TARGET_OS_OSX && !TARGET_OS_TV // [macOS]
   UIPasteboard *clipboard = [UIPasteboard generalPasteboard];
   resolve((clipboard.string ?: @""));
-#else // [macOS
+#elif TARGET_OS_OSX // [macOS
   NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-  resolve(([pasteboard stringForType:NSPasteboardTypeString] ? : @""));
-#endif // macOS]
+  resolve(([pasteboard stringForType:NSPasteboardTypeString] ?: @""));
+#else // macOS]
+  resolve(@"");
+#endif // [macOS]
 }
 
 - (std::shared_ptr<TurboModule>)getTurboModule:(const ObjCTurboModule::InitParams &)params

@@ -130,6 +130,7 @@ export interface ViewPropsAndroid {
   tabIndex?: 0 | -1 | undefined;
 }
 
+// [macOS
 export type DraggedType = 'fileUrl' | 'image' | 'string';
 export type DraggedTypesType = DraggedType | DraggedType[];
 
@@ -141,6 +142,8 @@ export interface ViewPropsMacOS {
   onMouseEnter?: ((event: MouseEvent) => void) | undefined;
   onMouseLeave?: ((event: MouseEvent) => void) | undefined;
   onDoubleClick?: ((event: MouseEvent) => void) | undefined;
+  onAuxClick?: ((event: PointerEvent) => void) | undefined;
+  onAuxClickCapture?: ((event: PointerEvent) => void) | undefined;
   onDragEnter?: ((event: DragEvent) => void) | undefined;
   onDragLeave?: ((event: DragEvent) => void) | undefined;
   onDrop?: ((event: DragEvent) => void) | undefined;
@@ -153,6 +156,7 @@ export interface ViewPropsMacOS {
   passthroughAllKeyEvents?: boolean | undefined;
   draggedTypes?: DraggedTypesType | undefined;
 }
+// macOS]
 
 /**
  * @see https://reactnative.dev/docs/view#props

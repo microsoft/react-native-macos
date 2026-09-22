@@ -297,12 +297,12 @@ RCT_EXPORT_MODULE()
                                                  name:@"RCTAccessibilityManagerDidUpdateMultiplierNotification"
                                                object:a11yManager];
   });
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS // [macOS]
   [[NSNotificationCenter defaultCenter] addObserver:self
                                            selector:@selector(namedOrientationDidChange)
                                                name:UIDeviceOrientationDidChangeNotification
                                              object:nil];
-#endif
+#endif // [macOS]
   [RCTLayoutAnimation initializeStatics];
 #endif // [macOS]
 }
@@ -373,7 +373,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
 }
 #endif // [macOS] [visionOS]
 
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS // [macOS]
 - (void)namedOrientationDidChange
 {
   NSDictionary *orientationEvent = deviceOrientationEventBody([UIDevice currentDevice].orientation);
@@ -387,7 +387,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
                                                                         body:orientationEvent];
 #pragma clang diagnostic pop
 }
-#endif
+#endif // [macOS]
 
 - (dispatch_queue_t)methodQueue
 {
@@ -915,7 +915,7 @@ static NSDictionary *deviceOrientationEventBody(UIDeviceOrientation orientation)
     [container removeReactSubview:removedChild];
     // Disable user interaction while the view is animating
     // since the view is (conceptually) deleted and not supposed to be interactive.
-    if ([removedChild respondsToSelector:@selector(setUserInteractionEnabled:)]) { // [macOS
+    if ([removedChild respondsToSelector:@selector(setUserInteractionEnabled:)]) { // [macOS]
       ((RCTUIView *)removedChild).userInteractionEnabled = NO; // [macOS]
     }
 #if !TARGET_OS_OSX // [macOS]
@@ -1297,7 +1297,7 @@ RCT_EXPORT_METHOD(
             [[RCTComposedViewRegistry alloc] initWithUIManager:strongSelf andRegistry:strongSelf->_viewRegistry];
         block(strongSelf, composedViewRegistry);
       }
-    } @catch (NSException *exception) {
+    } @catch (NSException *__unused exception) {
       RCTLogError(@"Exception thrown while executing UI block: %@", exception);
     }
   };

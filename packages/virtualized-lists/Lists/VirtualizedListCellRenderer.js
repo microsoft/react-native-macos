@@ -51,7 +51,7 @@ export type Props<ItemT> = {
   ...
 };
 
-type SeparatorProps<ItemT> = $ReadOnly<{
+type SeparatorProps<ItemT> = Readonly<{
   highlighted: boolean,
   leadingItem: ?ItemT,
 }>;

@@ -60,7 +60,11 @@
   RCTUIView *rootView = RCTAppSetupDefaultRootView(bridge, moduleName, initProps, YES);
 
 #if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_TV
+  rootView.backgroundColor = [UIColor clearColor];
+#else
   rootView.backgroundColor = [UIColor systemBackgroundColor];
+#endif
 #else // [macOS
   rootView.backgroundColor = [NSColor windowBackgroundColor];
 #endif // macOS]
