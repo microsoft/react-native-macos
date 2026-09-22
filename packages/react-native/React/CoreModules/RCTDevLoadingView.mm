@@ -56,8 +56,29 @@ RCT_EXPORT_MODULE()
                                              selector:@selector(hide)
                                                  name:RCTJavaScriptDidFailToLoadNotification
                                                object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(hide)
+                                                 name:@"RCTInstanceDidLoadBundle"
+                                               object:nil];
   }
   return self;
+}
+
+- (void)dealloc
+{
+  [self clearInitialMessageDelay];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  RCTPlatformWindow *window = _window; // [macOS]
+  _window = nil;
+  if (window) {
+    RCTExecuteOnMainQueue(^{
+#if !TARGET_OS_OSX // [macOS]
+      window.hidden = YES;
+#else // [macOS
+      [window close];
+#endif // macOS]
+    });
+  }
 }
 
 + (void)setEnabled:(BOOL)enabled
@@ -337,7 +358,7 @@ RCT_EXPORT_METHOD(hide)
           self->_dismissButton = nil;
           self->_hiding = false;
         }];
-#else // [macOS]
+#else // [macOS
     for (NSWindow *window in NSApp.windows) {
       if ([[window identifier] isEqualToString:sRCTDevLoadingViewWindowIdentifier]) {
         [window.parentWindow removeChildWindow:window];

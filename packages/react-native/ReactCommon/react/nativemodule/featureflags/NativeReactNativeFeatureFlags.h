@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<525d64b15e1b72440743363280116c6a>>
+ * @generated SignedSource<<ed4a87c5d258ebf5aa61e7d74d1b09be>>
  */
 
 /**
@@ -118,6 +118,8 @@ class NativeReactNativeFeatureFlags
 
   bool enableModuleArgumentNSNullConversionIOS(jsi::Runtime& runtime);
 
+  bool enableMutationObserverByDefault(jsi::Runtime& runtime);
+
   bool enableNativeCSSParsing(jsi::Runtime& runtime);
 
   bool enableNetworkEventReporting(jsi::Runtime& runtime);
@@ -154,7 +156,11 @@ class NativeReactNativeFeatureFlags
 
   bool fuseboxEnabledRelease(jsi::Runtime& runtime);
 
+  bool fuseboxFrameRecordingEnabled(jsi::Runtime& runtime);
+
   bool fuseboxNetworkInspectionEnabled(jsi::Runtime& runtime);
+
+  bool fuseboxScreenshotCaptureEnabled(jsi::Runtime& runtime);
 
   bool hideOffscreenVirtualViewsOnIOS(jsi::Runtime& runtime);
 
@@ -167,6 +173,10 @@ class NativeReactNativeFeatureFlags
   double preparedTextCacheSize(jsi::Runtime& runtime);
 
   bool preventShadowTreeCommitExhaustion(jsi::Runtime& runtime);
+
+  bool redBoxV2Android(jsi::Runtime& runtime);
+
+  bool redBoxV2IOS(jsi::Runtime& runtime);
 
   bool shouldPressibilityUseW3CPointerEventsForHover(jsi::Runtime& runtime);
 
