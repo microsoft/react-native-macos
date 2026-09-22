@@ -14,9 +14,11 @@
 
 @protocol RCTRedBoxControllerActionDelegate <NSObject>
 
-- (void)redBoxController:(RCTPlatformViewController *)redBoxController // [macOS]
+// [macOS
+- (void)redBoxController:(RCTPlatformViewController *)redBoxController
     openStackFrameInEditor:(RCTJSStackFrame *)stackFrame;
-- (void)reloadFromRedBoxController:(RCTPlatformViewController *)redBoxController; // [macOS]
+- (void)reloadFromRedBoxController:(RCTPlatformViewController *)redBoxController;
+// macOS]
 - (void)loadExtraDataViewController;
 
 @end
