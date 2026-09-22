@@ -9,7 +9,7 @@ on:
         required: false
         default: ''
       use-hermes-prebuilt:
-        description: 'Whether to resolve Hermes from the latest-v1 npm dist-tag (true) or from the version pinned in version.properties (false)'
+        description: 'Compatibility input; Hermes always uses the exact version pinned in the fork SDK metadata'
         type: boolean
         required: false
         default: false
@@ -226,13 +226,12 @@ jobs:
       - name: Rename ReactNativeHeaders XCFramework tarball
         if: steps.restore-ios-xcframework.outputs.cache-hit != 'true'
         run: |
+          # The compose step already tars ReactNativeHeaders.xcframework standalone;
+          # published as its own Maven artifact (classifier reactnative-headers-*)
+          # so SwiftPM consumers can wire it as a separate binaryTarget. It also
+          # ships inside the ReactCore tarball for the CocoaPods pod.
           cp packages/react-native/.build/output/xcframeworks/${{matrix.flavor}}/ReactNativeHeaders.xcframework.tar.gz \
             packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
-      - name: Upload ReactNativeHeaders XCFramework Artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: ReactNativeHeaders${{ matrix.flavor }}.xcframework.tar.gz
-          path: packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
       - name: Upload XCFramework Artifact
         uses: actions/upload-artifact@v6
         with:
@@ -243,6 +242,11 @@ jobs:
         with:
           name: ReactCore${{ matrix.flavor }}.framework.dSYM.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCore${{matrix.flavor}}.framework.dSYM.tar.gz
+      - name: Upload ReactNativeHeaders XCFramework Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ReactNativeHeaders${{ matrix.flavor }}.xcframework.tar.gz
+          path: packages/react-native/.build/output/xcframeworks/ReactNativeHeaders${{matrix.flavor}}.xcframework.tar.gz
       - name: Save cache if present
         if: ${{ github.ref == 'refs/heads/main' }} # To avoid that the cache explode
         uses: actions/cache/save@v5
