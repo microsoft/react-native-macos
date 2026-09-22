@@ -107,7 +107,7 @@ function wrapModuleSchema(
 }
 
 // $FlowFixMe[unsupported-variance-annotation]
-function unwrapNullable<+T: NativeModuleTypeAnnotation>(
+function unwrapNullable<+T extends NativeModuleTypeAnnotation>(
   x: Nullable<T>,
 ): [T, boolean] {
   if (x.type === 'NullableTypeAnnotation') {
@@ -118,7 +118,7 @@ function unwrapNullable<+T: NativeModuleTypeAnnotation>(
 }
 
 // $FlowFixMe[unsupported-variance-annotation]
-function wrapNullable<+T: NativeModuleTypeAnnotation>(
+function wrapNullable<+T extends NativeModuleTypeAnnotation>(
   nullable: boolean,
   typeAnnotation: T,
 ): Nullable<T> {
@@ -189,30 +189,42 @@ function getObjectTypeAnnotations(
     if (!isTypeAlias) {
       return;
     }
-    const parent = parser.nextNodeForTypeAlias(value);
+    let parent = parser.nextNodeForTypeAlias(value);
+    // Unwrap $ReadOnly/Readonly wrappers to get the inner object type
+    if (
+      parent.type === 'GenericTypeAnnotation' &&
+      (parent.id?.name === '$ReadOnly' || parent.id?.name === 'Readonly') &&
+      parent.typeParameters?.params?.length === 1
+    ) {
+      parent = parent.typeParameters.params[0];
+    } else if (
+      parent.type === 'TSTypeReference' &&
+      parent.typeName?.name === 'Readonly' &&
+      parent.typeParameters?.params?.length === 1
+    ) {
+      parent = parent.typeParameters.params[0];
+    }
     if (
       parent.type !== 'ObjectTypeAnnotation' &&
       parent.type !== 'TSTypeLiteral'
     ) {
       return;
     }
-    const typeProperties = parser
-      .getAnnotatedElementProperties(value)
-      .map(prop =>
-        parseObjectProperty(
-          parent,
-          prop,
-          hasteModuleName,
-          types,
-          aliasMap,
-          {}, // enumMap
-          tryParse,
-          true, // cxxOnly
-          prop?.optional || false,
-          translateTypeAnnotation,
-          parser,
-        ),
-      );
+    const typeProperties = (parent.properties ?? parent.members).map(prop =>
+      parseObjectProperty(
+        parent,
+        prop,
+        hasteModuleName,
+        types,
+        aliasMap,
+        {}, // enumMap
+        tryParse,
+        true, // cxxOnly
+        prop?.optional || false,
+        translateTypeAnnotation,
+        parser,
+      ),
+    );
     aliasMap[key] = {
       type: 'ObjectTypeAnnotation',
       properties: typeProperties,
@@ -751,9 +763,9 @@ const buildModuleSchema = (
 ): NativeModuleSchema => {
   const language = parser.language();
   const types = parser.getTypes(ast);
-  const moduleSpecs = (Object.values(types): ReadonlyArray<$FlowFixMe>).filter(
-    t => parser.isModuleInterface(t),
-  );
+  const moduleSpecs = (
+    Object.values(types) as ReadonlyArray<$FlowFixMe>
+  ).filter(t => parser.isModuleInterface(t));
 
   throwIfModuleInterfaceNotFound(
     moduleSpecs.length,

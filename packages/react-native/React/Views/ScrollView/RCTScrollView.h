@@ -17,13 +17,16 @@
 
 @protocol UIScrollViewDelegate;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic warning "-Wdeprecated"
 __attribute__((deprecated("This API will be removed along with the legacy architecture.")))
 @interface RCTScrollView : RCTView<
 #if TARGET_OS_IPHONE // [macOS
-	UIScrollViewDelegate,
+  UIScrollViewDelegate,
 #endif
-	RCTScrollableProtocol, RCTAutoInsetsProtocol
+  RCTScrollableProtocol, RCTAutoInsetsProtocol
 > // macOS]
+#pragma clang diagnostic pop
 
 - (instancetype)initWithEventDispatcher:(id<RCTEventDispatcherProtocol>)eventDispatcher NS_DESIGNATED_INITIALIZER;
 
@@ -84,9 +87,10 @@ __attribute__((deprecated("This API will be removed along with the legacy archit
 
 #if !TARGET_OS_OSX // [macOS]
 @interface UIView (RCTScrollView) // [macOS]
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
 - (void)reactUpdateResponderOffsetForScrollView:(RCTScrollView *)scrollView;
-
+#pragma clang diagnostic pop
 @end
 #endif // [macOS]
 
