@@ -145,16 +145,29 @@ function populateExtractedFramework() {
 }
 
 test.each(['Debug', 'Release'])(
-  'uses checked-in metadata with the 1000.0.0 RN package for %s',
+  'builds checked-in source-sentinel metadata with the 1000.0.0 RN package for %s',
   async flavor => {
     properties = checkedInProperties;
     const version = metadata.HERMES_VERSION_NAME;
     expect(await prepareHermesArtifactsAsync('1000.0.0', flavor)).toBe(
       artifacts,
     );
-    const url = releaseUrl(version, flavor.toLowerCase());
-    expect(global.fetch.mock.calls).toEqual([[url, {method: 'HEAD'}], [url]]);
-    expect(readFileSync(versionFile, 'utf8')).toBe(`${version}-${flavor}`);
+    expect(version).toBe('1000.0.0');
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(hermesCommitAtMergeBase).toHaveBeenCalledWith();
+    expect(execFileSync).toHaveBeenCalledWith(
+      'bash',
+      [expect.stringContaining('build-ios-framework.sh')],
+      expect.objectContaining({
+        env: expect.objectContaining({
+          BUILD_TYPE: flavor,
+          RELEASE_VERSION: version,
+        }),
+      }),
+    );
+    expect(readFileSync(versionFile, 'utf8')).toBe(
+      `source-0123456789abcdef0123456789abcdef01234567-${flavor}`,
+    );
     expect(fs.existsSync(path.join(artifacts, 'hermes-ios.download'))).toBe(
       false,
     );
@@ -326,7 +339,9 @@ test('reuses only the matching Hermes version, flag and flavor cache', async () 
   execFileSync.mockClear();
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
   expect(global.fetch).not.toHaveBeenCalled();
-  expect(execFileSync.mock.calls.map(([command]) => command)).toEqual(['plutil']);
+  expect(execFileSync.mock.calls.map(([command]) => command)).toEqual([
+    'plutil',
+  ]);
   properties = 'HERMES_VERSION_NAME=123.4.58\nHERMES_V1_VERSION_NAME=234.5.67';
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
   expect(global.fetch).toHaveBeenCalledWith(releaseUrl('123.4.58'));
