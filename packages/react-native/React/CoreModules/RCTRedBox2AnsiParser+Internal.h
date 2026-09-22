@@ -5,10 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <React/RCTDefines.h>
-
-#if !TARGET_OS_OSX // [macOS]
-#import <UIKit/UIKit.h>
+#import <React/RCTUIKit.h> // [macOS]
 
 /**
  * Parses ANSI escape sequences in text and produces an NSAttributedString
@@ -18,10 +15,14 @@
  */
 @interface RCTRedBox2AnsiParser : NSObject
 
+#if !TARGET_OS_OSX // [macOS]
 + (NSAttributedString *)attributedStringFromAnsiText:(NSString *)text
                                             baseFont:(UIFont *)font
                                            baseColor:(UIColor *)color;
+#else // [macOS
++ (NSAttributedString *)attributedStringFromAnsiText:(NSString *)text
+                                            baseFont:(UIFont *)font
+                                           baseColor:(RCTPlatformColor *)color;
+#endif // macOS]
 
 @end
-
-#endif // [macOS]
