@@ -131,3 +131,24 @@ test('reads checked-in metadata relative to the helper', () => {
     metadata.HERMES_V1_VERSION_NAME,
   );
 });
+
+test('the default runtime, compiler, and source tag versions agree', () => {
+  const previous = process.env.RCT_HERMES_V1_ENABLED;
+  try {
+    delete process.env.RCT_HERMES_V1_ENABLED;
+    // CI and prebuild use V1 by default; the shared helper defaults to legacy.
+    const {version, tagFile} = readHermesMetadata('v1-default');
+    const {dependencies} = require('../../../package.json');
+    expect(dependencies['hermes-compiler']).toBe(version);
+    const tag = fs
+      .readFileSync(path.resolve(__dirname, '../../../sdks', tagFile), 'utf8')
+      .trim();
+    expect(tag).toBe(`hermes-v${version}`);
+  } finally {
+    if (previous == null) {
+      delete process.env.RCT_HERMES_V1_ENABLED;
+    } else {
+      process.env.RCT_HERMES_V1_ENABLED = previous;
+    }
+  }
+});

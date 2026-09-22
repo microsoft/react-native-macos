@@ -45,7 +45,7 @@ type UnsafeNativeEventObject = Object;
  * can theoretically listen to `RCTDeviceEventEmitter` (although discouraged).
  */
 export default class NativeEventEmitter<
-  TEventToArgsMap: Readonly<
+  TEventToArgsMap extends Readonly<
     Record<string, ReadonlyArray<UnsafeNativeEventObject>>,
   > = Readonly<Record<string, ReadonlyArray<UnsafeNativeEventObject>>>,
 > implements IEventEmitter<TEventToArgsMap>
@@ -84,7 +84,7 @@ export default class NativeEventEmitter<
     }
   }
 
-  addListener<TEvent: keyof TEventToArgsMap>(
+  addListener<TEvent extends keyof TEventToArgsMap>(
     eventType: TEvent,
     listener: (...args: TEventToArgsMap[TEvent]) => unknown,
     context?: unknown,
@@ -108,7 +108,7 @@ export default class NativeEventEmitter<
     };
   }
 
-  emit<TEvent: keyof TEventToArgsMap>(
+  emit<TEvent extends keyof TEventToArgsMap>(
     eventType: TEvent,
     ...args: TEventToArgsMap[TEvent]
   ): void {
@@ -117,7 +117,9 @@ export default class NativeEventEmitter<
     RCTDeviceEventEmitter.emit(eventType, ...args);
   }
 
-  removeAllListeners<TEvent: keyof TEventToArgsMap>(eventType?: ?TEvent): void {
+  removeAllListeners<TEvent extends keyof TEventToArgsMap>(
+    eventType?: ?TEvent,
+  ): void {
     invariant(
       eventType != null,
       '`NativeEventEmitter.removeAllListener()` requires a non-null argument.',
@@ -126,7 +128,9 @@ export default class NativeEventEmitter<
     RCTDeviceEventEmitter.removeAllListeners(eventType);
   }
 
-  listenerCount<TEvent: keyof TEventToArgsMap>(eventType: TEvent): number {
+  listenerCount<TEvent extends keyof TEventToArgsMap>(
+    eventType: TEvent,
+  ): number {
     return RCTDeviceEventEmitter.listenerCount(eventType);
   }
 }

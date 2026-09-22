@@ -113,6 +113,15 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return YES;
   }
 
+  // Clamp the range to the current text length to avoid NSRangeException.
+  NSUInteger textLength = _backedTextInputView.attributedText.length;
+  if (range.location > textLength) {
+    return NO;
+  }
+  if (range.location + range.length > textLength) {
+    range = NSMakeRange(range.location, textLength - range.location);
+  }
+
   NSMutableAttributedString *attributedString = [_backedTextInputView.attributedText mutableCopy];
   [attributedString replaceCharactersInRange:range withString:newText];
   [_backedTextInputView setAttributedText:[attributedString copy]];
@@ -405,16 +414,18 @@ static void *TextFieldSelectionObservingContext = &TextFieldSelectionObservingCo
     return NO;
   }
 
-#if !TARGET_OS_OSX // [macOS]
-  if (range.location + range.length > _backedTextInputView.text.length) {
-    range = NSMakeRange(range.location, _backedTextInputView.text.length - range.location);
-#else // [macOS
-  if (range.location + range.length > _backedTextInputView.string.length) {
-    range = NSMakeRange(range.location, _backedTextInputView.string.length - range.location);
-#endif // macOS]
-  } else if ([newText isEqualToString:text]) {
+  if ([newText isEqualToString:text]) {
     _textDidChangeIsComing = YES;
     return YES;
+  }
+
+  // Clamp the range to the current text length to avoid NSRangeException.
+  NSUInteger textLength = _backedTextInputView.attributedText.length;
+  if (range.location > textLength) {
+    return NO;
+  }
+  if (range.location + range.length > textLength) {
+    range = NSMakeRange(range.location, textLength - range.location);
   }
 
   NSMutableAttributedString *attributedString = [_backedTextInputView.attributedText mutableCopy];
