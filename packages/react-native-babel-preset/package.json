@@ -1,6 +1,6 @@
 {
   "name": "@react-native/babel-preset",
-  "version": "0.83.0-main",
+  "version": "0.84.0-main",
   "private": true,
   "description": "Babel preset for React Native applications",
   "repository": {
@@ -14,7 +14,7 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": ">= 22.11.0"
   },
   "main": "src/index.js",
   "files": [

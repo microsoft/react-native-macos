@@ -15,7 +15,8 @@ import {ViewStyle} from '../../StyleSheet/StyleSheetTypes';
 import {
   DragEvent, // [macOS]
   HandledKeyEvent, // [macOS]
-  KeyEvent, // [macOS]
+  KeyDownEvent,
+  KeyUpEvent,
   BlurEvent,
   FocusEvent,
   LayoutChangeEvent,
@@ -143,10 +144,13 @@ export interface ViewPropsMacOS {
   onDragEnter?: ((event: DragEvent) => void) | undefined;
   onDragLeave?: ((event: DragEvent) => void) | undefined;
   onDrop?: ((event: DragEvent) => void) | undefined;
-  onKeyDown?: ((event: KeyEvent) => void) | undefined;
-  onKeyUp?: ((event: KeyEvent) => void) | undefined;
+  onKeyDown?: ((event: KeyDownEvent) => void) | undefined;
+  onKeyUp?: ((event: KeyUpEvent) => void) | undefined;
   keyDownEvents?: HandledKeyEvent[] | undefined;
   keyUpEvents?: HandledKeyEvent[] | undefined;
+  validKeysDown?: readonly (string | HandledKeyEvent)[] | undefined;
+  validKeysUp?: readonly (string | HandledKeyEvent)[] | undefined;
+  passthroughAllKeyEvents?: boolean | undefined;
   draggedTypes?: DraggedTypesType | undefined;
 }
 

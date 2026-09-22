@@ -17,8 +17,15 @@ import { $, echo, fs, path } from 'zx';
 // Use createRequire to import CommonJS modules from ESM context
 const require = createRequire(import.meta.url);
 const {
+  readHermesMetadata,
+  selectHermesMetadata,
+} = require('../../packages/react-native/scripts/ios-prebuild/hermes-version.js');
+const {
   computeNightlyTarballURL,
 } = require('../../packages/react-native/scripts/ios-prebuild/utils.js');
+const {
+  hermesCommitAtMergeBase,
+} = require('../../packages/react-native/scripts/ios-prebuild/microsoft-hermes.js');
 
 function setActionOutput(key: string, value: string) {
   const outputFile = process.env.GITHUB_OUTPUT;
@@ -31,43 +38,31 @@ function setActionOutput(key: string, value: string) {
  * Reads the Hermes artifact version from
  * packages/react-native/sdks/hermes-engine/version.properties.
  *
- * Returns HERMES_V1_VERSION_NAME when RCT_HERMES_V1_ENABLED=1, otherwise
- * HERMES_VERSION_NAME. Returns null if the file or the key is missing.
+ * Uses the same version key and validation as the local prebuild script.
+ * A missing file permits a source build; malformed metadata must fail CI.
  */
 function resolveHermesArtifactVersion(): string | null {
-  const propsPath = path.resolve(
-    import.meta.dirname!, '..', '..',
-    'packages', 'react-native', 'sdks', 'hermes-engine', 'version.properties',
-  );
   try {
-    const props: Record<string, string> = {};
-    for (const line of fs.readFileSync(propsPath, 'utf8').split('\n')) {
-      const eq = line.indexOf('=');
-      if (eq > 0) {
-        props[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
-      }
+    const {version, versionKey} = readHermesMetadata('legacy-default');
+    echo(`Using ${versionKey}=${version}`);
+    return version;
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      return null;
     }
-    const key =
-      process.env.RCT_HERMES_V1_ENABLED === '1'
-        ? 'HERMES_V1_VERSION_NAME'
-        : 'HERMES_VERSION_NAME';
-    const version = props[key];
-    return version != null && version.length > 0 ? version : null;
-  } catch {
-    return null;
+    throw error;
   }
 }
 
 /**
- * Reads the pinned Hermes tag from packages/react-native/sdks/.hermesversion
- * (or .hermesv1version when RCT_HERMES_V1_ENABLED=1). The value is a git tag in
+ * Reads the pinned Hermes ref from packages/react-native/sdks/.hermesversion
+ * (or .hermesv1version when RCT_HERMES_V1_ENABLED=1). The value is a tag or commit in
  * facebook/hermes. Returns null if the file is missing or empty.
  */
 function resolveHermesTag(): string | null {
-  const tagFile =
-    process.env.RCT_HERMES_V1_ENABLED === '1'
-      ? '.hermesv1version'
-      : '.hermesversion';
+  const {tagFile} = selectHermesMetadata(
+    'legacy-default', process.env.RCT_HERMES_V1_ENABLED,
+  );
   const tagPath = path.resolve(
     import.meta.dirname!, '..', '..',
     'packages', 'react-native', 'sdks', tagFile,
@@ -92,7 +87,13 @@ async function downloadUpstreamHermesTarball(
 ): Promise<{ tarballPath: string; version: string } | null> {
   const version = resolveHermesArtifactVersion();
   if (version == null) {
-    echo('Could not read Hermes version from sdks/hermes-engine/version.properties');
+    echo('Hermes version.properties is missing — will build from source.');
+    return null;
+  }
+  // On the 0.84 fork, selected metadata 1000.0.0 requires a source build.
+  // Resolve its revision only in resolve-commit, before the CI cache lookup.
+  if (version === '1000.0.0') {
+    echo('Hermes version.properties selects 1000.0.0 — will build from source.');
     return null;
   }
 
@@ -104,6 +105,7 @@ async function downloadUpstreamHermesTarball(
   const nightlyUrl = await computeNightlyTarballURL(
     version,
     buildType,
+    'hermes',
     'hermes-ios',
     `hermes-ios-${flavor}.tar.gz`,
   );
@@ -260,13 +262,20 @@ switch (command) {
     break;
   }
   case 'resolve-commit': {
+    if (resolveHermesArtifactVersion() === '1000.0.0') {
+      const {commit, timestamp} = hermesCommitAtMergeBase();
+      setActionOutput('hermes-commit', commit);
+      echo(`Resolved Hermes commit: ${commit} (merge base timestamp: ${timestamp})`);
+      break;
+    }
+    // Concrete versions and missing metadata retain the independent source pin.
     const tag = resolveHermesTag();
     if (tag == null) {
-      echo('Could not read pinned Hermes tag from sdks/.hermesversion or sdks/.hermesv1version');
+      echo('Could not read pinned Hermes ref from sdks/.hermesversion or sdks/.hermesv1version');
       process.exit(1);
     }
     setActionOutput('hermes-commit', tag);
-    echo(`Resolved Hermes tag: ${tag}`);
+    echo(`Resolved Hermes ref: ${tag}`);
     break;
   }
   default:

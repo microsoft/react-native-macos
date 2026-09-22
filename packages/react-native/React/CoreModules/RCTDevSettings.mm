@@ -34,9 +34,12 @@ static NSString *const kRCTDevSettingSecondClickToShowDevMenu = @"secondClickToS
 
 static NSString *const kRCTDevSettingsUserDefaultsKey = @"RCTDevMenu";
 
+#if RCT_DEV
+#import <React/RCTPackagerConnection.h>
+#endif
+
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
 #import <React/RCTPackagerClient.h>
-#import <React/RCTPackagerConnection.h>
 #endif
 
 #if RCT_ENABLE_INSPECTOR
@@ -152,6 +155,9 @@ RCT_EXPORT_MODULE()
   };
   RCTDevSettingsUserDefaultsDataSource *dataSource =
       [[RCTDevSettingsUserDefaultsDataSource alloc] initWithDefaultValues:defaultValues];
+#if RCT_DEV
+  _packagerConnection = [RCTPackagerConnection new];
+#endif
   _isShakeGestureEnabled = true;
   return [self initWithDataSource:dataSource];
 }
@@ -185,18 +191,27 @@ RCT_EXPORT_MODULE()
 
 - (void)initialize
 {
+#if RCT_DEV
+  [_packagerConnection startWithBundleManager:_bundleManager];
+#endif
+
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
   if (numInitializedModules++ == 0) {
-    reloadToken = [[RCTPackagerConnection sharedPackagerConnection]
+    reloadToken = [self
         addNotificationHandler:^(id params) {
           RCTTriggerReloadCommandListeners(@"Global hotkey");
         }
                          queue:dispatch_get_main_queue()
                      forMethod:@"reload"];
 #if RCT_DEV_MENU
-    devMenuToken = [[RCTPackagerConnection sharedPackagerConnection]
+    __weak __typeof(self) weakSelf = self;
+    devMenuToken = [self
         addNotificationHandler:^(id params) {
-          [[self.moduleRegistry moduleForName:"DevMenu"] show];
+          __typeof(self) strongSelf = weakSelf;
+          if (strongSelf == nullptr) {
+            return;
+          }
+          [[strongSelf.moduleRegistry moduleForName:"DevMenu"] show];
         }
                          queue:dispatch_get_main_queue()
                      forMethod:@"devMenu"];
@@ -247,9 +262,9 @@ RCT_EXPORT_MODULE()
   [super invalidate];
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
   if (--numInitializedModules == 0) {
-    [[RCTPackagerConnection sharedPackagerConnection] removeHandler:reloadToken];
+    [_packagerConnection removeHandler:reloadToken];
 #if RCT_DEV_MENU
-    [[RCTPackagerConnection sharedPackagerConnection] removeHandler:devMenuToken];
+    [_packagerConnection removeHandler:devMenuToken];
 #endif
   }
 #endif
@@ -441,10 +456,27 @@ RCT_EXPORT_METHOD(addMenuItem : (NSString *)title)
   }
 }
 
+#if RCT_DEV
+- (RCTHandlerToken)addNotificationHandler:(RCTNotificationHandler)handler
+                                    queue:(dispatch_queue_t)queue
+                                forMethod:(NSString *)method
+{
+  return [_packagerConnection addNotificationHandler:handler queue:queue forMethod:method];
+}
+
+- (RCTHandlerToken)addRequestHandler:(RCTRequestHandler)handler
+                               queue:(dispatch_queue_t)queue
+                           forMethod:(NSString *)method
+{
+  return [_packagerConnection addRequestHandler:handler queue:queue forMethod:method];
+}
+
+#endif
+
 - (void)addHandler:(id<RCTPackagerClientMethod>)handler forPackagerMethod:(NSString *)name
 {
 #if RCT_DEV_SETTINGS_ENABLE_PACKAGER_CONNECTION
-  [[RCTPackagerConnection sharedPackagerConnection] addHandler:handler forMethod:name];
+  [_packagerConnection addHandler:handler forMethod:name];
 #endif
 }
 
@@ -531,7 +563,7 @@ RCT_EXPORT_METHOD(openDebugger)
 
 @end
 
-#else // #if RCT_DEV_MENU
+#else // #if RCT_DEV_MENU || RCT_REMOTE_PROFILE
 
 @interface RCTDevSettings () <NativeDevSettingsSpec>
 @end
@@ -597,6 +629,10 @@ RCT_EXPORT_MODULE()	// [macOS]
     (const facebook::react::ObjCTurboModule::InitParams &)params
 {
   return std::make_shared<facebook::react::NativeDevSettingsSpecJSI>(params);
+}
+
+- (void)addHandler:(id<RCTPackagerClientMethod>)handler forPackagerMethod:(NSString *)name
+{
 }
 
 @end

@@ -12,7 +12,13 @@
 // Legacy validKeysDown/validKeysUp/passthroughAllKeyEvents compat layer.
 // When removing legacy support, delete this file and its call sites.
 
-import type {HandledKeyEvent, KeyEvent} from '../Types/CoreEventTypes';
+import type {
+  HandledKeyEvent,
+  KeyDownEvent,
+  KeyUpEvent,
+} from '../Types/CoreEventTypes';
+
+type KeyboardEvent = KeyDownEvent | KeyUpEvent;
 
 type LegacyHandledKeyEvent = string | HandledKeyEvent;
 
@@ -49,7 +55,7 @@ function normalize(
 
 function matchesEvent(
   events: $ReadOnlyArray<HandledKeyEvent>,
-  event: KeyEvent,
+  event: KeyboardEvent,
 ): boolean {
   return events.some(
     ({key, metaKey, ctrlKey, altKey, shiftKey}: HandledKeyEvent) =>
@@ -64,8 +70,8 @@ function matchesEvent(
 export type LegacyKeyResult = {
   keyDownEvents: void | Array<HandledKeyEvent>,
   keyUpEvents: void | Array<HandledKeyEvent>,
-  onKeyDown: void | ((event: KeyEvent) => void),
-  onKeyUp: void | ((event: KeyEvent) => void),
+  onKeyDown: void | ((event: KeyDownEvent) => void),
+  onKeyUp: void | ((event: KeyUpEvent) => void),
 };
 
 /**
@@ -130,7 +136,7 @@ export default function processLegacyKeyProps(
 
   const onKeyDown =
     props.onKeyDown != null
-      ? (event: KeyEvent) => {
+      ? (event: KeyDownEvent) => {
           let isHandled = false;
           if (normalizedDown != null && !event.isPropagationStopped()) {
             isHandled = matchesEvent(normalizedDown, event);
@@ -146,7 +152,7 @@ export default function processLegacyKeyProps(
 
   const onKeyUp =
     props.onKeyUp != null
-      ? (event: KeyEvent) => {
+      ? (event: KeyUpEvent) => {
           let isHandled = false;
           if (normalizedUp != null && !event.isPropagationStopped()) {
             isHandled = matchesEvent(normalizedUp, event);

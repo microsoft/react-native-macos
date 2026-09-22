@@ -1,17 +1,20 @@
 #!/usr/bin/env node
 // @ts-ignore
 import { parseArgs, styleText } from 'node:util';
+import { pathToFileURL } from 'node:url';
+import { join } from 'node:path';
 
 import { $, echo, fs } from 'zx';
+import { validatePreparedVersionPR } from './publishing-contract.mjs';
 
 /**
  * Wrapper around `changeset add` (default) and `changeset status` validation (--check).
  *
  * Without --check: runs `changeset add` interactively with the correct upstream remote
- * auto-detected from package.json's repository URL, temporarily patched into config.json.
+ * auto-detected from repository metadata and the base branch from Changesets config.
  *
  * With --check (CI mode): validates that all changed public packages have changesets and that
- * no major version bumps are introduced.
+ * no major version bumps are introduced, or validates a fully prepared version PR.
  */
 
 interface ChangesetStatusOutput {
@@ -33,21 +36,32 @@ const log = {
 };
 
 /** Find the remote that matches the repo's own URL (works for forks and CI alike). */
-async function getBaseBranch(): Promise<string> {
-  const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));
-  const repoUrl: string = pkg.repository?.url ?? '';
+export async function getBaseBranch(root = process.cwd()): Promise<string> {
+  const pkg = fs.readJsonSync(join(root, 'package.json'));
+  let repoUrl: string = typeof pkg.repository === 'string' ? pkg.repository : pkg.repository?.url ?? '';
+  const coreManifest = join(root, 'packages/react-native/package.json');
+  if (!repoUrl && fs.existsSync(coreManifest)) {
+    const core = fs.readJsonSync(coreManifest);
+    repoUrl = typeof core.repository === 'string' ? core.repository : core.repository?.url ?? '';
+  }
   // Extract "org/repo" from https://github.com/org/repo.git or git@github.com:org/repo.git
-  const repoPath = repoUrl.match(/github\.com[:/](.+?)(?:\.git)?$/)?.[1] ?? '';
+  const repoPath = (url: string) => url.match(/github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?\/?$/i)?.[1]?.toLowerCase();
+  const repository = repoPath(repoUrl);
 
-  const remotes = (await $`git remote -v`.quiet()).stdout;
-  const remote = (repoPath && remotes.match(new RegExp(`^(\\S+)\\s+.*${repoPath}`, 'm'))?.[1]) ?? 'origin';
+  const remotes = (await $({ cwd: root })`git remote -v`.quiet()).stdout;
+  const remote = (repository && remotes.trim().split('\n')
+    .map(line => line.split(/\s+/))
+    .find(([, url, kind]) => kind === '(fetch)' && repoPath(url) === repository)?.[0]) || 'origin';
 
   // In CI, use the PR target branch (e.g., origin/0.81-stable)
   if (process.env['GITHUB_BASE_REF']) {
     return `${remote}/${process.env['GITHUB_BASE_REF']}`;
   }
 
-  return `${remote}/main`;
+  const config = fs.readJsonSync(join(root, '.changeset/config.json'));
+  const baseBranch: string = config.baseBranch ?? 'origin/main';
+  // origin is the shared config's checkout remote; preserve explicit local overrides.
+  return baseBranch.startsWith('origin/') ? `${remote}/${baseBranch.slice('origin/'.length)}` : baseBranch;
 }
 
 /** Run `changeset status` and return the output and exit code. */
@@ -79,10 +93,18 @@ function checkMajorBumps(releases: ChangesetStatusOutput['releases']): void {
 }
 
 /** Validate that all changed public packages have changesets and no major bumps are introduced. */
-async function runCheck(baseBranch: string): Promise<void> {
+export async function runCheck(baseBranch: string, {
+  validatePrepared = validatePreparedVersionPR,
+  getStatus = getChangesetStatus,
+} = {}): Promise<void> {
   log.info(`Validating changesets against ${baseBranch}...\n`);
 
-  const { data, exitCode } = await getChangesetStatus(baseBranch);
+  if (await validatePrepared({baseBranch})) {
+    log.success('All validations passed (prepared version PR)');
+    return;
+  }
+
+  const { data, exitCode } = await getStatus(baseBranch);
 
   if (exitCode !== 0) {
     log.error('Some packages have been changed but no changesets were found.');
@@ -101,12 +123,14 @@ async function runAdd(baseBranch: string): Promise<void> {
   await $({ stdio: 'inherit' })`yarn changeset --since ${baseBranch}`;
 }
 
-const { values: args } = parseArgs({ options: { check: { type: 'boolean', default: false } } });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const { values: args } = parseArgs({ options: { check: { type: 'boolean', default: false } } });
 
-const baseBranch = await getBaseBranch();
+  const baseBranch = await getBaseBranch();
 
-if (args.check) {
-  await runCheck(baseBranch);
-} else {
-  await runAdd(baseBranch);
+  if (args.check) {
+    await runCheck(baseBranch);
+  } else {
+    await runAdd(baseBranch);
+  }
 }
