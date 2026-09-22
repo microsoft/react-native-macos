@@ -22,7 +22,7 @@ import * as t from '@babel/types';
 const visitor: PluginObj<unknown> = {
   visitor: {
     Program(path) {
-      const exportedIdentifiers: Set<string> = new Set();
+      const exportedIdentifiers: Map<string, string> = new Map();
 
       // Collect exported identifiers
       path.get('body').forEach(nodePath => {
@@ -40,14 +40,20 @@ const visitor: PluginObj<unknown> = {
               t.isTSEnumDeclaration(declaration)
             ) {
               if (declaration.id && declaration.id.name != null) {
-                exportedIdentifiers.add(declaration.id.name);
+                exportedIdentifiers.set(
+                  declaration.id.name,
+                  declaration.id.name,
+                );
               } else if (
                 t.isVariableDeclaration(declaration) &&
                 declaration.declarations.length > 0
               ) {
                 declaration.declarations.forEach(declarator => {
                   if (t.isIdentifier(declarator.id)) {
-                    exportedIdentifiers.add(declarator.id.name);
+                    exportedIdentifiers.set(
+                      declarator.id.name,
+                      declarator.id.name,
+                    );
                   }
                 });
               }
@@ -60,7 +66,13 @@ const visitor: PluginObj<unknown> = {
           } else if (nodePath.node.specifiers) {
             nodePath.node.specifiers.forEach(specifier => {
               if (specifier.type === 'ExportSpecifier') {
-                exportedIdentifiers.add(specifier.local.name);
+                // Preserve public names when API Extractor disambiguates a
+                // declaration from a global or another imported type. // [macOS]
+                const exported = specifier.exported;
+                exportedIdentifiers.set(
+                  t.isIdentifier(exported) ? exported.name : exported.value,
+                  specifier.local.name,
+                );
               }
             });
             nodePath.remove(); // Remove export statement
@@ -77,12 +89,15 @@ const visitor: PluginObj<unknown> = {
 
       // Move all exports into single `export {}` block
       if (exportedIdentifiers.size > 0) {
-        const sortedIdentifiers = Array.from(exportedIdentifiers).sort();
+        const sortedIdentifiers = Array.from(exportedIdentifiers.keys()).sort();
         const exportStatement = t.exportNamedDeclaration(
           // $FlowFixMe[incompatible-type]
           null,
           sortedIdentifiers.map(name =>
-            t.exportSpecifier(t.identifier(name), t.identifier(name)),
+            t.exportSpecifier(
+              t.identifier(exportedIdentifiers.get(name) ?? name),
+              t.identifier(name),
+            ),
           ),
         );
         path.pushContainer('body', exportStatement);

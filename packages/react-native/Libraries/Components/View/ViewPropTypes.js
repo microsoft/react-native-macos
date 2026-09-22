@@ -584,6 +584,15 @@ type MacOSViewProps = Readonly<{
    */
   inverted?: ?boolean,
 }>;
+
+// Public macOS subset, including events shared with other platforms.
+export type ViewPropsMacOS = Readonly<{
+  ...MacOSViewProps,
+  ...MouseEventProps,
+  ...KeyboardEventProps,
+  onAuxClick?: ?(event: PointerEvent) => void,
+  onAuxClickCapture?: ?(event: PointerEvent) => void,
+}>;
 // macOS]
 
 type ViewBaseProps = Readonly<{
