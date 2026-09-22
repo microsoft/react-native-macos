@@ -163,14 +163,14 @@ const ModuleSpecClassDeclarationTemplate = ({
   moduleEventEmitters,
   moduleFunctions,
   methods,
-}: $ReadOnly<{
+}: Readonly<{
   hasteModuleName: string,
   moduleName: string,
   structs: string,
   enums: string,
   moduleEventEmitters: EventEmitterCpp[],
   moduleFunctions: string[],
-  methods: $ReadOnlyArray<$ReadOnly<{methodName: string, paramCount: number}>>,
+  methods: ReadonlyArray<Readonly<{methodName: string, paramCount: number}>>,
 }>) => {
   return `${enums}${structs}
 template <typename T>
@@ -196,7 +196,7 @@ ${moduleFunctions.join('\n\n')}
 
 const FileTemplate = ({
   modules,
-}: $ReadOnly<{
+}: Readonly<{
   modules: string[],
 }>) => {
   return `/**
@@ -504,7 +504,7 @@ function getMemberValueAppearance(member: NativeModuleEnumMember['value']) {
 function generateEnum(
   hasteModuleName: string,
   origEnumName: string,
-  members: $ReadOnlyArray<NativeModuleEnumMember>,
+  members: ReadonlyArray<NativeModuleEnumMember>,
   memberType: NativeModuleEnumMemberType,
 ): string {
   const enumName = getEnumName(hasteModuleName, origEnumName);

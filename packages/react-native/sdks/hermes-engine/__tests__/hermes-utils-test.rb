@@ -46,14 +46,14 @@ class HermesUtilsTests < Test::Unit::TestCase
         end
     end
 
-    def test_checked_in_v1_ref_uses_commit
+    def test_checked_in_v1_ref
         ENV['RCT_HERMES_V1_ENABLED'] = '1'
         root = File.expand_path('../../..', __dir__)
         ref = File.read(File.join(root, 'sdks', '.hermesv1version')).strip
 
-        assert_match(/\A[0-9a-fA-F]{40}\z/, ref)
+        ref_type = ref.match?(/\A[0-9a-fA-F]{40}\z/) ? :commit : :tag
         assert_equal(
-            {:git => HERMES_GITHUB_URL, :commit => ref},
+            {:git => HERMES_GITHUB_URL, ref_type => ref},
             podspec_source_build_from_github_tag(root)
         )
     end

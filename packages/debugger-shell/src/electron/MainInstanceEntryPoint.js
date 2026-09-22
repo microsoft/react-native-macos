@@ -19,7 +19,7 @@ const {BrowserWindow, Menu, app, shell, ipcMain} = require('electron') as any;
 const appSettings = new SettingsStore();
 const windowMetadata = new WeakMap<
   typeof BrowserWindow,
-  $ReadOnly<{
+  Readonly<{
     windowKey: string,
   }>,
 >();
@@ -68,6 +68,8 @@ function handleLaunchArgs(argv: string[]) {
       },
       // Icon for Linux
       icon: path.join(__dirname, 'resources', 'icon.png'),
+      // Enable tabs for this window (macOS 10.12+)
+      tabbingIdentifier: 'main',
     });
     // Auto-hide the Windows/Linux menu bar
     frontendWindow.setMenuBarVisibility(false);

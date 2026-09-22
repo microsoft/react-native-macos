@@ -24,7 +24,7 @@ import AnimatedObject from './AnimatedObject';
 import AnimatedStyle from './AnimatedStyle';
 import invariant from 'invariant';
 
-export type AnimatedPropsAllowlist = $ReadOnly<{
+export type AnimatedPropsAllowlist = Readonly<{
   style?: ?AnimatedStyleAllowlist,
   [key: string]: true | AnimatedStyleAllowlist,
 }>;
@@ -38,7 +38,7 @@ type TargetViewInstance = React.ElementRef<React.ElementType>;
 function createAnimatedProps(
   inputProps: {[string]: unknown},
   allowlist: ?AnimatedPropsAllowlist,
-): [$ReadOnlyArray<string>, $ReadOnlyArray<AnimatedNode>, {[string]: unknown}] {
+): [ReadonlyArray<string>, ReadonlyArray<AnimatedNode>, {[string]: unknown}] {
   const nodeKeys: Array<string> = [];
   const nodes: Array<AnimatedNode> = [];
   const props: {[string]: unknown} = {};
@@ -96,8 +96,8 @@ function createAnimatedProps(
 
 export default class AnimatedProps extends AnimatedNode {
   _callback: () => void;
-  _nodeKeys: $ReadOnlyArray<string>;
-  _nodes: $ReadOnlyArray<AnimatedNode>;
+  _nodeKeys: ReadonlyArray<string>;
+  _nodes: ReadonlyArray<AnimatedNode>;
   _props: {[string]: unknown};
   _target: ?TargetView = null;
   _rootTag: ?RootTag = undefined;
@@ -179,7 +179,7 @@ export default class AnimatedProps extends AnimatedNode {
     return props;
   }
 
-  __getNativeAnimatedEventTuples(): $ReadOnlyArray<[string, AnimatedEvent]> {
+  __getNativeAnimatedEventTuples(): ReadonlyArray<[string, AnimatedEvent]> {
     const tuples = [];
 
     const keys = Object.keys(this._props);
@@ -358,6 +358,6 @@ export default class AnimatedProps extends AnimatedNode {
 // this shim when they do.
 // $FlowFixMe[method-unbinding]
 const _hasOwnProp = Object.prototype.hasOwnProperty;
-const hasOwn: (obj: $ReadOnly<{...}>, prop: string) => boolean =
+const hasOwn: (obj: Readonly<{...}>, prop: string) => boolean =
   // $FlowFixMe[method-unbinding]
   Object.hasOwn ?? ((obj, prop) => _hasOwnProp.call(obj, prop));

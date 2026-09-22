@@ -13,7 +13,7 @@
 
 #if !TARGET_OS_OSX // [macOS]
 static UIViewAnimationCurve _currentKeyboardAnimationCurve;
-#endif // [macOS]
+#endif
 
 #if !TARGET_OS_OSX // [macOS]
 static UIViewAnimationOptions UIViewAnimationOptionsFromRCTAnimationType(RCTAnimationType type)
@@ -55,6 +55,7 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
 #endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
+#if TARGET_OS_TV
 // Use a custom initialization function rather than implementing `+initialize` so that we can control
 // when the initialization code runs. `+initialize` runs immediately before the first message is sent
 // to the class which may be too late for us. By this time, we may have missed some
@@ -75,6 +76,8 @@ static NSString *CAMediaTimingFunctionNameFromRCTAnimationType(RCTAnimationType 
   NSDictionary *userInfo = notification.userInfo;
   _currentKeyboardAnimationCurve = [userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
 }
+#endif
+
 #endif // [macOS]
 
 - (instancetype)initWithDuration:(NSTimeInterval)duration
