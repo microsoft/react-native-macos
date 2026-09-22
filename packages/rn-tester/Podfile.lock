@@ -2756,7 +2756,7 @@ EXTERNAL SOURCES:
     :podspec: "../react-native/third-party-podspecs/glog.podspec"
   hermes-engine:
     :podspec: "../react-native/sdks/hermes-engine/hermes-engine.podspec"
-    :tag: hermes-v250829098.0.2
+    :tag: hermes-v250829098.0.12
   MyNativeView:
     :path: NativeComponentExample
   NativeCxxModuleExample:
@@ -2923,7 +2923,7 @@ SPEC CHECKSUMS:
   FBLazyVector: 3b0404adfe03965e932e7220d6a9536813ad3204
   fmt: 4cf0c5ec5864511c96d8d4bd7b03c3c69040af06
   glog: 8fb6f603b9feab8ebedb130c6e0683bbeafa6fb0
-  hermes-engine: a3dcf92cd8639bb3e45a57fb1cdfc7aef1064ec1
+  hermes-engine: 842b093f838032a4690f06c33da761d509c968fd
   MyNativeView: 0190c023cc3664a9122cecb523189fa8e3f7b75c
   NativeCxxModuleExample: 1a3b8d5824dc1c5ce2c32475a2d1bedccd22d2f7
   OCMock: 589f2c84dacb1f5aaf6e4cec1f292551fe748e74
