@@ -552,7 +552,12 @@ function generateChangelogTable(
     limitedCommits.forEach(commit => {
       const [hash, author, email, timestamp, subject] = commit.split('\0');
       // Escape pipe characters in the subject to avoid breaking the markdown table
-      const escapedSubject = subject.replace(/\|/g, '\\|');
+      const escapedSubject = subject
+        .replace(/\\/g, '\\\\')
+        .replace(/\|/g, '\\|')
+        .replace(/\[/g, '\\[')
+        .replace(/\]/g, '\\]')
+        .replace(/`/g, '\\`');
       // Create links for commit hash and description
       const commitUrl = `${DEVTOOLS_FRONTEND_REPO_URL}/commit/${hash}`;
       const hashLink = `[${hash}](${commitUrl})`;

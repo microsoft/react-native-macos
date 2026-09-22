@@ -10,7 +10,43 @@
 // Preload in the CLI subprocess. Exercise the real ESM entry point and URL
 // helper without network access or changes to checked-in metadata.
 const fs = require('node:fs');
+const Module = require('node:module');
 const path = require('node:path');
+
+const helpersPath = path.resolve(
+  __dirname,
+  '../../../../packages/react-native/scripts/ios-prebuild',
+);
+const calls = {source: [], nightly: []};
+const load = Module._load;
+Module._load = function (request, parent, isMain) {
+  const filename = Module._resolveFilename(request, parent, isMain);
+  if (filename === path.join(helpersPath, 'microsoft-hermes.js')) {
+    return {
+      hermesCommitAtMergeBase: (...args) => {
+        calls.source.push(args);
+        if (process.env.HERMES_TEST_SOURCE_ERROR) {
+          throw new Error(process.env.HERMES_TEST_SOURCE_ERROR);
+        }
+        return {
+          commit: process.env.HERMES_TEST_COMMIT,
+          timestamp: '2026-01-05 12:34:56 +0000',
+        };
+      },
+    };
+  }
+  const exports = load.call(this, request, parent, isMain);
+  if (filename === path.join(helpersPath, 'utils.js')) {
+    return {
+      ...exports,
+      computeNightlyTarballURL: (...args) => {
+        calls.nightly.push(args);
+        return exports.computeNightlyTarballURL(...args);
+      },
+    };
+  }
+  return exports;
+};
 
 const propertiesPath = path.resolve(
   __dirname,
@@ -52,4 +88,7 @@ global.fetch = async url => {
     arrayBuffer: async () => Buffer.from('mock Hermes archive'),
   };
 };
-process.on('exit', () => console.log(`HERMES_TEST_URLS=${JSON.stringify(urls)}`));
+process.on('exit', () => {
+  console.log(`HERMES_TEST_URLS=${JSON.stringify(urls)}`);
+  console.log(`HERMES_TEST_CALLS=${JSON.stringify(calls)}`);
+});

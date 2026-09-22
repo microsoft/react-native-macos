@@ -20,7 +20,8 @@ import type {
   DragEvent,
   FocusEvent,
   HandledKeyEvent,
-  KeyEvent,
+  KeyDownEvent,
+  KeyUpEvent,
 } from '../../Types/CoreEventTypes';
 // macOS]
 import type {DraggedTypesType} from '../View/DraggedType'; // [macOS]
@@ -90,41 +91,41 @@ type PressableBaseProps = $ReadOnly<{
   /**
    * Called when this view's layout changes.
    */
-  onLayout?: ?(event: LayoutChangeEvent) => mixed,
+  onLayout?: ?(event: LayoutChangeEvent) => unknown,
 
   /**
    * Called when the hover is activated to provide visual feedback.
    */
-  onHoverIn?: ?(event: MouseEvent) => mixed,
+  onHoverIn?: ?(event: MouseEvent) => unknown,
 
   /**
    * Called when the hover is deactivated to undo visual feedback.
    */
-  onHoverOut?: ?(event: MouseEvent) => mixed,
+  onHoverOut?: ?(event: MouseEvent) => unknown,
 
   /**
    * Called when a long-tap gesture is detected.
    */
-  onLongPress?: ?(event: GestureResponderEvent) => mixed,
+  onLongPress?: ?(event: GestureResponderEvent) => unknown,
 
   /**
    * Called when a single tap gesture is detected.
    */
-  onPress?: ?(event: GestureResponderEvent) => mixed,
+  onPress?: ?(event: GestureResponderEvent) => unknown,
 
   /**
    * Called when a touch is engaged before `onPress`.
    */
-  onPressIn?: ?(event: GestureResponderEvent) => mixed,
+  onPressIn?: ?(event: GestureResponderEvent) => unknown,
   /**
    * Called when the press location moves.
    */
-  onPressMove?: ?(event: GestureResponderEvent) => mixed,
+  onPressMove?: ?(event: GestureResponderEvent) => unknown,
 
   /**
    * Called when a touch is released before `onPress`.
    */
-  onPressOut?: ?(event: GestureResponderEvent) => mixed,
+  onPressOut?: ?(event: GestureResponderEvent) => unknown,
 
   // [macOS
   /**
@@ -140,12 +141,12 @@ type PressableBaseProps = $ReadOnly<{
   /**
    * Called after a key down event is detected.
    */
-  onKeyDown?: ?(event: KeyEvent) => void,
+  onKeyDown?: ?(event: KeyDownEvent) => void,
 
   /**
    * Called after a key up event is detected.
    */
-  onKeyUp?: ?(event: KeyEvent) => void,
+  onKeyUp?: ?(event: KeyUpEvent) => void,
 
   /**
    * Array of keys to receive key down events for. These events have their default native behavior prevented.
@@ -160,6 +161,9 @@ type PressableBaseProps = $ReadOnly<{
    * @platform macos
    */
   keyUpEvents?: ?Array<HandledKeyEvent>,
+  validKeysDown?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  validKeysUp?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  passthroughAllKeyEvents?: ?boolean,
 
   /**
    * Specifies whether the view should receive the mouse down event when the

@@ -217,7 +217,8 @@ async function downloadArtifacts(
   const basePath = path.dirname(localNodeTGZPath);
   const newLocalNodeTGZ = path.join(basePath, tgzName);
   const reactNativeTGZ = path.join(reactNativeDestPath, tgzName);
-  exec(`mv ${reactNativeTGZ} ${newLocalNodeTGZ}`);
+  fs.copyFileSync(reactNativeTGZ, newLocalNodeTGZ);
+  fs.unlinkSync(reactNativeTGZ);
 
   return {newLocalNodeTGZ};
 }
