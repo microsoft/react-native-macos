@@ -199,10 +199,13 @@ test('repository Changesets policy follows the actual public and private workspa
   assert.ok(corePackage && !corePackage.private, 'Missing public core workspace');
   assert.ok(listsPackage, 'Missing lists workspace');
   const main = corePackage.version === '1000.0.0';
+  if (!main) parseVersion(corePackage.version);
+  const prereleaseReview = !main && semver.prerelease(corePackage.version) !== null
+    && releasePolicy.baseBranch === 'origin/main';
   assert.deepEqual(releasePolicy.ignore, main ? mainPolicy.ignore : []);
-  assert.equal(releasePolicy.baseBranch, main ? 'origin/main'
+  assert.equal(releasePolicy.baseBranch, main || prereleaseReview ? 'origin/main'
     : `origin/${semver.major(corePackage.version)}.${semver.minor(corePackage.version)}-stable`);
-  assert.equal(Boolean(listsPackage.private), main, 'Lists must be public on stable and private on main');
+  assert.equal(Boolean(listsPackage.private), main, 'Lists must be public on release graphs and private in development');
   assert.equal(listsPackage.version, corePackage.version);
   const publicPackages = [corePackage, listsPackage];
   // Derive expectations from manifests, never from the policy or release-plan output.
@@ -302,8 +305,9 @@ test('repository Changesets policy couples public stable packages without regist
 });
 
 test('real Yarn constraints preserve private upstream versions, align public versions, and preserve workspace fork edges', t => {
-  for (const main of [true, false]) {
-    const workspaces = graph(main ? '1000.0.0' : '0.83.2');
+  for (const [version, upstreamVersion] of [['1000.0.0', '0.83.1'], ['0.83.2', '0.83.1'], ['0.87.0-rc.0', '0.87.1']]) {
+    const main = version === '1000.0.0';
+    const workspaces = graph(version);
     workspaces[1].private = main;
     workspaces[1].version = '0.82.0';
     workspaces[2].version = '0.82.7';
@@ -314,7 +318,7 @@ test('real Yarn constraints preserve private upstream versions, align public ver
         if (index !== 1) workspaces[index][field][lists] = '*';
       }
     }
-    if (!main) workspaces[0].peerDependencies['react-native'] = '0.83.1';
+    if (!main) workspaces[0].peerDependencies['react-native'] = upstreamVersion;
     const {root} = releaseFixture(t, {workspaces});
     writeFileSync(join(root, 'yarn.lock'), '');
     writeFileSync(join(root, 'yarn.config.cjs'), `module.exports = require(${JSON.stringify(join(repositoryRoot, 'yarn.config.cjs'))});\n`);
@@ -327,17 +331,25 @@ test('real Yarn constraints preserve private upstream versions, align public ver
     yarn(['constraints']);
     const actual = workspaces.map((_, index) => JSON.parse(readFileSync(join(root, `packages/p${index}/package.json`), 'utf8')));
     assert.equal(actual[0].version, workspaces[0].version);
-    assert.equal(actual[1].version, main ? '1000.0.0' : '0.83.2');
+    assert.equal(actual[1].version, version);
     assert.equal(actual[2].private, true);
     assert.equal(actual[2].version, '0.82.7');
     assert.equal(actual[3].version, '1000.0.0');
     assert.equal(actual[5].private, true);
-    assert.equal(actual[5].version, main ? '0.83.0' : '0.83.1');
+    assert.equal(actual[5].version, main ? '0.83.0' : upstreamVersion);
     for (const index of [0, 1, 3]) {
       for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
-        assert.equal(actual[index][field]['@react-native/codegen'], main || index === 3 ? 'workspace:*' : '0.83.1');
+        assert.equal(actual[index][field]['@react-native/codegen'], main || index === 3 ? 'workspace:*' : upstreamVersion);
         if (index !== 1) assert.equal(actual[index][field][lists], 'workspace:*');
       }
+    }
+    if (!main) {
+      const archive = join(root, 'core.tgz');
+      yarn(['workspace', core, 'pack', '--out', archive]);
+      const packed = JSON.parse(execFileSync('tar', ['-xOf', archive, 'package/package.json'], {encoding: 'utf8'}));
+      assert.equal(packed.version, version);
+      assert.equal(packed.dependencies[lists], version);
+      assert.equal(packed.dependencies['@react-native/codegen'], upstreamVersion);
     }
   }
 });
