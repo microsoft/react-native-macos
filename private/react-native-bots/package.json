@@ -1,10 +1,10 @@
 {
   "name": "@react-native/bots",
-  "version": "0.0.0",
+  "version": "0.84.1",
   "private": true,
   "license": "MIT",
   "engines": {
-    "node": ">= 22.11.0"
+    "node": ">= 20.19.4"
   },
   "devDependencies": {
     "@rnx-kit/rn-changelog-generator": "^0.4.0",
