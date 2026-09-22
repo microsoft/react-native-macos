@@ -28,7 +28,7 @@ Pod::Spec.new do |spec|
   spec.version              = version
   spec.summary              = 'React Native Dependencies'
   spec.description          = 'ReactNativeDependencies is a podspec that contains all the third-party dependencies of React Native.'
-  spec.homepage             = 'https://github.com/facebook/react-native'
+  spec.homepage             = 'https://github.com/react/react-native'
   spec.license              = package['license']
   spec.authors              = 'meta'
   spec.platforms            = min_supported_versions

@@ -227,7 +227,7 @@ public class ReactTextView extends AppCompatTextView implements ReactCompoundVie
     try (SystraceSection s = new SystraceSection("ReactTextView.setText(ReactTextUpdate)")) {
       // Android's TextView crashes when it tries to relayout if LayoutParams are
       // null; explicitly set the LayoutParams to prevent this crash. See:
-      // https://github.com/facebook/react-native/pull/7011
+      // https://github.com/react/react-native/pull/7011
       if (getLayoutParams() == null) {
         setLayoutParams(EMPTY_LAYOUT_PARAMS);
       }

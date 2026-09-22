@@ -6,14 +6,14 @@ The RNTester showcases React Native views and modules.
 
 Before running the app, make sure you ran:
 ```sh
-git clone https://github.com/facebook/react-native.git
+git clone https://github.com/react/react-native.git
 cd react-native
 yarn install
 ```
 
 ### Running on iOS
 
-If you are testing non-fabric component, search for and modify the `fabric_enabled` flag in [RNTester's Podfile](https://github.com/facebook/react-native/blob/main/packages/rn-tester/Podfile).
+If you are testing non-fabric component, search for and modify the `fabric_enabled` flag in [RNTester's Podfile](https://github.com/react/react-native/blob/main/packages/rn-tester/Podfile).
 
 ```ruby
 fabric_enabled = false

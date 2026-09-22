@@ -41,7 +41,7 @@ declare global {
    *
    *   global.XMLHttpRequest = global.originalXMLHttpRequest;
    *
-   * @see https://github.com/facebook/react-native/issues/934
+   * @see https://github.com/react/react-native/issues/934
    */
   const originalXMLHttpRequest: any;
 
@@ -237,7 +237,7 @@ declare global {
   /**
    * React Native's implementation of fetch allows this syntax for uploading files from
    * local filesystem.
-   * See https://github.com/facebook/react-native/blob/master/Libraries/Network/convertRequestBody.js#L22
+   * See https://github.com/react/react-native/blob/master/Libraries/Network/convertRequestBody.js#L22
    */
   interface _SourceUri {
     uri: string;

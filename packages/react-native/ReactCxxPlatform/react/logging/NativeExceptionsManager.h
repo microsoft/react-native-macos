@@ -18,7 +18,7 @@
 
 namespace facebook::react {
 
-// https://github.com/facebook/react-native/blob/v0.71.1/Libraries/Core/NativeExceptionsManager.js#L17-L35
+// https://github.com/react/react-native/blob/v0.71.1/Libraries/Core/NativeExceptionsManager.js#L17-L35
 using StackFrame = NativeExceptionsManagerStackFrame<
     std::optional<int32_t>,
     std::optional<std::string>,
@@ -58,7 +58,7 @@ class NativeExceptionsManager : public NativeExceptionsManagerCxxSpec<NativeExce
   void updateExceptionMessage(jsi::Runtime &rt, jsi::String message, jsi::Array stack, double exceptionId)
   {
     // This method is not in modern React Native:
-    // https://github.com/search?q=repo%3Afacebook%2Freact-native+updateExceptionMessage&type=code
+    // https://github.com/search?q=repo%3Areact%2Freact-native+updateExceptionMessage&type=code
   }
 
   void dismissRedbox(jsi::Runtime &rt)

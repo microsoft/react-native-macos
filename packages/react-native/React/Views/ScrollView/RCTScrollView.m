@@ -426,7 +426,7 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   if (@available(iOS 14.0, *)) {
     // On iOS when Prefer Cross-Fade Transitions is enabled, the keyboard position
     // & height is reported differently (0 instead of Y position value matching height of frame)
-    // Fixes similar issue we saw with https://github.com/facebook/react-native/pull/34503
+    // Fixes similar issue we saw with https://github.com/react/react-native/pull/34503
     if (UIAccessibilityPrefersCrossFadeTransitions() && endFrame.size.height == 0) {
       newContentOffset.y = 0;
       newEdgeInsets.bottom = 0;

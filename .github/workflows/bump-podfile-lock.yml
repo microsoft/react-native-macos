@@ -2,15 +2,23 @@ name: Bump Podfile.lock
 
 on:
   workflow_call: # this directive allow us to call this workflow from other workflows
+    inputs:
+      releaseVersion:
+        required: false
+        type: string
+      checkoutRef:
+        required: false
+        type: string
 
 jobs:
   bump-podfile-lock:
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
+          ref: ${{ inputs.checkoutRef || github.ref }}
           fetch-depth: 0
           fetch-tags: true
       - name: Install dependencies
@@ -23,7 +31,7 @@ jobs:
         uses: ./.github/actions/setup-xcode
       - name: Extract branch name
         run: |
-          TAG="${{ github.ref_name }}";
+          TAG="${{ inputs.releaseVersion || github.ref_name }}";
           BRANCH_NAME=$(echo "$TAG" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+(-rc\.[0-9]+)?/\1-stable/')
           echo "Branch Name is $BRANCH_NAME"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
