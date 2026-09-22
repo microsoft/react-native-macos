@@ -232,9 +232,12 @@ function createVersionExportedApis(
             nodePath.node.specifiers != null
           ) {
             const specifiers = nodePath.node.specifiers.map(specifier => {
-              // $FlowFixMe[incompatible-type] nodePath is refined above
-              // $FlowFixMe[incompatible-use]
-              const name: string = specifier.exported.name;
+              if (!t.isExportSpecifier(specifier)) {
+                return specifier;
+              }
+              // [macOS] Hash the local declaration, retaining the public alias
+              // on the export specifier (e.g. DragEvent_2 as DragEvent).
+              const name: string = specifier.local.name;
               if (declarations.has(name)) {
                 const hash = generateTypeHash(name);
                 let comment = ` ${hash}`;

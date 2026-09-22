@@ -18,6 +18,8 @@ module.exports = {
     platforms: ['android', 'ios', 'macos', 'native'], // [macOS]
   },
   moduleNameMapper: {
+    // Resolve secondary entry points before the broad fork mapper. // [macOS]
+    '^react-native/setup-env$': `${path.dirname(require.resolve('react-native-macos'))}/src/setup-env.js`, // [macOS]
     '^react-native($|/.*)': `${path.dirname(
       require.resolve('react-native-macos'), // [macOS]
     )}/$1`,

@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "skipLibCheck": true,
+    "paths": {},
+    "customConditions": []
+  },
+  "include": ["macos-public-api.ts"],
+  "exclude": []
+}

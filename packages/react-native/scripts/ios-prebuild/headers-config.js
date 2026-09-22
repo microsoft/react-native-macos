@@ -109,7 +109,10 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
             headerPatterns: [
               'react/renderer/components/view/*.h',
               'react/renderer/components/view/platform/cxx/**/*.h',
+              'react/renderer/components/view/platform/macos/**/*.h', // [macOS]
             ],
+            // [macOS] Stable root headers dispatch to platform-relative paths.
+            preservePaths: ['react/renderer/components/view/platform/**/*.h'],
             headerDir: 'react/renderer/components/view',
           },
 
@@ -131,6 +134,9 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
             excludePatterns: [
               'react/renderer/components/legacyviewmanagerinterop/tests',
             ],
+            preservePaths: [
+              'react/renderer/components/legacyviewmanagerinterop/platform/**/*.h',
+            ], // [macOS] Do not flatten the upstream iOS copy over the fork header.
             headerDir: 'react/renderer/components/legacyviewmanagerinterop',
           },
         ],

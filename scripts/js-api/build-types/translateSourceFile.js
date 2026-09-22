@@ -12,10 +12,12 @@ import type {PluginObj} from '@babel/core';
 import type {ParseResult} from 'hermes-transform/dist/transform/parse';
 import type {TransformASTResult} from 'hermes-transform/dist/transform/transformAST';
 
+const {REACT_NATIVE_PACKAGE_DIR} = require('../../shared/consts');
 const getDependencies = require('./resolution/getDependencies');
 const applyBabelTransformsSeq = require('./utils/applyBabelTransformsSeq');
 const translate = require('flow-api-translator');
 const {parse, print} = require('hermes-transform');
+const path = require('path');
 
 type PreTransformFn = ParseResult => Promise<TransformASTResult>;
 
@@ -69,6 +71,15 @@ async function translateSourceFile(
     await parse(flowDefResult),
     filePath,
   );
+
+  // [macOS] Full builds and watch updates must preserve the same public shim.
+  // Keep the Flow dependencies above so watch mode still tracks source changes.
+  if (filePath === path.join(REACT_NATIVE_PACKAGE_DIR, 'src/types/macos.js')) {
+    return {
+      result: 'export type * from "../../../src/types/macos";\n',
+      dependencies,
+    };
+  }
 
   // Translate to TypeScript defs
   const tsDefResult = await translate.translateFlowDefToTSDef(
