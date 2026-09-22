@@ -88,11 +88,12 @@ Scheduler::Scheduler(
                        EventTarget* eventTarget,
                        const std::string& type,
                        ReactEventPriority priority,
-                       const EventPayload& payload) {
+                       const EventPayload& payload,
+                       HighResTimeStamp eventTimestamp) {
     uiManager->visitBinding(
         [&](const UIManagerBinding& uiManagerBinding) {
           uiManagerBinding.dispatchEvent(
-              runtime, eventTarget, type, priority, payload);
+              runtime, eventTarget, type, priority, payload, eventTimestamp);
         },
         runtime);
   };
@@ -157,6 +158,12 @@ Scheduler::Scheduler(
   }
   uiManager_->setAnimationDelegate(animationDelegate);
 
+  // Initialize ViewTransitionModule
+  if (ReactNativeFeatureFlags::viewTransitionEnabled()) {
+    viewTransitionModule_ = std::make_shared<ViewTransitionModule>();
+    viewTransitionModule_->initialize(uiManager_.get(), viewTransitionModule_);
+  }
+
   uiManager->registerMountHook(*eventPerformanceLogger_);
 }
 
@@ -186,6 +193,7 @@ Scheduler::~Scheduler() {
   // The thread-safety of this operation is guaranteed by this requirement.
   uiManager_->setDelegate(nullptr);
   uiManager_->setAnimationDelegate(nullptr);
+  uiManager_->setViewTransitionDelegate(nullptr);
 
   if (cdpMetricsReporter_) {
     performanceEntryReporter_->removeEventListener(&*cdpMetricsReporter_);
@@ -353,6 +361,27 @@ void Scheduler::uiManagerDidUpdateShadowTree(
     const std::unordered_map<Tag, folly::dynamic>& tagToProps) {
   if (delegate_ != nullptr) {
     delegate_->schedulerDidUpdateShadowTree(tagToProps);
+  }
+}
+
+void Scheduler::uiManagerDidCaptureViewSnapshot(Tag tag, SurfaceId surfaceId) {
+  if (delegate_ != nullptr) {
+    delegate_->schedulerDidCaptureViewSnapshot(tag, surfaceId);
+  }
+}
+
+void Scheduler::uiManagerDidSetViewSnapshot(
+    Tag sourceTag,
+    Tag targetTag,
+    SurfaceId surfaceId) {
+  if (delegate_ != nullptr) {
+    delegate_->schedulerDidSetViewSnapshot(sourceTag, targetTag, surfaceId);
+  }
+}
+
+void Scheduler::uiManagerDidClearPendingSnapshots() {
+  if (delegate_ != nullptr) {
+    delegate_->schedulerDidClearPendingSnapshots();
   }
 }
 

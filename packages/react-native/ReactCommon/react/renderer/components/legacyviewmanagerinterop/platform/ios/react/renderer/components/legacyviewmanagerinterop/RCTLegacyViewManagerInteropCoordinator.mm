@@ -89,13 +89,13 @@ using namespace facebook::react;
   [_eventInterceptors removeObjectForKey:[NSNumber numberWithInteger:tag]];
 }
 
-- (UIView *)createPaperViewWithTag:(NSInteger)tag
+- (RCTPlatformView *)createPaperViewWithTag:(NSInteger)tag // [macOS]
 {
   [_bridgelessInteropData attachInteropAPIsToModule:(id<RCTBridgeModule>)_componentData.manager];
   return [_componentData createViewWithTag:[NSNumber numberWithInteger:tag] rootTag:NULL];
 }
 
-- (void)setProps:(NSDictionary<NSString *, id> *)props forView:(UIView *)view
+- (void)setProps:(NSDictionary<NSString *, id> *)props forView:(RCTPlatformView *)view // [macOS]
 {
   [_componentData setProps:props forView:view];
 
@@ -112,7 +112,7 @@ using namespace facebook::react;
 - (void)handleCommand:(NSString *)commandName
                  args:(NSArray *)args
              reactTag:(NSInteger)tag
-            paperView:(nonnull UIView *)paperView
+            paperView:(nonnull RCTPlatformView *)paperView // [macOS]
 {
   Class managerClass = _componentData.managerClass;
   [self _lookupModuleMethodsIfNecessary];
@@ -163,7 +163,7 @@ using namespace facebook::react;
   [componentViewManager setValue:_bridgeProxy forKey:@"bridge"];
 
   [self->_bridgeProxy.uiManager
-      addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+      addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *, RCTPlatformView *> *viewRegistry) { // [macOS]
         [method invokeWithBridge:nil module:componentViewManager arguments:newArgs];
       }];
 }

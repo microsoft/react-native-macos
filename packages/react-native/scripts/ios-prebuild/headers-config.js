@@ -9,12 +9,12 @@
  */
 
 /*::
-export type PodSpecConfiguration = $ReadOnly<{
+export type PodSpecConfiguration = Readonly<{
   name: string,
   headerPatterns: Array<string>,
   headerDir?: string,
   excludePatterns?: Array<string>,
-  subSpecs?: $ReadOnlyArray<PodSpecConfiguration>,
+  subSpecs?: ReadonlyArray<PodSpecConfiguration>,
   preservePaths?: Array<string>,
 } | {disabled: true}>;
 */
@@ -214,6 +214,12 @@ const PodspecExceptions /*: {[key: string]: PodSpecConfiguration} */ = {
         headerPatterns: ['react/renderer/leakchecker/**/*.h'],
         excludePatterns: ['react/renderer/leakchecker/tests'],
         headerDir: 'react/renderer/leakchecker',
+      },
+
+      {
+        name: 'viewtransition',
+        headerPatterns: ['react/renderer/viewtransition/**/*.h'],
+        headerDir: 'react/renderer/viewtransition',
       },
     ],
   },
