@@ -53,6 +53,7 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-NativeModulesApple")
   add_dependency(s, "React-featureflags")
   add_dependency(s, "React-RCTUIKit", :framework_name => 'RCTUIKit') # [macOS]
+  add_dependency(s, "React-debug")
 
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)

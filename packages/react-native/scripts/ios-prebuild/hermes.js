@@ -10,9 +10,11 @@
 
 const {recomposeHermesXCFramework} = require('./hermes-framework'); // [macOS]
 const {readHermesMetadata} = require('./hermes-version'); // [macOS]
+const {hermesCommitAtMergeBase} = require('./microsoft-hermes'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
-const {execSync} = require('child_process');
+const {execFileSync} = require('child_process');
 const fs = require('fs');
+const os = require('os'); // [macOS]
 const path = require('path');
 const stream = require('stream');
 const {promisify} = require('util');
@@ -22,6 +24,7 @@ const hermesLog = createLogger('Hermes');
 
 /*::
 import type {BuildFlavor, Destination, Platform} from './types';
+type HermesSourceRevision = {|commit: string, timestamp: string|}; // [macOS]
 */
 
 /**
@@ -30,7 +33,8 @@ import type {BuildFlavor, Destination, Platform} from './types';
  * the .build/artifacts/hermes folder, but this can be overridden by setting the HERMES_ENGINE_TARBALL_PATH
  * environment variable. If this varuable is set, the script will use the local tarball instead of downloading it.
  * [macOS] Without an override, use the selected version.properties pin. Only an explicit
- * HERMES_VERSION=nightly resolves the npm nightly tag.
+ * HERMES_VERSION=nightly resolves the npm nightly tag. On the 0.84 fork, selected
+ * metadata 1000.0.0 requires a source build at the React Native merge-base timestamp.
  */
 async function prepareHermesArtifactsAsync(
   reactNativeVersion /*:string*/,
@@ -57,10 +61,18 @@ async function prepareHermesArtifactsAsync(
 
   // Only check if the artifacts folder exists if we are not using a local tarball
   if (!localPath) {
-    // Resolve the version from the environment variable or use the default version
     // [macOS] Hermes artifacts use the selected SDK pin, not the RN version.
+    const explicitVersion = process.env.HERMES_VERSION;
     let resolvedVersion =
-      process.env.HERMES_VERSION ?? readHermesMetadata().version;
+      explicitVersion ?? readHermesMetadata('legacy-default').version;
+    // This is the 0.84 fork's source sentinel, not a rule for every RN main
+    // package. Explicit versions (including 1000.0.0) remain artifact overrides.
+    const buildFromSource =
+      explicitVersion == null && resolvedVersion === '1000.0.0';
+    // Resolve before checking the cache so an upstream rebase invalidates it.
+    // Pass this same revision to the build rather than resolving it again.
+    const sourceRevision = buildFromSource ? hermesCommitAtMergeBase() : null;
+    // macOS]
 
     if (resolvedVersion === 'nightly') {
       hermesLog('Using latest nightly tarball');
@@ -72,7 +84,7 @@ async function prepareHermesArtifactsAsync(
     if (
       checkExistingVersion(
         versionFilePath,
-        resolvedVersion,
+        sourceRevision ? `source-${sourceRevision.commit}` : resolvedVersion, // [macOS]
         buildType,
         artifactsPath,
       )
@@ -80,12 +92,16 @@ async function prepareHermesArtifactsAsync(
       return artifactsPath;
     }
 
-    const sourceType = await hermesSourceType(resolvedVersion, buildType);
+    // [macOS] Do not probe Maven or resolve a nightly for the source sentinel.
+    const sourceType = buildFromSource
+      ? HermesEngineSourceTypes.BUILD_FROM_HERMES_COMMIT
+      : await hermesSourceType(resolvedVersion, buildType);
     localPath = await resolveSourceFromSourceType(
       sourceType,
       resolvedVersion,
       buildType,
       artifactsPath,
+      sourceRevision, // [macOS]
     );
   } else {
     hermesLog('Using local tarball, skipping artifacts folder check');
@@ -96,7 +112,7 @@ async function prepareHermesArtifactsAsync(
   }
 
   // Extract the tar.gz
-  execSync(`tar -xzf "${localPath}" -C "${artifactsPath}"`, {
+  execFileSync('tar', ['-xzf', localPath, '-C', artifactsPath], {
     stdio: 'inherit',
   });
   // [macOS] All-Apple prebuilds require macOS; local overrides may omit it.
@@ -135,9 +151,11 @@ type HermesEngineSourceType =
   | 'local_prebuilt_tarball'
   | 'download_prebuild_tarball'
   | 'download_prebuilt_nightly_tarball'
+  | 'build_from_hermes_commit' // [macOS]
 */
 
 const HermesEngineSourceTypes /*:{
+  +BUILD_FROM_HERMES_COMMIT: "build_from_hermes_commit",
   +DOWNLOAD_PREBUILD_TARBALL: "download_prebuild_tarball",
   +DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: "download_prebuilt_nightly_tarball",
   +LOCAL_PREBUILT_TARBALL: "local_prebuilt_tarball"
@@ -145,6 +163,7 @@ const HermesEngineSourceTypes /*:{
   LOCAL_PREBUILT_TARBALL: 'local_prebuilt_tarball',
   DOWNLOAD_PREBUILD_TARBALL: 'download_prebuild_tarball',
   DOWNLOAD_PREBUILT_NIGHTLY_TARBALL: 'download_prebuilt_nightly_tarball',
+  BUILD_FROM_HERMES_COMMIT: 'build_from_hermes_commit', // [macOS]
 };
 
 /**
@@ -216,6 +235,7 @@ async function getNightlyTarballUrl(
   return await computeNightlyTarballURL(
     version,
     buildType,
+    'hermes',
     artifactCoordinate,
     artifactName,
   );
@@ -274,6 +294,7 @@ async function resolveSourceFromSourceType(
   version /*: string */,
   buildType /*: BuildFlavor */,
   artifactsPath /*: string*/,
+  sourceRevision /*: ?HermesSourceRevision */ = null, // [macOS]
 ) /*: Promise<string> */ {
   switch (sourceType) {
     case HermesEngineSourceTypes.LOCAL_PREBUILT_TARBALL:
@@ -282,6 +303,17 @@ async function resolveSourceFromSourceType(
       return downloadPrebuildTarball(version, buildType, artifactsPath);
     case HermesEngineSourceTypes.DOWNLOAD_PREBUILT_NIGHTLY_TARBALL:
       return downloadPrebuiltNightlyTarball(version, buildType, artifactsPath);
+    case HermesEngineSourceTypes.BUILD_FROM_HERMES_COMMIT: // [macOS]
+      if (sourceRevision != null) {
+        return buildFromHermesCommit(
+          version,
+          buildType,
+          artifactsPath,
+          sourceRevision,
+        );
+      }
+      abort('[Hermes] Missing resolved source revision');
+      return '';
     default:
       abort(
         `[Hermes] Unsupported or invalid source type provided: ${sourceType}`,
@@ -387,6 +419,131 @@ async function downloadHermesTarball(
   }
   return destPath;
 }
+
+// [macOS
+/**
+ * Builds the 0.84 fork's selected source-only Hermes metadata.
+ * Uses the Hermes revision resolved before the cache check and provides
+ * actionable guidance for building Hermes.
+ */
+async function buildFromHermesCommit(
+  version /*: string */,
+  buildType /*: BuildFlavor */,
+  artifactsPath /*: string */,
+  sourceRevision /*: HermesSourceRevision */,
+) /*: Promise<string> */ {
+  const {commit, timestamp} = sourceRevision;
+  hermesLog(
+    `Building Hermes from source at commit ${commit} (merge base timestamp: ${timestamp})`,
+  );
+
+  const HERMES_GITHUB_URL = 'https://github.com/facebook/hermes.git';
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-build-'));
+  const hermesDir = path.join(tmpDir, 'hermes');
+  const inheritStdio /*: child_process$execFileSyncOpts */ = {
+    stdio: 'inherit',
+  };
+
+  try {
+    // Clone Hermes at the identified commit using the most efficient
+    // single-fetch pattern (see https://github.com/actions/checkout)
+    hermesLog(`Cloning Hermes at commit ${commit}...`);
+    execFileSync('git', ['init', hermesDir], inheritStdio);
+    execFileSync(
+      'git',
+      ['-C', hermesDir, 'remote', 'add', 'origin', HERMES_GITHUB_URL],
+      inheritStdio,
+    );
+    execFileSync(
+      'git',
+      [
+        '-C',
+        hermesDir,
+        'fetch',
+        '--no-tags',
+        '--depth',
+        '1',
+        'origin',
+        `+${commit}:refs/remotes/origin/main`,
+      ],
+      {...inheritStdio, timeout: 300000},
+    );
+    execFileSync('git', ['-C', hermesDir, 'checkout', 'main'], inheritStdio);
+
+    const reactNativeRoot = path.resolve(__dirname, '..', '..');
+    const buildScript = path.join(
+      reactNativeRoot,
+      'sdks',
+      'hermes-engine',
+      'utils',
+      'build-ios-framework.sh',
+    );
+
+    const buildEnv = {
+      ...process.env,
+      BUILD_TYPE: buildType,
+      HERMES_PATH: hermesDir,
+      JSI_PATH: path.join(hermesDir, 'API', 'jsi'),
+      REACT_NATIVE_PATH: reactNativeRoot,
+      // Deployment targets matching react-native-macos minimums
+      IOS_DEPLOYMENT_TARGET: '15.1',
+      MAC_DEPLOYMENT_TARGET: '14.0',
+      XROS_DEPLOYMENT_TARGET: '1.0',
+      RELEASE_VERSION: version,
+    };
+
+    hermesLog(`Building Hermes frameworks (${buildType})...`);
+    execFileSync('bash', [buildScript], {
+      ...inheritStdio,
+      cwd: hermesDir,
+      timeout: 3600000, // 60 minutes
+      env: buildEnv,
+    });
+
+    // Create tarball from the destroot (same structure as Maven artifacts)
+    const tarballName = `hermes-ios-${buildType.toLowerCase()}.tar.gz`;
+    const tarballPath = path.join(artifactsPath, tarballName);
+    hermesLog('Creating Hermes tarball from build output...');
+    execFileSync(
+      'tar',
+      ['-czf', tarballPath, '-C', hermesDir, 'destroot'],
+      inheritStdio,
+    );
+
+    hermesLog(`Hermes built from source and packaged at ${tarballPath}`);
+    return tarballPath;
+  } catch (e) {
+    // Dump CMake error logs before cleanup for debugging
+    try {
+      const cmakeErrorLog = path.join(
+        hermesDir,
+        'build_host_hermesc',
+        'CMakeFiles',
+        'CMakeError.log',
+      );
+      if (fs.existsSync(cmakeErrorLog)) {
+        hermesLog('=== CMakeError.log ===');
+        hermesLog(fs.readFileSync(cmakeErrorLog, 'utf8'));
+      }
+    } catch (_) {
+      // ignore
+    }
+
+    abort(
+      `[Hermes] Failed to build Hermes from source at commit ${commit}.\n` +
+        `Error: ${e.message}\n` +
+        `To resolve, either:\n` +
+        `  1. Set HERMES_ENGINE_TARBALL_PATH to a local Hermes tarball path\n` +
+        `  2. Set HERMES_VERSION to a Hermes version with published artifacts\n` +
+        `  3. Build Hermes manually from commit ${commit} and provide the tarball path via HERMES_ENGINE_TARBALL_PATH`,
+    );
+    return ''; // unreachable
+  } finally {
+    // Clean up
+    fs.rmSync(tmpDir, {recursive: true, force: true});
+  }
+}
+// macOS]
 
 function abort(message /*: string */) {
   hermesLog(message, 'error');

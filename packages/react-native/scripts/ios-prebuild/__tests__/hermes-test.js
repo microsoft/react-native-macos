@@ -10,13 +10,14 @@
 
 'use strict';
 
-jest.mock('child_process', () => ({
-  execSync: jest.fn(),
-  execFileSync: jest.fn(),
+jest.mock('child_process', () => ({execFileSync: jest.fn()}));
+jest.mock('../microsoft-hermes', () => ({
+  hermesCommitAtMergeBase: jest.fn(),
 }));
 
 const {prepareHermesArtifactsAsync} = require('../hermes');
-const {execFileSync, execSync} = require('child_process');
+const {hermesCommitAtMergeBase} = require('../microsoft-hermes');
+const {execFileSync} = require('child_process');
 const fs = require('fs');
 const ini = require('ini');
 const os = require('os');
@@ -64,6 +65,7 @@ beforeEach(() => {
   standaloneMacOS = false;
   includeInfo = true;
   jest.spyOn(process, 'cwd').mockReturnValue(tmp);
+  jest.spyOn(os, 'tmpdir').mockReturnValue(tmp);
   jest.spyOn(console, 'log').mockImplementation(() => {});
   jest.spyOn(fs, 'readFileSync').mockImplementation((file, ...args) => {
     if (file === propertiesPath) {
@@ -80,24 +82,17 @@ beforeEach(() => {
     }
     return {ok: true, body: Readable.from(['mock Hermes archive'])};
   });
-  execSync.mockImplementation(() => {
-    fs.mkdirSync(framework, {recursive: true});
-    if (includeInfo) {
-      fs.writeFileSync(
-        path.join(framework, 'Info.plist'),
-        JSON.stringify({AvailableLibraries: libraries}),
-      );
-    }
-    if (standaloneMacOS) {
-      const macOSFramework = path.resolve(
-        framework,
-        '../../macosx/hermesvm.framework',
-      );
-      fs.mkdirSync(macOSFramework, {recursive: true});
-      fs.writeFileSync(path.join(macOSFramework, 'hermesvm'), 'macOS binary');
-    }
+  hermesCommitAtMergeBase.mockReturnValue({
+    commit: '0123456789abcdef0123456789abcdef01234567',
+    timestamp: '2026-01-05',
   });
   execFileSync.mockImplementation((command, args) => {
+    if (command === 'tar' && args[0] === '-czf') {
+      fs.writeFileSync(args[1], 'mock source archive');
+    }
+    if (command === 'tar' && args[0] === '-xzf') {
+      populateExtractedFramework();
+    }
     if (command === 'plutil') {
       return readFileSync(args[4], 'utf8');
     }
@@ -129,6 +124,24 @@ afterEach(() => {
 
 function releaseUrl(version, flavor = 'debug') {
   return `https://repo1.maven.org/maven2/com/facebook/hermes/hermes-ios/${version}/hermes-ios-${version}-hermes-ios-${flavor}.tar.gz`;
+}
+
+function populateExtractedFramework() {
+  fs.mkdirSync(framework, {recursive: true});
+  if (includeInfo) {
+    fs.writeFileSync(
+      path.join(framework, 'Info.plist'),
+      JSON.stringify({AvailableLibraries: libraries}),
+    );
+  }
+  if (standaloneMacOS) {
+    const macOSFramework = path.resolve(
+      framework,
+      '../../macosx/hermesvm.framework',
+    );
+    fs.mkdirSync(macOSFramework, {recursive: true});
+    fs.writeFileSync(path.join(macOSFramework, 'hermesvm'), 'macOS binary');
+  }
 }
 
 test.each(['Debug', 'Release'])(
@@ -174,7 +187,8 @@ test.each([
       prepareHermesArtifactsAsync('1000.0.0', 'Debug'),
     ).rejects.toThrow();
     expect(global.fetch).not.toHaveBeenCalled();
-    expect(execSync).not.toHaveBeenCalled();
+    expect(execFileSync).not.toHaveBeenCalled();
+    expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
   },
 );
 
@@ -187,14 +201,16 @@ test('local tarball overrides invalid metadata and explicit nightly', async () =
   process.env.HERMES_VERSION = 'nightly';
   properties = '';
   await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
-  expect(execSync).toHaveBeenCalledWith(
-    `tar -xzf "${tarball}" -C "${artifacts}"`,
+  expect(execFileSync).toHaveBeenCalledWith(
+    'tar',
+    ['-xzf', tarball, '-C', artifacts],
     {stdio: 'inherit'},
   );
   expect(fs.existsSync(tarball)).toBe(true);
   expect(fs.existsSync(versionFile)).toBe(false);
   expect(fs.readFileSync).not.toHaveBeenCalledWith(propertiesPath, 'utf8');
   expect(global.fetch).not.toHaveBeenCalled();
+  expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
 });
 
 test.each(['123.4.56', '1000.0.0'])(
@@ -208,6 +224,7 @@ test.each(['123.4.56', '1000.0.0'])(
       [releaseUrl(version)],
     ]);
     expect(fs.readFileSync).not.toHaveBeenCalledWith(propertiesPath, 'utf8');
+    expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
   },
 );
 
@@ -239,16 +256,30 @@ test('an explicit nightly lookup failure does not use the default pin', async ()
   expect(global.fetch.mock.calls).toEqual([
     ['https://registry.npmjs.org/hermes-compiler/nightly'],
   ]);
-  expect(execSync).not.toHaveBeenCalled();
+  expect(execFileSync).not.toHaveBeenCalled();
+  expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
 });
 
-test('main does not infer a source exception from selected metadata 1000.0.0', async () => {
+test('the 0.84 caller builds selected metadata 1000.0.0 from source', async () => {
   properties = 'HERMES_VERSION_NAME=1000.0.0';
-  await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
-  expect(global.fetch.mock.calls).toEqual([
-    [releaseUrl('1000.0.0'), {method: 'HEAD'}],
-    [releaseUrl('1000.0.0')],
-  ]);
+  expect(await prepareHermesArtifactsAsync('0.84.0', 'Debug')).toBe(artifacts);
+  expect(global.fetch).not.toHaveBeenCalled();
+  expect(hermesCommitAtMergeBase).toHaveBeenCalledTimes(1);
+  expect(hermesCommitAtMergeBase).toHaveBeenCalledWith();
+  expect(execFileSync).toHaveBeenCalledWith(
+    'bash',
+    [expect.stringContaining('build-ios-framework.sh')],
+    expect.objectContaining({
+      env: expect.objectContaining({
+        BUILD_TYPE: 'Debug',
+        RELEASE_VERSION: '1000.0.0',
+      }),
+    }),
+  );
+  expect(readFileSync(versionFile, 'utf8')).toBe(
+    'source-0123456789abcdef0123456789abcdef01234567-Debug',
+  );
+  expect(fs.existsSync(framework)).toBe(true);
 });
 
 test('uses the selected pin for snapshot metadata and download', async () => {
@@ -292,10 +323,10 @@ test('preserves the enterprise repository override', async () => {
 test('reuses only the matching Hermes version, flag and flavor cache', async () => {
   await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
   global.fetch.mockClear();
-  execSync.mockClear();
+  execFileSync.mockClear();
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
   expect(global.fetch).not.toHaveBeenCalled();
-  expect(execSync).not.toHaveBeenCalled();
+  expect(execFileSync.mock.calls.map(([command]) => command)).toEqual(['plutil']);
   properties = 'HERMES_VERSION_NAME=123.4.58\nHERMES_V1_VERSION_NAME=234.5.67';
   await prepareHermesArtifactsAsync('0.83.1', 'Debug');
   expect(global.fetch).toHaveBeenCalledWith(releaseUrl('123.4.58'));
@@ -315,7 +346,8 @@ test('unavailable artifacts fail without an npm or source fallback', async () =>
   await expect(
     prepareHermesArtifactsAsync('1000.0.0', 'Debug'),
   ).rejects.toThrow('Failed to download: 404 Not Found');
-  expect(execSync).not.toHaveBeenCalled();
+  expect(execFileSync).not.toHaveBeenCalled();
+  expect(hermesCommitAtMergeBase).not.toHaveBeenCalled();
   expect(global.fetch.mock.calls.some(([url]) => url.includes('npmjs'))).toBe(
     false,
   );
@@ -340,9 +372,8 @@ describe('macOS slice capabilities', () => {
         process.env.HERMES_ENGINE_TARBALL_PATH = path.join(tmp, 'local.tar.gz');
       }
       if (source === 'cache') {
-        execSync(); // Populate the old extracted layout without recomposition.
+        populateExtractedFramework();
         fs.writeFileSync(versionFile, '123.4.56-Debug');
-        execSync.mockClear();
       }
       await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
       expect(execFileSync).toHaveBeenCalledWith(
@@ -358,7 +389,9 @@ describe('macOS slice capabilities', () => {
         expect(global.fetch).not.toHaveBeenCalled();
       }
       if (source === 'cache') {
-        expect(execSync).not.toHaveBeenCalled();
+        expect(
+          execFileSync.mock.calls.some(([command]) => command === 'tar'),
+        ).toBe(false);
       }
     },
   );
@@ -367,8 +400,8 @@ describe('macOS slice capabilities', () => {
     libraries.push({SupportedPlatform: 'macos'});
     await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
     await prepareHermesArtifactsAsync('1000.0.0', 'Debug');
-    expect(execSync).toHaveBeenCalledTimes(1);
     expect(execFileSync.mock.calls.map(([command]) => command)).toEqual([
+      'tar',
       'plutil',
       'plutil',
     ]);
@@ -382,12 +415,14 @@ describe('macOS slice capabilities', () => {
         prepareHermesArtifactsAsync('1000.0.0', 'Debug'),
       ).rejects.toThrow('Cannot prepare required macOS slice: missing');
       global.fetch.mockClear();
-      execSync.mockClear();
+      execFileSync.mockClear();
       await expect(
         prepareHermesArtifactsAsync('1000.0.0', 'Debug'),
       ).rejects.toThrow('Cannot prepare required macOS slice: missing');
       expect(global.fetch).not.toHaveBeenCalled();
-      expect(execSync).not.toHaveBeenCalled();
+      expect(
+        execFileSync.mock.calls.some(([command]) => command === 'tar'),
+      ).toBe(false);
     },
   );
 
