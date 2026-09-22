@@ -32,9 +32,9 @@ React Native is developed and supported by many companies and individual core co
 
 [r]: https://react.dev/
 [p]: https://reactnative.dev/docs/out-of-tree-platforms
-[e]: https://github.com/facebook/react-native/blob/HEAD/ECOSYSTEM.md
+[e]: https://github.com/react/react-native/blob/HEAD/ECOSYSTEM.md
 
-This repository is a working fork of **facebook/react-native** that adds support for the official React Native for macOS implementation from Microsoft.
+This repository is a working fork of **react/react-native** that adds support for the official React Native for macOS implementation from Microsoft.
 
 You can read more about the macOS implementation in our website - [React Native for Windows + macOS](https://microsoft.github.io/react-native-windows/). You can read about how we manage this fork in our [docs](docs/) folder.
 
@@ -145,13 +145,13 @@ Read our [**Contributing Guide**][contribute] to learn about our development pro
 
 You can learn more about our vision for React Native in the [**Roadmap**][roadmap].
 
-[roadmap]: https://github.com/facebook/react-native/wiki/Roadmap
+[roadmap]: https://github.com/react/react-native/wiki/Roadmap
 
 ### Good First Issues
 
 We have a list of [good first issues][gfi] that contain bugs which have a relatively limited scope. This is a great place to get started, gain experience, and get familiar with our contribution process.
 
-[gfi]: https://github.com/facebook/react-native/labels/good%20first%20issue
+[gfi]: https://github.com/react/react-native/labels/good%20first%20issue
 
 ### Discussions
 
@@ -163,4 +163,4 @@ Larger discussions and proposals are discussed in [**@react-native-community/dis
 
 React Native is MIT licensed, as found in the [LICENSE][l] file.
 
-[l]: https://github.com/facebook/react-native/blob/main/LICENSE
+[l]: https://github.com/react/react-native/blob/main/LICENSE

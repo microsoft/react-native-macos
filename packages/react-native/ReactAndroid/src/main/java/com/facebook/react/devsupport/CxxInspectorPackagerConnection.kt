@@ -85,7 +85,7 @@ internal class CxxInspectorPackagerConnection(
    * A simple WebSocket wrapper that prevents having more than 16MiB of messages queued
    * simultaneously. This is done to stop OkHttp from closing the WebSocket connection.
    *
-   * https://github.com/facebook/react-native/issues/39651.
+   * https://github.com/react/react-native/issues/39651.
    * https://github.com/square/okhttp/blob/4e7dbec1ea6c9cf8d80422ac9d44b9b185c749a3/okhttp/src/commonJvmAndroid/kotlin/okhttp3/internal/ws/RealWebSocket.kt#L684.
    */
   private class InspectorPackagerWebSocketImpl(

@@ -17,7 +17,7 @@ namespace facebook::react::unstable_redbox {
  * by query string stripping of URLs in JavaScriptCore stack traces
  * introduced in iOS 16.4. This is a direct port of https://www.npmjs.com/package/jsc-safe-url.
  *
- * See https://github.com/facebook/react-native/issues/36794 for context.
+ * See https://github.com/react/react-native/issues/36794 for context.
  */
 
 bool isJscSafeUrl(std::string_view url);

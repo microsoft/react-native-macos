@@ -6,6 +6,7 @@
 require 'test/unit'
 require 'json'
 require 'ostruct'
+require 'pathname'
 
 class HermesEngineTests < Test::Unit::TestCase
   ENGINE = File.expand_path('../../../sdks/hermes-engine', __dir__)
@@ -70,6 +71,9 @@ class HermesEngineTests < Test::Unit::TestCase
     @sandbox.const_set(:File, file)
     pod = Module.new
     pod.const_set(:Spec, Spec)
+    config = Module.new
+    config.define_singleton_method(:instance) { OpenStruct.new(sandbox: OpenStruct.new(root: Pathname.new('/Pods'))) }
+    pod.const_set(:Config, config)
     executable = Module.new
     executable.define_singleton_method(:execute_command) do |_, args|
       calls << [:node, args]
@@ -102,18 +106,26 @@ class HermesEngineTests < Test::Unit::TestCase
           key = flag == '0' ? 'HERMES_VERSION_NAME' : 'HERMES_V1_VERSION_NAME'
           assert_equal(METADATA.fetch(key), spec.version)
           assert_equal('destroot/Library/Frameworks/macosx/hermesvm.framework', spec.osx.vendored_frameworks)
-          if flag == '0'
+          if METADATA.fetch(key) == '1000.0.0'
             assert_equal({git: @sandbox::HERMES_GITHUB_URL, commit: 'merge-base-hermes-commit'}, spec.source)
-            assert_equal([[:merge_base, 'main']], @calls.reject { |call| call.first == :node })
+            source_calls = @calls.reject { |call| call.first == :node }
+            assert_equal(1, source_calls.length)
+            assert_equal(:merge_base, source_calls.first.first)
+            if flag == '0'
+              assert_equal('main', source_calls.first[1])
+            else
+              assert_not_equal('main', source_calls.first[1])
+            end
             assert_equal('${PODS_ROOT}/hermes-engine/build_host_hermesc/bin/hermesc', spec.user_target_xcconfig['HERMES_CLI_PATH'])
             assert_equal(". '#{RN}/sdks/hermes-engine/utils/create-dummy-hermes-xcframework.sh'", spec.prepare_command)
             assert_equal(2, spec.script_phases.length)
-            assert_include(spec.subspecs, 'inspector')
+            assert_equal(flag == '0', spec.subspecs.key?('inspector'))
           else
             assert_equal({http: @sandbox.release_tarball_url(spec.version, :debug)}, spec.source)
             assert_equal([[:artifact, spec.source[:http]]], @calls.select { |call| call.first == :artifact })
             assert_equal([], @calls.select { |call| call.first == :merge_base })
-            assert_equal('/compiler/hermesc/osx-bin/hermesc', spec.user_target_xcconfig['HERMES_CLI_PATH'])
+            compiler_path = spec.user_target_xcconfig['HERMES_CLI_PATH'].sub('$(PODS_ROOT)', '/Pods')
+            assert_equal('/compiler/hermesc/osx-bin/hermesc', File.expand_path(compiler_path))
             assert_equal('destroot/Library/Frameworks/macosx/hermesvm.framework', spec.subspecs['Pre-built'].osx.vendored_frameworks)
           end
         end
@@ -121,13 +133,14 @@ class HermesEngineTests < Test::Unit::TestCase
     end
   end
 
-  def test_ci_without_pod_executable_uses_the_same_legacy_source
+  def test_ci_without_pod_executable_can_force_legacy_source
     ENV['RCT_HERMES_V1_ENABLED'] = '0'
+    ENV['RCT_BUILD_HERMES_FROM_SOURCE'] = 'true'
     @sandbox::Pod.send(:remove_const, :Executable)
     spec = evaluate
     assert_equal(METADATA.fetch('HERMES_VERSION_NAME'), spec.version)
-    assert_equal('merge-base-hermes-commit', spec.source[:commit])
-    assert_equal([[:merge_base, 'main']], @calls)
+    assert_equal({git: @sandbox::HERMES_GITHUB_URL, tag: File.read(File.join(RN, 'sdks', '.hermesversion')).strip}, spec.source)
+    assert_equal([], @calls)
     assert_equal(". '#{File.join(ENGINE, '..', '..')}/sdks/hermes-engine/utils/create-dummy-hermes-xcframework.sh'", spec.prepare_command)
   end
 
@@ -176,6 +189,7 @@ class HermesEngineTests < Test::Unit::TestCase
 
   def test_explicit_host_compiler_path_is_preserved
     ENV['RCT_HERMES_V1_ENABLED'] = '0'
+    ENV['RCT_BUILD_HERMES_FROM_SOURCE'] = 'true'
     ENV['HERMES_OVERRIDE_HERMESC_PATH'] = ENGINE
     assert_equal("#{ENGINE}/bin/hermesc", evaluate.user_target_xcconfig['HERMES_CLI_PATH'])
   end

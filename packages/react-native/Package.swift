@@ -103,7 +103,7 @@ let jsi = RNTarget(
   path: "ReactCommon/jsi",
   // JSI is a part of hermes-engine. Including them also in react-native will violate the One Definition Rule.
   // Precompiled binaries are only supported with hermes - so we can safely exclude the jsi.cpp file.
-  // https://github.com/facebook/react-native/issues/53257
+  // https://github.com/react/react-native/issues/53257
   excludedPaths: ["jsi/test", "jsi/jsi.cpp", "CMakeLists.txt", "jsi/CMakeLists.txt"],
   dependencies: [.reactNativeDependencies]
 )

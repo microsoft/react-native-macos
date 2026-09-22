@@ -4,12 +4,19 @@
 # LICENSE file in the root directory of this source tree.
 
 require 'shellwords'
+require 'digest'
+require 'uri'
 
 require_relative "./helpers.rb"
 require_relative "./jsengine.rb"
 
 # Utilities class for React Native Cocoapods
 class ReactNativePodsUtils
+    # URI::File.build validates path components as ASCII, so escape the filesystem path first.
+    def self.local_file_uri(path)
+        URI::File.build(path: URI::DEFAULT_PARSER.escape(path)).to_s
+    end
+
     def self.warn_if_not_on_arm64
         if SysctlChecker.new().call_sysctl_arm64() == 1 && !Environment.new().ruby_platform().include?('arm64')
             Pod::UI.warn 'Do not use "pod install" from inside Rosetta2 (x86_64 emulation on arm64).'
@@ -69,7 +76,7 @@ class ReactNativePodsUtils
     end
 
     def self.turn_off_resource_bundle_react_core(installer)
-        # this is needed for Xcode 14, see more details here https://github.com/facebook/react-native/issues/34673
+        # this is needed for Xcode 14, see more details here https://github.com/react/react-native/issues/34673
         # we should be able to remove this once CocoaPods catches up to it, see more details here https://github.com/CocoaPods/CocoaPods/issues/11402
         installer.target_installation_results.pod_target_installation_results.each do |pod_name, target_installation_result|
             if pod_name.to_s == 'React-Core'
@@ -243,7 +250,7 @@ class ReactNativePodsUtils
             # When installing pods with a yarn alias, yarn creates a fake yarn and node executables
             # in a temporary folder.
             # Using `node --print "process.argv[0]";` we are able to retrieve the actual path from which node is running.
-            # see https://github.com/facebook/react-native/issues/43285 for more info. We've tweaked this slightly.
+            # see https://github.com/react/react-native/issues/43285 for more info. We've tweaked this slightly.
             node_binary = Shellwords.escape(`node --print "process.argv[0]"`.strip)
             system("echo 'export NODE_BINARY=#{node_binary}' > #{file_path}.local")
         end
@@ -743,6 +750,51 @@ class ReactNativePodsUtils
 
         if header_mappings_dir != nil && ReactNativeCoreUtils.build_rncore_from_source()
             spec.header_mappings_dir = header_mappings_dir
+        end
+    end
+
+    # ==================== #
+    # Shared download cache #
+    # ==================== #
+
+    def self.skip_caches?
+        ENV['RCT_SKIP_CACHES'] == '1'
+    end
+
+    def self.shared_cache_dir()
+        return File.join(Dir.home, "Library", "Caches", "ReactNative")
+    end
+
+    def self.fetch_maven_sha1(tarball_url)
+        sha1 = `curl -sL "#{tarball_url}.sha1"`.strip
+        return sha1.downcase if $?.success? && sha1.match?(/\A[a-fA-F0-9]{40}\z/)
+        nil
+    end
+
+    def self.validate_tarball(path, tarball_url)
+        expected_sha1 = fetch_maven_sha1(tarball_url)
+        basename = File.basename(path)
+        if expected_sha1.nil?
+          cache_log("SHA1 not available from Maven for #{basename}. Skipping validation.")
+          return true
+        end
+        actual_sha1 = Digest::SHA1.file(path).hexdigest
+        if actual_sha1 == expected_sha1
+          cache_log("SHA1 verified for #{basename}")
+          return true
+        end
+        cache_log("SHA1 mismatch for #{basename}: expected #{expected_sha1}, got #{actual_sha1}", :error)
+        return false
+    end
+
+    def self.cache_log(message, level = :info)
+        return unless Object.const_defined?("Pod::UI")
+        prefix = '[Cache] '
+        case level
+        when :error
+            Pod::UI.puts prefix.red + message
+        else
+            Pod::UI.puts prefix.green + message
         end
     end
 end

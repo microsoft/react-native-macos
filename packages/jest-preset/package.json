@@ -1,6 +1,6 @@
 {
   "name": "@react-native/jest-preset",
-  "version": "0.86.0-main",
+  "version": "0.86.3",
   "description": "Jest preset for React Native apps",
   "keywords": [
     "jest",
@@ -9,7 +9,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/jest-preset"
   },
   "license": "MIT",

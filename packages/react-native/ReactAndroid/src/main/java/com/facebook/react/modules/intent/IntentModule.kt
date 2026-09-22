@@ -87,11 +87,15 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
           override fun onHostResume() {
             reactApplicationContext.removeLifecycleEventListener(this)
             synchronized(this@IntentModule) {
-              for (pendingPromise in pendingOpenURLPromises) {
+              // getInitialURL can re-enter and re-add to pendingOpenURLPromises when the activity
+              // is still null at resume, so drain a snapshot (after clearing the list and listener)
+              // to avoid mutating the list being iterated (ConcurrentModificationException).
+              val pendingPromises = ArrayList(pendingOpenURLPromises)
+              pendingOpenURLPromises.clear()
+              initialURLListener = null
+              for (pendingPromise in pendingPromises) {
                 getInitialURL(pendingPromise)
               }
-              initialURLListener = null
-              pendingOpenURLPromises.clear()
             }
           }
 
@@ -223,7 +227,7 @@ public open class IntentModule(reactContext: ReactApplicationContext) :
             }
             ReadableType.Number -> {
               // We cannot know from JS if is an Integer or Double
-              // See: https://github.com/facebook/react-native/issues/4141
+              // See: https://github.com/react/react-native/issues/4141
               // We might need to find a workaround if this is really an issue
               val number = map.getDouble(EXTRA_MAP_KEY_FOR_VALUE)
               intent.putExtra(name, number)
