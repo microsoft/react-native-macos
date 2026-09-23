@@ -171,11 +171,6 @@ jobs:
         run: |
           tar -cz -f packages/react-native/third-party/ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz \
             packages/react-native/third-party/ReactNativeDependenciesHeaders.xcframework
-      - name: Upload Headers Sidecar XCFramework Artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
-          path: packages/react-native/third-party/ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
       - name: Show Symbol folder content
         if: steps.restore-xcframework.outputs.cache-hit != 'true'
         run: ls -lR packages/react-native/third-party/Symbols
@@ -190,6 +185,11 @@ jobs:
         with:
           name: ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
           path: packages/react-native/third-party/ReactNativeDependencies${{ matrix.flavor }}.xcframework.tar.gz
+      - name: Upload Headers Sidecar XCFramework Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
+          path: packages/react-native/third-party/ReactNativeDependenciesHeaders${{ matrix.flavor }}.xcframework.tar.gz
       - name: Upload dSYM Artifact
         uses: actions/upload-artifact@v6
         with:
