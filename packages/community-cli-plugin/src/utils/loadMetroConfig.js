@@ -14,7 +14,6 @@ import type {InputConfigT} from 'metro-config';
 import {CLIError} from './errors';
 import {reactNativePlatformResolver} from './metroPlatformResolver';
 import {loadConfig, resolveConfig} from 'metro';
-import path from 'path';
 
 const debug = require('debug')('ReactNative:CommunityCliPlugin');
 
@@ -25,7 +24,6 @@ export type {Config};
 
 export type ConfigLoadingContext = Readonly<{
   root: Config['root'],
-  reactNativePath: Config['reactNativePath'],
   platforms: Config['platforms'],
   ...
 }>;
@@ -61,22 +59,33 @@ function getCommunityCliDefaultConfig(
   return {
     resolver,
     serializer: {
-      // We can include multiple copies of InitializeCore here because metro will
+      // We can include multiple copies of setup-env here because Metro will
       // only add ones that are already part of the bundle
       getModulesRunBeforeMainModule: () => [
-        require.resolve(
-          path.join(ctx.reactNativePath, 'Libraries/Core/InitializeCore'),
-          {paths: [ctx.root]},
-        ),
+        resolveSetupEnv(ctx.root), // [macOS]
         ...outOfTreePlatforms.map(platform =>
           require.resolve(
-            `${ctx.platforms[platform].npmPackageName}/Libraries/Core/InitializeCore`,
+            `${ctx.platforms[platform].npmPackageName}/setup-env`,
             {paths: [ctx.root]},
           ),
         ),
       ],
     },
   };
+}
+
+// [macOS] Main workspaces have only the fork; release apps can have both.
+function resolveSetupEnv(projectRoot: string): string {
+  try {
+    return require.resolve('react-native/setup-env', {paths: [projectRoot]});
+  } catch (error) {
+    if (error.code !== 'MODULE_NOT_FOUND') {
+      throw error;
+    }
+    return require.resolve('react-native-macos/setup-env', {
+      paths: [projectRoot],
+    });
+  }
 }
 
 /**

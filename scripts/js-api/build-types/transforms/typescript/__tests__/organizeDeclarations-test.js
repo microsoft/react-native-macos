@@ -22,6 +22,17 @@ async function translate(code: string): Promise<string> {
 }
 
 describe('organizeDeclarations', () => {
+  test('preserves public aliases for names disambiguated by API Extractor', async () => {
+    const result = await translate(`
+      declare interface DragEvent_2 { nativeEvent: {} }
+      declare const Text_2: unknown;
+      export { Text_2 as Text, DragEvent_2 as DragEvent };
+    `);
+    expect(result).toContain(
+      'export { DragEvent_2 as DragEvent, Text_2 as Text };',
+    );
+  });
+
   test('should sort declarations and move exports into single export block', async () => {
     const code = await fs.readFile(
       path.join(__dirname, '../__fixtures__/organizeDeclarations.d.ts'),
