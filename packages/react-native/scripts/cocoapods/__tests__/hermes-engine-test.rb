@@ -141,7 +141,7 @@ class HermesEngineTests < Test::Unit::TestCase
     assert_equal(METADATA.fetch('HERMES_VERSION_NAME'), spec.version)
     assert_equal(checked_in_source, spec.source)
     assert_empty(@calls)
-    assert_equal(". '#{File.join(ENGINE, '..', '..')}/sdks/hermes-engine/utils/create-dummy-hermes-xcframework.sh'", spec.prepare_command)
+    assert_equal(File.read(File.join(ENGINE, 'utils', 'create-dummy-hermes-xcframework.sh')), spec.prepare_command)
   end
 
   def test_explicit_override_order_precedes_the_default_source_policy
