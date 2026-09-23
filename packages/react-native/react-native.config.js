@@ -192,6 +192,11 @@ const spmCommand /*: Command */ = {
       name: '--skipCodegen',
       description: '[advanced] Skip the react-native codegen step.',
     },
+    {
+      name: '--configCommand <json>',
+      description:
+        '[advanced] JSON argv array for the autolinking config command; persisted for later syncs.',
+    },
   ],
   func: async (argv, _config, args) => {
     const passthrough /*: Array<string> */ = [];
@@ -204,6 +209,7 @@ const spmCommand /*: Command */ = {
       ['xcodeproj', '--xcodeproj'],
       ['artifacts', '--artifacts'],
       ['download', '--download'],
+      ['configCommand', '--config-command'],
     ];
     for (const [key, flag] of stringOpts) {
       if (args[key] != null) {

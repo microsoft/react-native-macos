@@ -23,6 +23,59 @@ const path = require('path');
 // generateXCFrameworksPackageSwift
 // ---------------------------------------------------------------------------
 
+// Adding a product must be one edit to REACT_NATIVE_PRODUCTS (plus the static
+// codegen template): the manifest's products AND targets both derive from it.
+// ReactHeaders is the Clang umbrella target; every other product is served by
+// an xcframework of the same name.
+describe('generateXCFrameworksPackageSwift derives from the shared name constants', () => {
+  // jest.doMock registers in the module registry beyond the isolateModules
+  // scope, so the mocked constants must be dropped before the next test.
+  afterEach(() => {
+    jest.dontMock('../spm-utils');
+    jest.resetModules();
+  });
+
+  it('emits a product and a binary target for a newly reserved product', () => {
+    jest.isolateModules(() => {
+      // Declared by KIND, the way a real edit adds one — spm-utils derives the
+      // flat list from the kind lists, so the mock mirrors that derivation.
+      jest.doMock('../spm-utils', () => {
+        const actual = jest.requireActual('../spm-utils');
+        const xcframeworkProducts = Object.freeze([
+          ...actual.REACT_NATIVE_XCFRAMEWORK_PRODUCTS,
+          'ReactBrandNewHeaders',
+        ]);
+        return {
+          ...actual,
+          REACT_NATIVE_XCFRAMEWORK_PRODUCTS: xcframeworkProducts,
+          REACT_NATIVE_PRODUCTS: Object.freeze([
+            actual.REACT_NATIVE_UMBRELLA_PRODUCT,
+            ...xcframeworkProducts,
+          ]),
+        };
+      });
+      const {
+        generateXCFrameworksPackageSwift: generate,
+      } = require('../generate-spm-package');
+      const out = generate();
+      expect(out).toContain(
+        '.library(name: "ReactBrandNewHeaders", targets: ["ReactBrandNewHeaders"])',
+      );
+      expect(out).toContain('path: "ReactBrandNewHeaders.xcframework"');
+    });
+  });
+
+  it('emits one library product per REACT_NATIVE_PRODUCTS entry, in order', () => {
+    const {REACT_NATIVE_PRODUCTS} = require('../spm-utils');
+    const libraries = [
+      ...generateXCFrameworksPackageSwift().matchAll(
+        /\.library\(name: "([^"]+)"/g,
+      ),
+    ].map(m => m[1]);
+    expect(libraries).toEqual([...REACT_NATIVE_PRODUCTS]);
+  });
+});
+
 describe('generateXCFrameworksPackageSwift', () => {
   it('exposes only invariant compile-time products', () => {
     const result = generateXCFrameworksPackageSwift();
