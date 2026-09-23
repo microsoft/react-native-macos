@@ -92,9 +92,8 @@ function enforceReactNativeVersionConsistency({Yarn}) {
 }
 
 /**
- * Enforce that all @react-native/ scoped dependencies use the same version
- * as the react-native peer dependency declared in react-native-macos.
- * Do not enforce on the main branch, where there is no published version of React Native to align to.
+ * Use the react-native peer version for upstream dependencies of public fork packages on release branches.
+ * Private consumers and all consumers on main use the upstream workspaces.
  * @param {Context} context
  */
 function enforceReactNativeDependencyConsistency({Yarn}) {
@@ -104,9 +103,11 @@ function enforceReactNativeDependencyConsistency({Yarn}) {
                 const reactNativeVersion = getReactNativePeerDependency({Yarn});
 
                 const isRNM = dependency.workspace.ident === 'react-native-macos';
-                const isRNMForkedPackage = dependency.workspace.ident?.startsWith('@react-native-macos/') && !dependency.workspace.manifest.private;
+                const isPublicRNMForkedPackage =
+                    dependency.workspace.ident?.startsWith('@react-native-macos/') &&
+                    !dependency.workspace.manifest.private;
 
-                if (isRNM || isRNMForkedPackage) {
+                if (isRNM || isPublicRNMForkedPackage) {
                     // Published upstream packages are registry inputs, not Changesets release dependencies.
                     dependency.update(reactNativeVersion);
                 } else {
