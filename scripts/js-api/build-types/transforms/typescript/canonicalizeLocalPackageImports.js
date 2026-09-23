@@ -18,7 +18,7 @@ import type {
 
 function canonicalizeSource(
   source: string,
-  packageNames: $ReadOnlyArray<string>,
+  packageNames: ReadonlyArray<string>,
 ): string {
   if (!source.startsWith('./') && !source.startsWith('../')) {
     return source;
@@ -37,8 +37,8 @@ function canonicalizeSource(
 }
 
 function canonicalizeLocalPackageImports(
-  packageNames: $ReadOnlyArray<string>,
-): PluginObj<mixed> {
+  packageNames: ReadonlyArray<string>,
+): PluginObj<unknown> {
   function canonicalizeNodeSource(
     nodePath: NodePath<
       ExportAllDeclaration | ExportNamedDeclaration | ImportDeclaration,
