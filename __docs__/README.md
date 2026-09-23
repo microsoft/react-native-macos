@@ -80,6 +80,7 @@ TODO: Explain the different components of React Native at a high level.
 - Build system
   - Android
   - iOS
+    - [SwiftPM](../packages/react-native/scripts/spm/__docs__/README.md)
   - C++
   - JavaScript
     - Metro

@@ -36,7 +36,6 @@ module.exports = {
       {
         name: 'ReactCommonSamples',
         path: '../react-native/ReactCommon/react/nativemodule/samples/platform/ios',
-        publicHeadersPath: '.',
       },
       {
         name: 'ReactRCTPushNotification',

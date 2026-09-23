@@ -47,6 +47,7 @@ type Identity = {
 type IncludeRef = {
   token: string, // text between <> or ""
   cxxGuarded: boolean, // true when only reachable under #ifdef __cplusplus
+  appleExcluded?: boolean, // proven unreachable in the Apple payload
 };
 
 type HeaderEntry = {
@@ -128,12 +129,145 @@ const SDK_PREFIXES = new Set([
   'sys',
 ]);
 
+// Three-valued logic: unknown feature conditions must keep both branches.
+function conditionNot(value /*: ?boolean */) /*: ?boolean */ {
+  return value == null ? null : !value;
+}
+
+function conditionAnd(a /*: ?boolean */, b /*: ?boolean */) /*: ?boolean */ {
+  return a === false || b === false
+    ? false
+    : a === true && b === true
+      ? true
+      : null;
+}
+
 /**
- * Scans a header's text line by line, tracking the preprocessor-conditional
+ * Evaluate only Boolean platform guards, not arbitrary preprocessor syntax.
+ * Android macros are false for every Apple slice. Leave all other macros
+ * unknown, including TARGET_OS_OSX: both macOS and generic C++ paths ship.
+ * Unsupported expressions remain unknown rather than hiding dependencies.
+ */
+function appleCondition(expression /*: string */) /*: ?boolean */ {
+  const tokens =
+    expression.match(/defined\b|[A-Za-z_]\w*|&&|\|\||[!()]|\S/g) ?? [];
+  let index = 0;
+  let valid = true;
+  const macroValue = (name /*: ?string */) /*: ?boolean */ =>
+    name === '__ANDROID__' || name === 'ANDROID' ? false : null;
+  const unary = () /*: ?boolean */ => {
+    const token = tokens[index++];
+    if (token === '!') {
+      return conditionNot(unary());
+    }
+    if (token === '(') {
+      const value = or();
+      valid = tokens[index++] === ')' && valid;
+      return value;
+    }
+    if (token === 'defined') {
+      const parenthesized = tokens[index] === '(';
+      if (parenthesized) {
+        index++;
+      }
+      const name = tokens[index++];
+      valid = /^[A-Za-z_]\w*$/.test(name ?? '') && valid;
+      if (parenthesized) {
+        valid = tokens[index++] === ')' && valid;
+      }
+      return macroValue(name);
+    }
+    if (/^[A-Za-z_]\w*$/.test(token ?? '')) {
+      return macroValue(token);
+    }
+    valid = false;
+    return null;
+  };
+  const and = () /*: ?boolean */ => {
+    let value = unary();
+    while (tokens[index] === '&&') {
+      index++;
+      value = conditionAnd(value, unary());
+    }
+    return value;
+  };
+  const or = () /*: ?boolean */ => {
+    let value = and();
+    while (tokens[index] === '||') {
+      index++;
+      value = conditionNot(
+        conditionAnd(conditionNot(value), conditionNot(and())),
+      );
+    }
+    return value;
+  };
+  const value = or();
+  return valid && index === tokens.length ? value : null;
+}
+
+/**
+ * Normalize CRLF and standalone CR before splicing escaped newlines and
+ * recognizing comments. A block comment is one space, even across physical
+ * lines. Only a newline outside that comment ends the directive. Keep line
+ * comments and quoted tokens separate so their delimiters cannot change the
+ * comment state.
+ */
+function headerLogicalLines(text /*: string */) /*: Array<string> */ {
+  const source = text.replace(/\r\n?/g, '\n').replace(/\\\n/g, '');
+  const lines = [];
+  let line = '';
+  let inBlockComment = false;
+  let inLineComment = false;
+  let quote = '';
+  for (let i = 0; i < source.length; i++) {
+    const char = source[i];
+    const next = source[i + 1];
+    if (inBlockComment) {
+      if (char === '*' && next === '/') {
+        inBlockComment = false;
+        i++;
+      }
+    } else if (char === '\n') {
+      lines.push(line);
+      line = '';
+      inLineComment = false;
+      quote = '';
+    } else if (inLineComment) {
+      continue;
+    } else if (quote !== '') {
+      line += char;
+      if (char === quote) {
+        quote = '';
+      } else if (char === '\\' && next != null && quote !== '>') {
+        line += next;
+        i++;
+      }
+    } else if (char === '/' && next === '*') {
+      line += ' ';
+      inBlockComment = true;
+      i++;
+    } else if (char === '/' && next === '/') {
+      inLineComment = true;
+      i++;
+    } else {
+      if (char === '"' || char === "'") {
+        quote = char;
+      } else if (char === '<' && /^\s*#\s*(?:include|import)\s*$/.test(line)) {
+        quote = '>';
+      }
+      line += char;
+    }
+  }
+  lines.push(line);
+  return lines;
+}
+
+/**
+ * Scans a header's logical lines, tracking the preprocessor-conditional
  * stack just enough to know whether a line is only compiled under
  * `__cplusplus`. Returns the include list and language-marker observations.
- * Heuristic by design: nested #if logic beyond __cplusplus is treated as
- * "other" and ignored.
+ * Includes retain an exclusion flag when their branch cannot run on Apple.
+ * Unknown conditions remain conservatively eligible for include resolution.
  */
 function scanHeader(text /*: string */) /*: {
   includes: Array<IncludeRef>,
@@ -149,6 +283,8 @@ function scanHeader(text /*: string */) /*: {
   // Stack frames: 'cpp' (only under __cplusplus), 'notcpp', 'other'.
   const stack /*: Array<'cpp' | 'notcpp' | 'other'> */ = [];
   const inCxxOnly = () => stack.includes('cpp');
+  const platformStack /*: Array<{active: ?boolean, remaining: ?boolean}> */ =
+    [];
 
   const includeRe = /^\s*#\s*(?:include|import)\s+(?:<([^>]+)>|"([^"]+)")/;
   const objcRe =
@@ -156,33 +292,30 @@ function scanHeader(text /*: string */) /*: {
   const cxxRe =
     /^\s*(namespace\s+[A-Za-z_]|template\s*<|extern\s+"C\+\+"|enum\s+class\b|constexpr\b|using\s+(namespace\s|[A-Za-z_]\w*\s*=))/;
 
-  // Track /* ... */ block comments across lines so a documentation line inside
-  // a comment (e.g. `namespace`, `template <`, `constexpr`) can't trip the C++
-  // detector below and needlessly shrink the umbrella.
-  let inBlockComment = false;
-  for (const rawLine of text.split('\n')) {
-    let line = rawLine;
-    if (inBlockComment) {
-      const end = line.indexOf('*/');
-      if (end === -1) {
-        continue; // whole line still inside a block comment
-      }
-      line = line.slice(end + 2);
-      inBlockComment = false;
-    }
-    // Drop complete inline block comments, then line comments (which also
-    // swallow any `/*` living inside a `//` comment), then detect a block
-    // comment that opens and runs onto the next line.
-    line = line.replace(/\/\*.*?\*\//g, '');
-    line = line.replace(/\/\/.*$/, '');
-    const blockOpen = line.indexOf('/*');
-    if (blockOpen !== -1) {
-      inBlockComment = true;
-      line = line.slice(0, blockOpen);
-    }
+  for (const line of headerLogicalLines(text)) {
     const cond = line.match(/^\s*#\s*(if|ifdef|ifndef|elif|else|endif)\b(.*)$/);
     if (cond) {
       const [, directive, rest] = cond;
+      if (
+        directive === 'if' ||
+        directive === 'ifdef' ||
+        directive === 'ifndef'
+      ) {
+        const expression =
+          directive === 'if' ? rest : `defined(${rest.trim()})`;
+        const value = appleCondition(expression);
+        const active = directive === 'ifndef' ? conditionNot(value) : value;
+        platformStack.push({active, remaining: conditionNot(active)});
+      } else if (directive === 'endif') {
+        platformStack.pop();
+      } else {
+        const frame = platformStack[platformStack.length - 1];
+        if (frame != null) {
+          const value = directive === 'else' ? true : appleCondition(rest);
+          frame.active = conditionAnd(frame.remaining, value);
+          frame.remaining = conditionAnd(frame.remaining, conditionNot(value));
+        }
+      }
       const mentionsCpp = /__cplusplus/.test(rest);
       if (directive === 'ifdef' || directive === 'if') {
         stack.push(
@@ -212,6 +345,9 @@ function scanHeader(text /*: string */) /*: {
       includes.push({
         token: inc[1] != null ? inc[1] : `"${inc[2]}"`,
         cxxGuarded: inCxxOnly(),
+        ...(platformStack.some(frame => frame.active === false)
+          ? {appleExcluded: true}
+          : {}),
       });
     }
     if (objcRe.test(line)) {
@@ -442,13 +578,32 @@ function classifyEntries(
 
     for (const inc of scan.includes) {
       let token = inc.token;
-      // Quoted include: resolve against the source dir and map back to a
-      // natural path if the resolved file is itself a shipped header.
+      if (inc.appleExcluded) {
+        // Keep the edge visible without resolving a non-Apple dependency.
+        entry.includes.otherPlatform.push(token);
+        continue;
+      }
+      // Quoted includes search the packaged sibling first, then the include
+      // root. Normalize subdirectories and dot segments in both spellings.
       if (token.startsWith('"')) {
         const quotedToken = token.slice(1, -1);
-        // [macOS] Stable dispatch headers contain inactive Android branches.
-        if (quotedToken.startsWith('platform/android/')) {
-          entry.includes.otherPlatform.push(quotedToken);
+        const packagedPaths = path.posix.isAbsolute(quotedToken)
+          ? []
+          : [
+              path.posix.join(
+                path.posix.dirname(entry.naturalPath),
+                quotedToken,
+              ),
+              path.posix.normalize(quotedToken),
+            ];
+        const packagedPath = packagedPaths.find(
+          candidate => !candidate.startsWith('../') && entries.has(candidate),
+        );
+        if (packagedPath != null) {
+          entry.includes.internal.push({
+            naturalPath: packagedPath,
+            cxxGuarded: inc.cxxGuarded,
+          });
           continue;
         }
         const resolved = path.resolve(path.dirname(absSource), quotedToken);

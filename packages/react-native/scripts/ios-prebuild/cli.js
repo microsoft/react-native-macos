@@ -72,6 +72,11 @@ const cli = yargs
     describe:
       'Specify the code signing identity to use for signing the frameworks.',
   })
+  .option('require-hermes', {
+    type: 'boolean',
+    describe:
+      'Require Hermes headers when composing the ReactNativeHeaders XCFramework.',
+  })
   .help();
 
 /**
@@ -86,6 +91,7 @@ async function getCLIConfiguration() /*: Promise<?{|
   flavor: BuildFlavor,
   destinations: ReadonlyArray<Destination>,
   identity: ?string,
+  requireHermes: boolean,
 |}> */ {
   // Run input parsing
   const argv = await cli.argv;
@@ -131,6 +137,7 @@ async function getCLIConfiguration() /*: Promise<?{|
     flavor: flavor,
     destinations: resolvedPlatforms,
     identity: argv.identity,
+    requireHermes: argv.requireHermes ?? false,
   };
 }
 

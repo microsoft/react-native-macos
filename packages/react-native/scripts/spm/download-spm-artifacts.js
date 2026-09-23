@@ -394,14 +394,62 @@ async function resolveRNDepsArtifact(
 }
 
 /**
+ * Resolves the `hermes-compiler` npm package's version from THIS project's own
+ * node_modules — the exact same lookup generate-spm-xcodeproj.js's
+ * resolveHermesCliPathSetting() uses to find the hermesc binary that will
+ * compile the JS bundle, and the same one react-native-xcode.sh falls back to
+ * for SwiftPM builds. Returns null when the package isn't resolvable (e.g.
+ * USE_HERMES=false apps that never installed it) so the caller can fall back
+ * to the npm dist-tag lookup.
+ */
+function resolveLocalHermesCompilerVersion(
+  rnRoot /*: string */,
+) /*: string | null */ {
+  try {
+    const pkgPath = require.resolve('hermes-compiler/package.json', {
+      paths: [rnRoot],
+    });
+    // $FlowFixMe[incompatible-type] JSON.parse returns any
+    const pkg /*: {version: string} */ = JSON.parse(
+      fs.readFileSync(pkgPath, 'utf8'),
+    );
+    assertSafeVersion(pkg.version, 'local hermes-compiler/package.json');
+    return pkg.version;
+  } catch (error) {
+    // A MODULE_NOT_FOUND resolution failure is the expected case (e.g.
+    // USE_HERMES=false apps that never installed hermes-compiler) — fall back
+    // silently. Any other failure means hermes-compiler IS installed but its
+    // package.json is unreadable/malformed or carries an unsafe version; warn
+    // loudly rather than silently regressing to the live latest-v1 dist-tag,
+    // which would re-introduce the version-skew crash this resolves (#57917).
+    if (error.code !== 'MODULE_NOT_FOUND') {
+      log(
+        `  WARNING: hermes-compiler is installed but its version could not be resolved (${error.message}); falling back to the latest-v1 dist-tag, which may not match the pinned hermesc and can crash at launch with "Wrong bytecode version".`,
+      );
+    }
+    return null;
+  }
+}
+
+/**
  * Returns {url, version} for Hermes. Hermes uses its own version space
  * decoupled from React Native's nightly cadence — RN's `hermes-compiler`
  * npm package publishes a `latest-v1` dist-tag that always resolves to a
- * binary that's been built and uploaded to Maven. Our default mirrors RN's
- * CocoaPods prebuild path (see scripts/ios-prebuild/hermes.js):
+ * binary that's been built and uploaded to Maven.
  *
- *   HERMES_VERSION unset       → 'latest-v1' dist-tag
- *   HERMES_VERSION=latest-v1   → same (explicit)
+ *   HERMES_VERSION unset       → version pinned by the locally installed
+ *                                hermes-compiler package (node_modules).
+ *                                This is the SAME source
+ *                                resolveHermesCliPathSetting() reads for
+ *                                HERMES_CLI_PATH, so the downloaded VM and
+ *                                the hermesc that compiles the JS bundle
+ *                                always agree — a mismatched pair crashes at
+ *                                launch with "Wrong bytecode version" (#57917).
+ *                                Falls back to the 'latest-v1' npm dist-tag
+ *                                (RN's CocoaPods prebuild default; see
+ *                                scripts/ios-prebuild/hermes.js) only when
+ *                                hermes-compiler isn't locally resolvable.
+ *   HERMES_VERSION=latest-v1   → 'latest-v1' dist-tag (explicit)
  *   HERMES_VERSION=nightly     → hermes-compiler@nightly dist-tag
  *   HERMES_VERSION=<literal>   → use that version verbatim
  *
@@ -413,8 +461,17 @@ async function resolveHermesArtifact(
   rnVersion /*: string */,
   flavor /*: string */,
   rawVersion /*: string | null */,
+  rnRoot /*: string */,
 ) /*: Promise<ResolvedArtifact> */ {
-  let version = process.env.HERMES_VERSION ?? 'latest-v1';
+  let version = process.env.HERMES_VERSION;
+
+  if (version == null) {
+    const localVersion = resolveLocalHermesCompilerVersion(rnRoot);
+    if (localVersion != null) {
+      log(`  Using locally pinned hermes-compiler: ${localVersion}`);
+    }
+    version = localVersion ?? 'latest-v1';
+  }
 
   if (version === 'nightly') {
     version = await resolveNightlyVersion('hermes-compiler');
@@ -943,7 +1000,7 @@ async function processArtifact(
     return localPath;
   };
 
-  let tarPath: string;
+  let tarPath /*: string */ = '';
   let fromShared = false;
   if (isLocalTarball) {
     tarPath = url;
@@ -970,7 +1027,7 @@ async function processArtifact(
     onProgress(xcframeworkName, 0, 0, 0, false, 0);
   }
   const tmpExtractDir = path.join(outputDir, '.extract-tmp', label);
-  let xcfwPath: string;
+  let xcfwPath /*: string */ = '';
   try {
     xcfwPath = extractXCFramework(tarPath, tmpExtractDir);
   } catch (e) {
@@ -1119,7 +1176,7 @@ async function main(argv /*:: ?: Array<string> */) /*: Promise<void> */ {
       label: 'hermes',
       name: 'hermes-engine',
       resolve: () =>
-        resolveHermesArtifact(resolvedRnVersion, flavor, rawVersion),
+        resolveHermesArtifact(resolvedRnVersion, flavor, rawVersion, rnRoot),
       sharedName: (v /*: string */) => `hermes-ios-${v}-${flavor}.tar.gz`,
     },
   ];
@@ -1349,7 +1406,7 @@ function validateArtifactsCache(
   if (!fs.existsSync(artifactsJsonPath)) {
     return `artifacts.json missing in ${artifactsDir}`;
   }
-  let json: {[string]: {xcframeworkPath: string, url: string}};
+  let json /*: {[string]: {xcframeworkPath: string, url: string}} */ = {};
   try {
     // $FlowFixMe[unclear-type] JSON.parse returns any
     const parsed /*: any */ = JSON.parse(
@@ -1390,6 +1447,7 @@ module.exports = {
   main,
   resolveCacheSlotVersion,
   resolveHermesArtifact,
+  resolveLocalHermesCompilerVersion,
   REQUIRED_ARTIFACTS,
   validateArtifactsCache,
   // Exposed for unit tests (pure / fetch-stubbable helpers).
