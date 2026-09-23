@@ -11,8 +11,8 @@
 #import <mach/mach_time.h>
 #import <objc/message.h>
 #import <objc/runtime.h>
-#import <react/featureflags/ReactNativeFeatureFlags.h>
 #import <zlib.h>
+#import <atomic>
 
 #import <React/RCTUIKit.h> // [macOS]
 
@@ -50,12 +50,6 @@ UIDeviceOrientation RCTDeviceOrientation(void);
 BOOL RCTIsNewArchEnabled(void)
 {
   return YES;
-}
-void RCTSetNewArchEnabled(BOOL enabled)
-{
-  // This function is now deprecated and will be removed in the future.
-  // This function is now no-op. You need to modify the Info.plist adding a `RCTNewArchEnabled` bool property to control
-  // whether the New Arch is enabled or not.
 }
 
 BOOL RCTAreLegacyLogsEnabled(void)
@@ -316,15 +310,12 @@ void RCTUnsafeExecuteOnMainQueueSync(dispatch_block_t block)
   }
 
 #if !TARGET_OS_TV
-  if (ReactNativeFeatureFlags::enableMainQueueCoordinatorOnIOS()) {
-    unsafeExecuteOnMainThreadSync(block);
-    return;
-  }
-#endif
-
+  unsafeExecuteOnMainThreadSync(block);
+#else
   dispatch_sync(dispatch_get_main_queue(), ^{
     block();
   });
+#endif
 }
 
 static void RCTUnsafeExecuteOnMainQueueOnceSync(dispatch_once_t *onceToken, dispatch_block_t block)
@@ -346,13 +337,10 @@ static void RCTUnsafeExecuteOnMainQueueOnceSync(dispatch_once_t *onceToken, disp
   }
 
 #if !TARGET_OS_TV
-  if (ReactNativeFeatureFlags::enableMainQueueCoordinatorOnIOS()) {
-    unsafeExecuteOnMainThreadSync(block);
-    return;
-  }
-#endif
-
+  unsafeExecuteOnMainThreadSync(block);
+#else
   dispatch_sync(dispatch_get_main_queue(), executeOnce);
+#endif
 }
 
 #if !TARGET_OS_OSX // [macOS]
@@ -402,31 +390,34 @@ UIDeviceOrientation RCTDeviceOrientation(void)
 
 CGSize RCTScreenSize(void)
 {
-  static CGSize portraitSize;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
+  static std::atomic<CGSize> cachedSize;
+  __block CGSize size = cachedSize.load(std::memory_order_relaxed);
+
+  if (CGSizeEqualToSize(size, CGSizeZero)) {
     RCTUnsafeExecuteOnMainQueueSync(^{
 #if TARGET_OS_IOS // [visionOS]
       CGSize screenSize = [UIScreen mainScreen].bounds.size;
 #else // [visionOS
       CGSize screenSize = RCTKeyWindow().bounds.size;
 #endif // visionOS]
-      portraitSize = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
+      size = CGSizeMake(MIN(screenSize.width, screenSize.height), MAX(screenSize.width, screenSize.height));
+      cachedSize.store(size, std::memory_order_relaxed);
     });
-  });
+  }
+
 #if TARGET_OS_IOS // [macOS]
   if (UIDeviceOrientationIsLandscape(RCTDeviceOrientation())) {
-    return CGSizeMake(portraitSize.height, portraitSize.width);
+    return CGSizeMake(size.height, size.width);
   } else {
-    return CGSizeMake(portraitSize.width, portraitSize.height);
+    return CGSizeMake(size.width, size.height);
   }
 #elif TARGET_OS_TV // [macOS]
   // tvOS doesn't have device orientation, always return landscape size
-  return CGSizeMake(portraitSize.height, portraitSize.width);
-#else // [macOS
+  return CGSizeMake(size.height, size.width);
+#else // [visionOS
   // visionOS does not expose device orientation.
-  return CGSizeMake(portraitSize.width, portraitSize.height);
-#endif // macOS]
+  return CGSizeMake(size.width, size.height);
+#endif // [macOS] [visionOS]
 }
 #else // [macOS
 CGFloat RCTScreenScale(void)

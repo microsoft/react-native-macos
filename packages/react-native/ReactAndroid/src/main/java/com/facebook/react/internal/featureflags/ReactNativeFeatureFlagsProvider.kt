@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<42e555a40da280b24f84e3ee5b45051d>>
+ * @generated SignedSource<<8b5a9f8966d9f096b7fa4f7020db1f34>>
  */
 
 /**
@@ -47,6 +47,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean
 
+  @DoNotStrip public fun enableAndroidFontWeightAdjustment(): Boolean
+
   @DoNotStrip public fun enableAndroidTextMeasurementOptimizations(): Boolean
 
   @DoNotStrip public fun enableBridgelessArchitecture(): Boolean
@@ -57,11 +59,7 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableDestroyShadowTreeRevisionAsync(): Boolean
 
-  @DoNotStrip public fun enableDifferentiatorMutationVectorPreallocation(): Boolean
-
   @DoNotStrip public fun enableDoubleMeasurementFixAndroid(): Boolean
-
-  @DoNotStrip public fun enableEagerMainQueueModulesOnIOS(): Boolean
 
   @DoNotStrip public fun enableEagerRootViewAttachment(): Boolean
 
@@ -71,9 +69,11 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableFabricLogs(): Boolean
 
-  @DoNotStrip public fun enableFabricRenderer(): Boolean
+  @DoNotStrip public fun enableFlexboxAutoMinSizeInStrictMode(): Boolean
 
   @DoNotStrip public fun enableFontScaleChangesUpdatingLayout(): Boolean
+
+  @DoNotStrip public fun enableIOSCompressedTextFrameAdjustment(): Boolean
 
   @DoNotStrip public fun enableIOSTextBaselineOffsetPerLine(): Boolean
 
@@ -95,21 +95,19 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableLayoutAnimationsOnIOS(): Boolean
 
-  @DoNotStrip public fun enableMainQueueCoordinatorOnIOS(): Boolean
-
   @DoNotStrip public fun enableModuleArgumentNSNullConversionIOS(): Boolean
 
   @DoNotStrip public fun enableMutationObserverByDefault(): Boolean
 
   @DoNotStrip public fun enableNativeCSSParsing(): Boolean
 
-  @DoNotStrip public fun enableNativeViewPropTransformations(): Boolean
-
   @DoNotStrip public fun enableNetworkEventReporting(): Boolean
 
   @DoNotStrip public fun enablePreparedTextLayout(): Boolean
 
   @DoNotStrip public fun enablePropsUpdateReconciliationAndroid(): Boolean
+
+  @DoNotStrip public fun enableRuntimeSchedulerQueueClearingOnError(): Boolean
 
   @DoNotStrip public fun enableSchedulerDelegateInvalidation(): Boolean
 
@@ -129,11 +127,7 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableVirtualViewContainerStateExperimental(): Boolean
 
-  @DoNotStrip public fun enableVirtualViewDebugFeatures(): Boolean
-
   @DoNotStrip public fun fixDifferentiatorParentTagForUnflattenCase(): Boolean
-
-  @DoNotStrip public fun fixFindShadowNodeByTagRaceCondition(): Boolean
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
 
@@ -149,7 +143,7 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun fuseboxScreenshotCaptureEnabled(): Boolean
 
-  @DoNotStrip public fun hideOffscreenVirtualViewsOnIOS(): Boolean
+  @DoNotStrip public fun optimizedAnimatedPropUpdates(): Boolean
 
   @DoNotStrip public fun overrideBySynchronousMountPropsAtMountingAndroid(): Boolean
 
@@ -183,13 +177,9 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun useFabricInterop(): Boolean
 
-  @DoNotStrip public fun useLISAlgorithmInDifferentiator(): Boolean
-
   @DoNotStrip public fun useNativeViewConfigsInBridgelessMode(): Boolean
 
   @DoNotStrip public fun useNestedScrollViewAndroid(): Boolean
-
-  @DoNotStrip public fun useOptimizedViewRegistryOnAndroid(): Boolean
 
   @DoNotStrip public fun useSharedAnimatedBackend(): Boolean
 
@@ -197,13 +187,11 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun useTurboModuleInterop(): Boolean
 
-  @DoNotStrip public fun useTurboModules(): Boolean
-
-  @DoNotStrip public fun useUnorderedMapInDifferentiator(): Boolean
-
   @DoNotStrip public fun viewCullingOutsetRatio(): Double
 
   @DoNotStrip public fun viewTransitionEnabled(): Boolean
+
+  @DoNotStrip public fun viewTransitionUseHardwareBitmapAndroid(): Boolean
 
   @DoNotStrip public fun virtualViewPrerenderRatio(): Double
 }

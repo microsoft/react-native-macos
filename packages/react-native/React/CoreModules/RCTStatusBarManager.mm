@@ -98,7 +98,7 @@ RCT_EXPORT_MODULE()
 
 - (void)startObserving
 {
-#if TARGET_OS_IOS // [visionOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
   NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -110,8 +110,8 @@ RCT_EXPORT_MODULE()
          selector:@selector(applicationWillChangeStatusBarFrame:)
              name:UIApplicationWillChangeStatusBarFrameNotification
            object:nil];
-#endif // [visionOS]
 #pragma clang diagnostic pop
+#endif // [macOS] [visionOS]
 }
 
 - (void)stopObserving
@@ -121,7 +121,7 @@ RCT_EXPORT_MODULE()
 
 - (void)emitEvent:(NSString *)eventName forNotification:(NSNotification *)notification
 {
-#if TARGET_OS_IOS // [visionOS]
+#if TARGET_OS_IOS // [macOS] [visionOS]
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   CGRect frame = [notification.userInfo[UIApplicationStatusBarFrameUserInfoKey] CGRectValue];
@@ -135,7 +135,7 @@ RCT_EXPORT_MODULE()
     },
   };
   [self sendEventWithName:eventName body:event];
-#endif // [visionOS]
+#endif // [macOS] [visionOS]
 }
 
 - (void)applicationDidChangeStatusBarFrame:(NSNotification *)notification
@@ -201,19 +201,6 @@ RCT_EXPORT_METHOD(setHidden : (BOOL)hidden withAnimation : (NSString *)withAnima
     }
   });
 #endif // [macOS] [visionOS]
-}
-
-RCT_EXPORT_METHOD(setNetworkActivityIndicatorVisible : (BOOL)visible)
-{
-#if TARGET_OS_IOS // [visionOS]
-  dispatch_async(dispatch_get_main_queue(), ^{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    // This is no longer supported in iOS 13 and later. We will remove this method in a future release.
-    RCTSharedApplication().networkActivityIndicatorVisible = visible;
-#pragma clang diagnostic pop
-  });
-#endif // [visionOS]
 }
 
 - (facebook::react::ModuleConstants<JS::NativeStatusBarManagerIOS::Constants>)getConstants

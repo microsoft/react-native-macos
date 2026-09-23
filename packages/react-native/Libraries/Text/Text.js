@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {HostInstance} from '../../src/private/types/HostInstance';
 import type {TextStyleProp} from '../StyleSheet/StyleSheet';
 import type {____TextStyle_Internal as TextStyleInternal} from '../StyleSheet/StyleSheetTypes';
 import type {GestureResponderEvent} from '../Types/CoreEventTypes';
@@ -30,19 +31,21 @@ import {
 import * as React from 'react';
 import {useContext, useMemo, useState} from 'react';
 
+export type TextInstance = HostInstance;
+
 export type {TextProps} from './TextProps';
 
-type TextForwardRef = React.ElementRef<
-  typeof NativeText | typeof NativeVirtualText | typeof NativeSelectableText,
->;
-
 /**
- * Text is the fundamental component for displaying text.
+ * A React component for displaying text. `Text` supports nesting, styling,
+ * and touch handling.
+ *
+ * `Text` uses text layout instead of flexbox — elements inside wrap at end of
+ * line rather than being positioned as rectangles.
  *
  * @see https://reactnative.dev/docs/text
  */
 const TextImpl: component(
-  ref?: React.RefSetter<TextForwardRef>,
+  ref?: React.RefSetter<TextInstance>,
   ...props: TextProps
 ) = ({
   ref: forwardedRef,
@@ -82,7 +85,7 @@ const TextImpl: component(
   style,
   ...restProps
 }: {
-  ref?: React.RefSetter<TextForwardRef>,
+  ref?: React.RefSetter<TextInstance>,
   ...TextProps,
 }) => {
   const processedProps = restProps as {
@@ -216,7 +219,7 @@ const TextImpl: component(
       'backgroundColor' in processedStyle &&
       !('borderRadius' in processedStyle)
     ) {
-      overrides = overrides || ({}: {...TextStyleInternal});
+      overrides = overrides || ({} as {...TextStyleInternal});
       overrides.borderRadius = Number.MIN_VALUE;
     }
     // macOS]
@@ -492,7 +495,7 @@ function useTextPressability({
  * expensive pressability logic to be only initialized when needed.
  */
 component PressableVirtualText(
-  ref?: React.RefSetter<TextForwardRef>,
+  ref?: React.RefSetter<TextInstance>,
   textProps: NativeTextProps,
   textPressabilityProps: TextPressabilityProps,
 ) {
@@ -518,7 +521,7 @@ component PressableVirtualText(
  * expensive pressability logic to be only initialized when needed.
  */
 component PressableText(
-  ref?: React.RefSetter<TextForwardRef>,
+  ref?: React.RefSetter<TextInstance>,
   selectable?: ?boolean,
   textProps: NativeTextProps,
   textPressabilityProps: TextPressabilityProps,

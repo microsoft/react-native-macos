@@ -12,13 +12,15 @@
 
 import type {Program as ESTreeProgram} from 'hermes-estree';
 
-const hermesParser = require('hermes-parser');
+// $FlowFixMe[unclear-type] Avoid expanding hermes-parser's large overloaded module type.
+const hermesParser: any = require('hermes-parser');
 
 function parseFlowAndThrowErrors(
   code: string,
   options: Readonly<{filename?: ?string}> = {},
 ): ESTreeProgram {
-  let ast;
+  // $FlowFixMe[unclear-type] The function's return type keeps this dynamic boundary contained.
+  let ast: any;
   try {
     ast = hermesParser.parse(code, {
       // Produce an ESTree-compliant AST

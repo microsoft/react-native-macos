@@ -610,6 +610,7 @@ export type TextInputSelectionChangeEvent =
  */
 export interface TextInputKeyPressEventData {
   key: string;
+  eventCount: number;
 }
 
 /**
@@ -624,6 +625,12 @@ export type TextInputKeyPressEvent =
 export interface TextInputChangeEventData extends TargetedEvent {
   eventCount: number;
   text: string;
+  selection?:
+    | {
+        start: number;
+        end: number;
+      }
+    | undefined;
 }
 
 /**
@@ -1081,9 +1088,9 @@ export interface TextInputProps
   style?: StyleProp<TextStyle> | undefined;
 
   /**
-   * Align the input text to the left, center, or right sides of the input field.
+   * Align the input text to the left, center, right, start, or end side of the input field.
    */
-  textAlign?: 'left' | 'center' | 'right' | undefined;
+  textAlign?: 'left' | 'center' | 'right' | 'start' | 'end' | undefined;
 
   /**
    * Used to locate this view in end-to-end tests

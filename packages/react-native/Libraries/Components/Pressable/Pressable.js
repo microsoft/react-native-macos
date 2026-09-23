@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {HostInstance} from '../../../src/private/types/HostInstance';
 import type {ViewStyleProp} from '../../StyleSheet/StyleSheet';
 import type {
   GestureResponderEvent,
@@ -38,6 +39,8 @@ import useAndroidRippleForView, {
 import * as React from 'react';
 import {memo, useMemo, useRef, useState} from 'react';
 
+export type PressableInstance = HostInstance;
+
 export type {PressableAndroidRippleConfig};
 
 export type PressableStateCallbackType = Readonly<{
@@ -52,28 +55,36 @@ type PressableBaseProps = Readonly<{
   cancelable?: ?boolean,
 
   /**
-   * Either children or a render prop that receives a boolean reflecting whether
+   * Either children or a function that receives a boolean reflecting whether
    * the component is currently pressed.
    */
   children?: React.Node | ((state: PressableStateCallbackType) => React.Node),
 
   /**
    * Duration to wait after hover in before calling `onHoverIn`.
+   *
+   * @platform macos windows
    */
   delayHoverIn?: ?number,
 
   /**
    * Duration to wait after hover out before calling `onHoverOut`.
+   *
+   * @platform macos windows
    */
   delayHoverOut?: ?number,
 
   /**
    * Duration (in milliseconds) from `onPressIn` before `onLongPress` is called.
+   *
+   * @default `500`
    */
   delayLongPress?: ?number,
 
   /**
    * Whether the press behavior is disabled.
+   *
+   * @default `false`
    */
   disabled?: ?boolean,
 
@@ -85,6 +96,8 @@ type PressableBaseProps = Readonly<{
   /**
    * Additional distance outside of this view in which a touch is considered a
    * press before `onPressOut` is triggered.
+   *
+   * @default `{bottom: 30, left: 20, right: 20, top: 20}`
    */
   pressRetentionOffset?: ?RectOrSize,
 
@@ -94,36 +107,38 @@ type PressableBaseProps = Readonly<{
   onLayout?: ?(event: LayoutChangeEvent) => unknown,
 
   /**
-   * Called when the hover is activated to provide visual feedback.
+   * Called when the hover is activated.
    */
   onHoverIn?: ?(event: MouseEvent) => unknown,
 
   /**
-   * Called when the hover is deactivated to undo visual feedback.
+   * Called when the hover is deactivated.
    */
   onHoverOut?: ?(event: MouseEvent) => unknown,
 
   /**
-   * Called when a long-tap gesture is detected.
+   * Called if the time after `onPressIn` lasts longer than `delayLongPress`.
    */
   onLongPress?: ?(event: GestureResponderEvent) => unknown,
 
   /**
-   * Called when a single tap gesture is detected.
+   * Called after `onPressOut`.
    */
   onPress?: ?(event: GestureResponderEvent) => unknown,
 
   /**
-   * Called when a touch is engaged before `onPress`.
+   * Called immediately when a touch is engaged, before `onPressOut` and
+   * `onPress`.
    */
   onPressIn?: ?(event: GestureResponderEvent) => unknown,
+
   /**
    * Called when the press location moves.
    */
   onPressMove?: ?(event: GestureResponderEvent) => unknown,
 
   /**
-   * Called when a touch is released before `onPress`.
+   * Called when a touch is released.
    */
   onPressOut?: ?(event: GestureResponderEvent) => unknown,
 
@@ -161,8 +176,8 @@ type PressableBaseProps = Readonly<{
    * @platform macos
    */
   keyUpEvents?: ?Array<HandledKeyEvent>,
-  validKeysDown?: ?$ReadOnlyArray<string | HandledKeyEvent>,
-  validKeysUp?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  validKeysDown?: ?ReadonlyArray<string | HandledKeyEvent>,
+  validKeysUp?: ?ReadonlyArray<string | HandledKeyEvent>,
   passthroughAllKeyEvents?: ?boolean,
 
   /**
@@ -258,12 +273,17 @@ type PressableBaseProps = Readonly<{
   testID?: ?string,
 
   /**
-   * If true, doesn't play system sound on touch.
+   * If true, doesn't play Android system sound on press.
+   *
+   * @platform android
+   * @default `false`
    */
   android_disableSound?: ?boolean,
 
   /**
-   * Enables the Android ripple effect and configures its color.
+   * Enables the Android ripple effect and configures its properties.
+   *
+   * @platform android
    */
   android_ripple?: ?PressableAndroidRippleConfig,
 
@@ -273,11 +293,13 @@ type PressableBaseProps = Readonly<{
   testOnly_pressed?: ?boolean,
 
   /**
-   * Duration to wait after press down before calling `onPressIn`.
+   * Duration (in milliseconds) to wait after press down before calling
+   * `onPressIn`.
    */
   unstable_pressDelay?: ?number,
 }>;
 
+/** @build-types emit-as-interface Uniwind compatibility */
 export type PressableProps = Readonly<{
   // Pressability may override `onMouseEnter` and `onMouseLeave` to
   // implement `onHoverIn` and `onHoverOut` in a platform-agnostic way.
@@ -286,17 +308,17 @@ export type PressableProps = Readonly<{
   ...PressableBaseProps,
 }>;
 
-type Instance = React.ElementRef<typeof View>;
-
 /**
- * Component used to build display components that should respond to whether the
- * component is currently pressed or not.
+ * A Core Component wrapper that can detect various stages of press
+ * interactions on any of its defined children.
+ *
+ * @see https://reactnative.dev/docs/pressable
  */
 function Pressable({
   ref: forwardedRef,
   ...props
 }: {
-  ref?: React.RefSetter<Instance>,
+  ref?: React.RefSetter<PressableInstance>,
   ...PressableProps,
 }): React.Node {
   const {
@@ -344,7 +366,7 @@ function Pressable({
     ...restProps
   } = props;
 
-  const viewRef = useRef<Instance | null>(null);
+  const viewRef = useRef<PressableInstance | null>(null);
   const mergedRef = useMergeRefs(forwardedRef, viewRef);
 
   const android_rippleConfig = useAndroidRippleForView(android_ripple, viewRef);
@@ -386,7 +408,7 @@ function Pressable({
     accessibilityLiveRegion,
     accessibilityLabel,
     accessibilityState: _accessibilityState,
-    focusable: focusable !== false && !disabled, // macOS]
+    focusable: focusable !== false && !disabled, // [macOS]
     accessibilityValue,
     hitSlop,
     // [macOS
@@ -395,9 +417,9 @@ function Pressable({
     keyDownEvents:
       keyDownEvents ??
       // $FlowFixMe[unclear-type] Legacy props not in type definitions
-      (((props: any).validKeysDown: mixed) == null &&
+      (((props as any).validKeysDown as unknown) == null &&
       // $FlowFixMe[unclear-type]
-      ((props: any).passthroughAllKeyEvents: mixed) !== true
+      ((props as any).passthroughAllKeyEvents as unknown) !== true
         ? [{key: ' '}, {key: 'Enter'}]
         : undefined),
     mouseDownCanMoveWindow: false,
@@ -505,6 +527,6 @@ const MemoedPressable = memo(Pressable);
 MemoedPressable.displayName = 'Pressable';
 
 export default MemoedPressable as component(
-  ref?: React.RefSetter<React.ElementRef<typeof View>>,
+  ref?: React.RefSetter<PressableInstance>,
   ...props: PressableProps
 );

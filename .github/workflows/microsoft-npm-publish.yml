@@ -3,7 +3,7 @@ name: Publish to npm
 on:
   push:
     branches:
-      - "*-stable"
+      - '*-stable'
 
 concurrency:
   # Serialize release lines because they share the latest and next tags.
@@ -36,7 +36,7 @@ jobs:
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
         with:
-          node-version: "22"
+          node-version: '22'
 
       - name: Install dependencies
         run: yarn install --immutable

@@ -8,12 +8,14 @@
  * @format
  */
 
+// [macOS]
+
 import type {TurboModule} from '../TurboModule/RCTExport';
 
 import * as TurboModuleRegistry from '../TurboModule/TurboModuleRegistry';
 
 export interface Spec extends TurboModule {
-  +getConstants: () => {|
+  readonly getConstants: () => {|
     isTesting: boolean,
     reactNativeVersion: {|
       major: number,
@@ -26,6 +28,6 @@ export interface Spec extends TurboModule {
   |};
 }
 
-export default (TurboModuleRegistry.getEnforcing<Spec>(
+export default TurboModuleRegistry.getEnforcing<Spec>(
   'PlatformConstants',
-): Spec);
+) as Spec;

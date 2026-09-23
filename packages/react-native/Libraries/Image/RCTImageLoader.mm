@@ -108,8 +108,8 @@ static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLRespo
 @end
 
 @implementation RCTImageLoader {
-  std::atomic<BOOL> _isLoaderSetup;
-  std::mutex _loaderSetupLock;
+  std::atomic<BOOL> _didSetup;
+  std::mutex _setupLock;
   NSArray<id<RCTImageURLLoader>> * (^_loadersProvider)(RCTModuleRegistry *);
   NSArray<id<RCTImageDataDecoder>> * (^_decodersProvider)(RCTModuleRegistry *);
   NSArray<id<RCTImageURLLoader>> *_loaders;
@@ -122,7 +122,6 @@ static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLRespo
   NSMutableArray *_pendingDecodes;
   NSInteger _scheduledDecodes;
   NSUInteger _activeBytes;
-  std::mutex _loadersMutex;
   __weak id<RCTImageRedirectProtocol> _redirectDelegate;
 }
 
@@ -148,7 +147,7 @@ RCT_EXPORT_MODULE()
 {
   if (self = [super init]) {
     _redirectDelegate = redirectDelegate;
-    _isLoaderSetup = NO;
+    _didSetup = NO;
   }
   return self;
 }
@@ -166,15 +165,56 @@ RCT_EXPORT_MODULE()
 
 - (void)setUp
 {
-  std::lock_guard<std::mutex> guard(_loaderSetupLock);
-  if (!_isLoaderSetup) {
+  std::lock_guard<std::mutex> guard(_setupLock);
+  if (!_didSetup) {
     // Set defaults
     _maxConcurrentLoadingTasks = _maxConcurrentLoadingTasks ?: 4;
     _maxConcurrentDecodingTasks = _maxConcurrentDecodingTasks ?: 2;
     _maxConcurrentDecodingBytes = _maxConcurrentDecodingBytes ?: 30 * 1024 * 1024; // 30MB
 
     _URLRequestQueue = dispatch_queue_create("com.facebook.react.ImageLoaderURLRequestQueue", DISPATCH_QUEUE_SERIAL);
-    _isLoaderSetup = YES;
+
+    // Get loaders, sorted in reverse priority order (highest priority first)
+    if (_loadersProvider != nil) {
+      _loaders = _loadersProvider(self.moduleRegistry);
+    } else {
+      RCTAssert(_bridge, @"Trying to find RCTImageURLLoaders and bridge not set.");
+      _loaders = [_bridge modulesConformingToProtocol:@protocol(RCTImageURLLoader)];
+    }
+    _loaders =
+        [_loaders sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageURLLoader> a, id<RCTImageURLLoader> b) {
+          float priorityA = [a respondsToSelector:@selector(loaderPriority)] ? [a loaderPriority] : 0;
+          float priorityB = [b respondsToSelector:@selector(loaderPriority)] ? [b loaderPriority] : 0;
+          if (priorityA > priorityB) {
+            return NSOrderedAscending;
+          } else if (priorityA < priorityB) {
+            return NSOrderedDescending;
+          } else {
+            return NSOrderedSame;
+          }
+        }];
+
+    // Get decoders, sorted in reverse priority order (highest priority first)
+    if (_decodersProvider != nil) {
+      _decoders = _decodersProvider(self.moduleRegistry);
+    } else {
+      RCTAssert(_bridge, @"Trying to find RCTImageDataDecoders and bridge not set.");
+      _decoders = [_bridge modulesConformingToProtocol:@protocol(RCTImageDataDecoder)];
+    }
+    _decoders = [_decoders
+        sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageDataDecoder> a, id<RCTImageDataDecoder> b) {
+          float priorityA = [a respondsToSelector:@selector(decoderPriority)] ? [a decoderPriority] : 0;
+          float priorityB = [b respondsToSelector:@selector(decoderPriority)] ? [b decoderPriority] : 0;
+          if (priorityA > priorityB) {
+            return NSOrderedAscending;
+          } else if (priorityA < priorityB) {
+            return NSOrderedDescending;
+          } else {
+            return NSOrderedSame;
+          }
+        }];
+
+    _didSetup = YES;
   }
 }
 
@@ -203,41 +243,17 @@ RCT_EXPORT_MODULE()
 
 - (id<RCTImageURLLoader>)imageURLLoaderForURL:(NSURL *)URL
 {
-  if (!_isLoaderSetup) {
+  if (!_didSetup) {
     [self setUp];
   }
 
-  if (!_loaders) {
-    std::unique_lock<std::mutex> guard(_loadersMutex);
-    if (!_loaders) {
-      // Get loaders, sorted in reverse priority order (highest priority first)
-      if (_loadersProvider) {
-        _loaders = _loadersProvider(self.moduleRegistry);
-      } else {
-        RCTAssert(_bridge, @"Trying to find RCTImageURLLoaders and bridge not set.");
-        _loaders = [_bridge modulesConformingToProtocol:@protocol(RCTImageURLLoader)];
-      }
-
-      _loaders =
-          [_loaders sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageURLLoader> a, id<RCTImageURLLoader> b) {
-            float priorityA = [a respondsToSelector:@selector(loaderPriority)] ? [a loaderPriority] : 0;
-            float priorityB = [b respondsToSelector:@selector(loaderPriority)] ? [b loaderPriority] : 0;
-            if (priorityA > priorityB) {
-              return NSOrderedAscending;
-            } else if (priorityA < priorityB) {
-              return NSOrderedDescending;
-            } else {
-              return NSOrderedSame;
-            }
-          }];
-    }
-  }
+  NSArray<id<RCTImageURLLoader>> *loaders = _loaders;
 
   if (RCT_DEBUG) {
     // Check for handler conflicts
     float previousPriority = 0;
     id<RCTImageURLLoader> previousLoader = nil;
-    for (id<RCTImageURLLoader> loader in _loaders) {
+    for (id<RCTImageURLLoader> loader in loaders) {
       float priority = [loader respondsToSelector:@selector(loaderPriority)] ? [loader loaderPriority] : 0;
       if (previousLoader && priority < previousPriority) {
         return previousLoader;
@@ -264,7 +280,7 @@ RCT_EXPORT_MODULE()
   }
 
   // Normal code path
-  for (id<RCTImageURLLoader> loader in _loaders) {
+  for (id<RCTImageURLLoader> loader in loaders) {
     if ([loader canLoadImageURL:URL]) {
       return loader;
     }
@@ -276,39 +292,17 @@ RCT_EXPORT_MODULE()
 
 - (id<RCTImageDataDecoder>)imageDataDecoderForData:(NSData *)data
 {
-  if (!_isLoaderSetup) {
+  if (!_didSetup) {
     [self setUp];
   }
 
-  if (!_decoders) {
-    // Get decoders, sorted in reverse priority order (highest priority first)
-
-    if (_decodersProvider) {
-      _decoders = _decodersProvider(self.moduleRegistry);
-    } else {
-      RCTAssert(_bridge, @"Trying to find RCTImageDataDecoders and bridge not set.");
-      _decoders = [_bridge modulesConformingToProtocol:@protocol(RCTImageDataDecoder)];
-    }
-
-    _decoders = [_decoders
-        sortedArrayUsingComparator:^NSComparisonResult(id<RCTImageDataDecoder> a, id<RCTImageDataDecoder> b) {
-          float priorityA = [a respondsToSelector:@selector(decoderPriority)] ? [a decoderPriority] : 0;
-          float priorityB = [b respondsToSelector:@selector(decoderPriority)] ? [b decoderPriority] : 0;
-          if (priorityA > priorityB) {
-            return NSOrderedAscending;
-          } else if (priorityA < priorityB) {
-            return NSOrderedDescending;
-          } else {
-            return NSOrderedSame;
-          }
-        }];
-  }
+  NSArray<id<RCTImageDataDecoder>> *decoders = _decoders;
 
   if (RCT_DEBUG) {
     // Check for handler conflicts
     float previousPriority = 0;
     id<RCTImageDataDecoder> previousDecoder = nil;
-    for (id<RCTImageDataDecoder> decoder in _decoders) {
+    for (id<RCTImageDataDecoder> decoder in decoders) {
       float priority = [decoder respondsToSelector:@selector(decoderPriority)] ? [decoder decoderPriority] : 0;
       if (previousDecoder && priority < previousPriority) {
         return previousDecoder;
@@ -337,7 +331,7 @@ RCT_EXPORT_MODULE()
   }
 
   // Normal code path
-  for (id<RCTImageDataDecoder> decoder in _decoders) {
+  for (id<RCTImageDataDecoder> decoder in decoders) {
     if ([decoder canDecodeImageData:data]) {
       return decoder;
     }
@@ -667,7 +661,7 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
   }
 
   // All access to URL cache must be serialized
-  if (!_isLoaderSetup) {
+  if (!_didSetup) {
     [self setUp];
   }
 
@@ -1086,7 +1080,7 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
       });
     };
 
-    if (!_isLoaderSetup) {
+    if (!_didSetup) {
       [self setUp];
     }
     dispatch_async(_URLRequestQueue, ^{
@@ -1225,6 +1219,9 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
     return NO;
   }
 
+  if (!_didSetup) {
+    [self setUp];
+  }
   for (id<RCTImageURLLoader> loader in _loaders) {
     // Don't use RCTImageURLLoader protocol for modules that already conform to
     // RCTURLRequestHandler as it's inefficient to decode an image and then

@@ -80,7 +80,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'canary',
     },
     defaultTextToOverflowHidden: {
       defaultValue: true,
@@ -167,7 +167,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'canary',
     },
     enableAccumulatedUpdatesInRawPropsAndroid: {
       defaultValue: false,
@@ -175,6 +175,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2024-12-10',
         description:
           'When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableAndroidFontWeightAdjustment: {
+      defaultValue: true,
+      metadata: {
+        dateAdded: '2026-06-29',
+        description:
+          'When enabled, Android Text measurement and rendering respects the system Bold text accessibility setting via `Configuration.fontWeightAdjustment`.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -194,8 +205,7 @@ const definitions: FeatureFlagDefinitions = {
     enableBridgelessArchitecture: {
       defaultValue: false,
       metadata: {
-        description:
-          'Feature flag to enable the new bridgeless architecture. Note: Enabling this will force enable the following flags: `useTurboModules` & `enableFabricRenderer`.',
+        description: 'Feature flag to enable the new bridgeless architecture.',
         expectedReleaseValue: true,
         purpose: 'release',
       },
@@ -233,17 +243,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableDifferentiatorMutationVectorPreallocation: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-02-28',
-        description:
-          'Pre-allocate mutation vectors in the Differentiator to reduce reallocation overhead during shadow view diffing.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     enableDoubleMeasurementFixAndroid: {
       defaultValue: false,
       metadata: {
@@ -251,16 +250,6 @@ const definitions: FeatureFlagDefinitions = {
           'When enabled a subset of components will avoid double measurement on Android.',
         expectedReleaseValue: true,
         purpose: 'operational',
-      },
-      ossReleaseStage: 'none',
-    },
-    enableEagerMainQueueModulesOnIOS: {
-      defaultValue: false,
-      metadata: {
-        description:
-          'This infra allows native modules to initialize on the main thread, during React Native init.',
-        expectedReleaseValue: true,
-        purpose: 'release',
       },
       ossReleaseStage: 'none',
     },
@@ -305,14 +294,16 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableFabricRenderer: {
+    enableFlexboxAutoMinSizeInStrictMode: {
       defaultValue: false,
       metadata: {
-        description: 'Enables the use of the Fabric renderer in the whole app.',
+        dateAdded: '2026-06-02',
+        description:
+          'Enables CSS Flexbox §4.5 automatic minimum sizing under strict layout conformance. When enabled, a flex item with an undefined main-axis `min-width`/`min-height` under strict conformance receives a content-derived minimum size (per spec) instead of an undefined (0) minimum. Defaults off so the behaviour can be ramped independently of strict conformance.',
         expectedReleaseValue: true,
-        purpose: 'release',
+        purpose: 'experimentation',
       },
-      ossReleaseStage: 'canary',
+      ossReleaseStage: 'experimental',
     },
     enableFontScaleChangesUpdatingLayout: {
       defaultValue: true,
@@ -320,6 +311,17 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2025-04-07',
         description:
           'Enables font scale changes updating layout for measurable nodes.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    enableIOSCompressedTextFrameAdjustment: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-07-02',
+        description:
+          'Adjusts iOS Text drawing frames for compressed explicit line heights.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -431,17 +433,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableMainQueueCoordinatorOnIOS: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2025-05-17',
-        description:
-          'Make RCTUnsafeExecuteOnMainQueueSync less likely to deadlock, when used in conjuction with sync rendering/events.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     enableModuleArgumentNSNullConversionIOS: {
       defaultValue: false,
       metadata: {
@@ -467,17 +458,6 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2025-02-07',
         description:
           'Parse CSS strings using the Fabric CSS parser instead of ViewConfig processing',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    enableNativeViewPropTransformations: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-02-26',
-        description:
-          'When enabled, View.js passes aria-*, id, and tabIndex props directly to native, relying on C++ prop parsing instead of JS-side transformations.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -514,6 +494,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    enableRuntimeSchedulerQueueClearingOnError: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-05-19',
+        description:
+          'When enabled, RuntimeScheduler_Modern clears pending tasks and rendering updates before handling an error.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'experimental',
+    },
     enableSchedulerDelegateInvalidation: {
       defaultValue: false,
       metadata: {
@@ -534,7 +525,7 @@ const definitions: FeatureFlagDefinitions = {
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
-      ossReleaseStage: 'experimental',
+      ossReleaseStage: 'canary',
     },
     enableViewCulling: {
       defaultValue: false,
@@ -613,33 +604,12 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    enableVirtualViewDebugFeatures: {
-      defaultValue: false,
-      metadata: {
-        description:
-          'Enables VirtualView debug features such as logging and overlays.',
-        expectedReleaseValue: false,
-        purpose: 'operational',
-      },
-      ossReleaseStage: 'none',
-    },
     fixDifferentiatorParentTagForUnflattenCase: {
-      defaultValue: false,
+      defaultValue: true,
       metadata: {
         dateAdded: '2026-04-18',
         description:
           'Fix incorrect parentTag passed as parentTagForUpdate in the unflatten-unflatten branch of calculateShadowViewMutationsFlattener, which causes UPDATE mutations to reference a parent being created in the same batch.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    fixFindShadowNodeByTagRaceCondition: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-02-25',
-        description:
-          'Fix a use-after-free race condition in findShadowNodeByTag_DEPRECATED by using getCurrentRevision() instead of tryCommit() with a raw pointer.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -720,12 +690,12 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    hideOffscreenVirtualViewsOnIOS: {
+    optimizedAnimatedPropUpdates: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2025-06-30',
+        dateAdded: '2026-04-07',
         description:
-          'Hides offscreen VirtualViews on iOS by setting hidden = YES to avoid extra cost of views',
+          'When enabled, uses optimized platform-specific paths to apply animated props synchronously. On Android, this uses a batched int/double buffer protocol with a single JNI call. On iOS, this passes AnimatedProps directly through the delegate chain and applies them via cloneProps, avoiding the folly::dynamic round-trip.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -901,17 +871,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    useLISAlgorithmInDifferentiator: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-03-12',
-        description:
-          'Use Longest Increasing Subsequence algorithm in the Differentiator to minimize REMOVE/INSERT mutations during child list reconciliation.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     useNativeViewConfigsInBridgelessMode: {
       defaultValue: false,
       metadata: {
@@ -929,17 +888,6 @@ const definitions: FeatureFlagDefinitions = {
         dateAdded: '2026-01-16',
         description:
           'When enabled, ReactScrollView will extend NestedScrollView instead of ScrollView on Android for improved nested scrolling support.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
-    useOptimizedViewRegistryOnAndroid: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-04-28',
-        description:
-          'Use MutableIntObjectMap with ReadWriteLock instead of ConcurrentHashMap for the view registry in SurfaceMountingManager to reduce memory overhead and GC pressure.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -976,27 +924,6 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'canary',
     },
-    useTurboModules: {
-      defaultValue: false,
-      metadata: {
-        description:
-          'When enabled, NativeModules will be executed by using the TurboModule system',
-        expectedReleaseValue: true,
-        purpose: 'release',
-      },
-      ossReleaseStage: 'canary',
-    },
-    useUnorderedMapInDifferentiator: {
-      defaultValue: false,
-      metadata: {
-        dateAdded: '2026-02-26',
-        description:
-          'Use std::unordered_map instead of TinyMap in the Differentiator for improved lookup performance.',
-        expectedReleaseValue: true,
-        purpose: 'experimentation',
-      },
-      ossReleaseStage: 'none',
-    },
     viewCullingOutsetRatio: {
       defaultValue: 0,
       metadata: {
@@ -1019,6 +946,17 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
+    viewTransitionUseHardwareBitmapAndroid: {
+      defaultValue: false,
+      metadata: {
+        dateAdded: '2026-05-04',
+        description:
+          'Use hardware bitmaps for view transition snapshots on Android.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
     virtualViewPrerenderRatio: {
       defaultValue: 5,
       metadata: {
@@ -1032,23 +970,34 @@ const definitions: FeatureFlagDefinitions = {
 
   jsOnly: {
     ...testDefinitions.jsOnly,
-    animatedShouldDebounceQueueFlush: {
+    animatedDeferStartOfTimingAnimations: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2024-02-05',
+        dateAdded: '2026-05-26',
         description:
-          'Enables an experimental flush-queue debouncing in Animated.js.',
+          'When enabled, the JS Animated layer defers the start of native-driven timing animations to the first rendered frame and re-anchors timing to prevent skipping initial frames when the UI thread is busy with layout work.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
       ossReleaseStage: 'none',
     },
-    animatedShouldUseSingleOp: {
+    animatedForceNativeDriver: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2024-02-05',
+        dateAdded: '2026-06-10',
         description:
-          'Enables an experimental mega-operation for Animated.js that replaces many calls to native with a single call into native, to reduce JSI/JNI traffic.',
+          'When enabled, forces `useNativeDriver` to `true` for all Animated animations and events, overriding the config (including an explicit `false`). Has no effect unless the shared animated backend is enabled, which is required to support native driver for all props.',
+        expectedReleaseValue: true,
+        purpose: 'experimentation',
+      },
+      ossReleaseStage: 'none',
+    },
+    animatedShouldSyncValueBeforeStartCallback: {
+      defaultValue: true,
+      metadata: {
+        dateAdded: '2026-06-01',
+        description:
+          'When a useNativeDriver animation completes, syncs the JS-side AnimatedValue with the post-animation value BEFORE invoking the user-supplied start({finished}) callback. Without the flag, the callback observes the pre-animation value, which can cause downstream re-renders to read stale interpolation outputs.',
         expectedReleaseValue: true,
         purpose: 'experimentation',
       },
@@ -1065,14 +1014,13 @@ const definitions: FeatureFlagDefinitions = {
       },
       ossReleaseStage: 'none',
     },
-    disableMaintainVisibleContentPosition: {
+    enableImperativeEvents: {
       defaultValue: false,
       metadata: {
-        dateAdded: '2025-08-26',
         description:
-          'Disable prop maintainVisibleContentPosition in ScrollView',
-        expectedReleaseValue: false,
-        purpose: 'experimentation',
+          'When enabled, ReactNativeElement and ReadOnlyText expose the public EventTarget API (addEventListener, removeEventListener, dispatchEvent). When disabled, those methods are removed from those final classes.',
+        expectedReleaseValue: true,
+        purpose: 'release',
       },
       ossReleaseStage: 'none',
     },

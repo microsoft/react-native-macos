@@ -24,10 +24,15 @@ import android.text.TextUtils
 import android.util.LayoutDirection
 import android.view.Gravity
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import com.facebook.common.logging.FLog
 import com.facebook.infer.annotation.Assertions
+import com.facebook.react.bridge.JavaOnlyArray
+import com.facebook.react.bridge.JavaOnlyMap
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.common.ReactConstants
+import com.facebook.react.common.annotations.UnstableReactNativeAPI
 import com.facebook.react.common.mapbuffer.MapBuffer
 import com.facebook.react.common.mapbuffer.ReadableMapBuffer
 import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
@@ -60,6 +65,8 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
+import org.json.JSONArray
+import org.json.JSONObject
 
 /** Class responsible of creating [Spanned] object for the JS representation of Text */
 internal object TextLayoutManager {
@@ -204,7 +211,7 @@ internal object TextLayoutManager {
 
     if (alignmentAttr == "center") {
       alignment = Layout.Alignment.ALIGN_CENTER
-    } else if (alignmentAttr == "right") {
+    } else if (alignmentAttr == "right" || alignmentAttr == "end") {
       alignment =
           if (swapNormalAndOpposite) Layout.Alignment.ALIGN_NORMAL
           else Layout.Alignment.ALIGN_OPPOSITE
@@ -229,13 +236,21 @@ internal object TextLayoutManager {
     }
   }
 
+  @OptIn(UnstableReactNativeAPI::class)
   private fun buildSpannableFromFragments(
       assets: AssetManager,
+      fontWeightAdjustment: Int,
       fragments: MapBuffer,
       sb: SpannableStringBuilder,
       ops: MutableList<SetSpanOperation>,
       outputReactTags: IntArray?,
+      textEffectRegistry: TextEffectRegistry?,
   ) {
+    // Track pending text effects to coalesce consecutive fragments with the same effects into
+    // single spans, avoiding duplicate draws (e.g. multiple accent marks in HighlighterTextSpan).
+    var pendingEffects: List<TextAttributeProps.TextEffectEntry> = emptyList()
+    var pendingEffectStart = 0
+
     for (i in 0 until fragments.count) {
       val fragment = fragments.getMapBuffer(i)
       val start = sb.length
@@ -310,15 +325,34 @@ internal object TextLayoutManager {
                       textAttributes.fontFeatureSettings,
                       textAttributes.fontFamily,
                       assets,
+                      fontWeightAdjustment,
                   ),
               )
           )
         }
         if (textAttributes.isUnderlineTextDecorationSet) {
-          ops.add(SetSpanOperation(start, end, ReactUnderlineSpan()))
+          ops.add(
+              SetSpanOperation(
+                  start,
+                  end,
+                  ReactUnderlineSpan(
+                      textAttributes.textDecorationColor,
+                      textAttributes.textDecorationStyle,
+                  ),
+              )
+          )
         }
         if (textAttributes.isLineThroughTextDecorationSet) {
-          ops.add(SetSpanOperation(start, end, ReactStrikethroughSpan()))
+          ops.add(
+              SetSpanOperation(
+                  start,
+                  end,
+                  ReactStrikethroughSpan(
+                      textAttributes.textDecorationColor,
+                      textAttributes.textDecorationStyle,
+                  ),
+              )
+          )
         }
         if (
             (textAttributes.textShadowOffsetDx != 0f ||
@@ -352,6 +386,34 @@ internal object TextLayoutManager {
           ops.add(SetSpanOperation(start, end, ReactTagSpan(reactTag)))
         }
       }
+
+      // Coalesce consecutive fragments with the same text effects into single spans.
+      val effects = textAttributes.textEffects
+      if (effects != pendingEffects) {
+        // Flush the previous pending effects
+        if (pendingEffects.isNotEmpty() && textEffectRegistry != null) {
+          for (effect in pendingEffects) {
+            val effectProps = jsonStringToReadableMap(effect.props)
+            val span = textEffectRegistry.createSpan(effect.name, effectProps)
+            if (span != null) {
+              ops.add(SetSpanOperation(pendingEffectStart, start, span))
+            }
+          }
+        }
+        pendingEffects = effects
+        pendingEffectStart = start
+      }
+    }
+
+    // Flush any remaining pending effects after the last fragment
+    if (pendingEffects.isNotEmpty() && textEffectRegistry != null) {
+      for (effect in pendingEffects) {
+        val effectProps = jsonStringToReadableMap(effect.props)
+        val span = textEffectRegistry.createSpan(effect.name, effectProps)
+        if (span != null) {
+          ops.add(SetSpanOperation(pendingEffectStart, sb.length, span))
+        }
+      }
     }
   }
 
@@ -364,10 +426,13 @@ internal object TextLayoutManager {
       val height: Double,
   )
 
+  @OptIn(UnstableReactNativeAPI::class)
   private fun buildSpannableFromFragmentsOptimized(
       assets: AssetManager,
+      fontWeightAdjustment: Int,
       fragments: MapBuffer,
       outputReactTags: IntArray?,
+      textEffectRegistry: TextEffectRegistry?,
   ): Spannable {
     val text = StringBuilder()
     val parsedFragments = ArrayList<FragmentAttributes>(fragments.count)
@@ -407,6 +472,11 @@ internal object TextLayoutManager {
     }
 
     val spannable = SpannableString(text)
+
+    // Track pending text effects to coalesce consecutive fragments with the same effects into
+    // single spans, avoiding duplicate draws (e.g. multiple accent marks in HighlighterTextSpan).
+    var pendingEffects: List<TextAttributeProps.TextEffectEntry> = emptyList()
+    var pendingEffectStart = 0
 
     var start = 0
     for ((i, fragment) in parsedFragments.withIndex()) {
@@ -486,6 +556,7 @@ internal object TextLayoutManager {
                   fragment.props.fontFeatureSettings,
                   fragment.props.fontFamily,
                   assets,
+                  fontWeightAdjustment,
               ),
               start,
               end,
@@ -494,11 +565,27 @@ internal object TextLayoutManager {
         }
 
         if (fragment.props.isUnderlineTextDecorationSet) {
-          spannable.setSpan(ReactUnderlineSpan(), start, end, spanFlags)
+          spannable.setSpan(
+              ReactUnderlineSpan(
+                  fragment.props.textDecorationColor,
+                  fragment.props.textDecorationStyle,
+              ),
+              start,
+              end,
+              spanFlags,
+          )
         }
 
         if (fragment.props.isLineThroughTextDecorationSet) {
-          spannable.setSpan(ReactStrikethroughSpan(), start, end, spanFlags)
+          spannable.setSpan(
+              ReactStrikethroughSpan(
+                  fragment.props.textDecorationColor,
+                  fragment.props.textDecorationStyle,
+              ),
+              start,
+              end,
+              spanFlags,
+          )
         }
 
         if (
@@ -534,16 +621,84 @@ internal object TextLayoutManager {
         }
       }
 
+      // Coalesce consecutive fragments with the same text effects into single spans.
+      val effects = fragment.props.textEffects
+      if (effects != pendingEffects) {
+        if (pendingEffects.isNotEmpty() && textEffectRegistry != null) {
+          for (effect in pendingEffects) {
+            val effectProps = jsonStringToReadableMap(effect.props)
+            val span = textEffectRegistry.createSpan(effect.name, effectProps)
+            if (span != null) {
+              spannable.setSpan(span, pendingEffectStart, start, Spannable.SPAN_EXCLUSIVE_INCLUSIVE)
+            }
+          }
+        }
+        pendingEffects = effects
+        pendingEffectStart = start
+      }
+
       start = end
+    }
+
+    // Flush any remaining pending effects after the last fragment
+    if (pendingEffects.isNotEmpty() && textEffectRegistry != null) {
+      for (effect in pendingEffects) {
+        val effectProps = jsonStringToReadableMap(effect.props)
+        val span = textEffectRegistry.createSpan(effect.name, effectProps)
+        if (span != null) {
+          spannable.setSpan(span, pendingEffectStart, start, Spannable.SPAN_EXCLUSIVE_INCLUSIVE)
+        }
+      }
     }
 
     return spannable
   }
 
+  @OptIn(UnstableReactNativeAPI::class)
   fun getOrCreateSpannableForText(
       assets: AssetManager,
       attributedString: MapBuffer,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+  ): Spannable =
+      getOrCreateSpannableForText(assets, attributedString, reactTextViewManagerCallback, null)
+
+  @OptIn(UnstableReactNativeAPI::class)
+  fun getOrCreateSpannableForText(
+      assets: AssetManager,
+      fontWeightAdjustment: Int,
+      attributedString: MapBuffer,
+      reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+  ): Spannable =
+      getOrCreateSpannableForText(
+          assets,
+          fontWeightAdjustment,
+          attributedString,
+          reactTextViewManagerCallback,
+          null,
+      )
+
+  @OptIn(UnstableReactNativeAPI::class)
+  internal fun getOrCreateSpannableForText(
+      assets: AssetManager,
+      attributedString: MapBuffer,
+      reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+      textEffectRegistry: TextEffectRegistry?,
+  ): Spannable =
+      getOrCreateSpannableForText(
+          assets,
+          0,
+          attributedString,
+          reactTextViewManagerCallback,
+          textEffectRegistry,
+      )
+
+  @OptIn(UnstableReactNativeAPI::class)
+  internal fun getOrCreateSpannableForText(
+      assets: AssetManager,
+      fontWeightAdjustment: Int,
+      attributedString: MapBuffer,
+      reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+      textEffectRegistry: TextEffectRegistry?,
   ): Spannable {
     var text: Spannable?
     if (attributedString.contains(AS_KEY_CACHE_ID)) {
@@ -553,23 +708,35 @@ internal object TextLayoutManager {
       text =
           createSpannableFromAttributedString(
               assets,
+              fontWeightAdjustment,
               attributedString.getMapBuffer(AS_KEY_FRAGMENTS),
               reactTextViewManagerCallback,
               null,
+              textEffectRegistry,
           )
     }
 
     return text
   }
 
+  @OptIn(UnstableReactNativeAPI::class)
   private fun createSpannableFromAttributedString(
       assets: AssetManager,
+      fontWeightAdjustment: Int,
       fragments: MapBuffer,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       outputReactTags: IntArray?,
+      textEffectRegistry: TextEffectRegistry? = null,
   ): Spannable {
     if (ReactNativeFeatureFlags.enableAndroidTextMeasurementOptimizations()) {
-      val spannable = buildSpannableFromFragmentsOptimized(assets, fragments, outputReactTags)
+      val spannable =
+          buildSpannableFromFragmentsOptimized(
+              assets,
+              fontWeightAdjustment,
+              fragments,
+              outputReactTags,
+              textEffectRegistry,
+          )
 
       reactTextViewManagerCallback?.onPostProcessSpannable(spannable)
       return spannable
@@ -581,7 +748,15 @@ internal object TextLayoutManager {
       // a new spannable will be wiped out
       val ops: MutableList<SetSpanOperation> = ArrayList()
 
-      buildSpannableFromFragments(assets, fragments, sb, ops, outputReactTags)
+      buildSpannableFromFragments(
+          assets,
+          fontWeightAdjustment,
+          fragments,
+          sb,
+          ops,
+          outputReactTags,
+          textEffectRegistry,
+      )
 
       // TODO T31905686: add support for inline Images
       // While setting the Spans on the final text, we also check whether any of them are images.
@@ -697,10 +872,12 @@ internal object TextLayoutManager {
    * Sets attributes on the TextPaint, used for content outside the Spannable text, like for empty
    * strings, or newlines after the last trailing character
    */
-  private fun updateTextPaint(
+  @VisibleForTesting
+  internal fun updateTextPaint(
       paint: TextPaint,
       baseTextAttributes: TextAttributeProps,
       assets: AssetManager,
+      fontWeightAdjustment: Int,
   ) {
     if (baseTextAttributes.fontSize != ReactConstants.UNSET) {
       paint.textSize = baseTextAttributes.fontSize.toFloat()
@@ -719,7 +896,9 @@ internal object TextLayoutManager {
               baseTextAttributes.fontFamily,
               assets,
           )
-      paint.setTypeface(typeface)
+      paint.setTypeface(
+          ReactTypefaceUtils.applyFontWeightAdjustment(typeface, fontWeightAdjustment)
+      )
 
       if (
           baseTextAttributes.fontStyle != ReactConstants.UNSET &&
@@ -729,6 +908,11 @@ internal object TextLayoutManager {
         val missingStyle = baseTextAttributes.fontStyle and typeface.style.inv()
         paint.isFakeBoldText = missingStyle and Typeface.BOLD != 0
         paint.textSkewX = if ((missingStyle and Typeface.ITALIC) != 0) -0.25f else 0f
+      }
+    } else {
+      val typeface = ReactTypefaceUtils.applyFontWeightAdjustment(null, fontWeightAdjustment)
+      if (typeface != null) {
+        paint.setTypeface(typeface)
       }
     }
   }
@@ -740,27 +924,31 @@ internal object TextLayoutManager {
   private fun scratchPaintWithAttributes(
       baseTextAttributes: TextAttributeProps,
       assets: AssetManager,
+      fontWeightAdjustment: Int,
   ): TextPaint {
     val paint = checkNotNull(textPaintInstance.get())
     paint.setTypeface(null)
     paint.textSize = 12f
     paint.isFakeBoldText = false
     paint.textSkewX = 0f
-    updateTextPaint(paint, baseTextAttributes, assets)
+    updateTextPaint(paint, baseTextAttributes, assets, fontWeightAdjustment)
     return paint
   }
 
   private fun newPaintWithAttributes(
       baseTextAttributes: TextAttributeProps,
       assets: AssetManager,
+      fontWeightAdjustment: Int,
   ): TextPaint {
     val paint = TextPaint(TextPaint.ANTI_ALIAS_FLAG)
-    updateTextPaint(paint, baseTextAttributes, assets)
+    updateTextPaint(paint, baseTextAttributes, assets, fontWeightAdjustment)
     return paint
   }
 
+  @OptIn(UnstableReactNativeAPI::class)
   private fun createLayoutForMeasurement(
       assets: AssetManager,
+      fontWeightAdjustment: Int,
       attributedString: MapBuffer,
       paragraphAttributes: MapBuffer,
       width: Float,
@@ -768,8 +956,16 @@ internal object TextLayoutManager {
       height: Float,
       heightYogaMeasureMode: YogaMeasureMode,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+      textEffectRegistry: TextEffectRegistry? = null,
   ): Layout {
-    val text = getOrCreateSpannableForText(assets, attributedString, reactTextViewManagerCallback)
+    val text =
+        getOrCreateSpannableForText(
+            assets,
+            fontWeightAdjustment,
+            attributedString,
+            reactTextViewManagerCallback,
+            textEffectRegistry,
+        )
 
     val paint: TextPaint
     if (attributedString.contains(AS_KEY_CACHE_ID)) {
@@ -777,7 +973,7 @@ internal object TextLayoutManager {
     } else {
       val baseTextAttributes =
           TextAttributeProps.fromMapBuffer(attributedString.getMapBuffer(AS_KEY_BASE_ATTRIBUTES))
-      paint = scratchPaintWithAttributes(baseTextAttributes, assets)
+      paint = scratchPaintWithAttributes(baseTextAttributes, assets, fontWeightAdjustment)
     }
 
     return createLayout(
@@ -881,6 +1077,7 @@ internal object TextLayoutManager {
   }
 
   @JvmStatic
+  @OptIn(UnstableReactNativeAPI::class)
   fun createPreparedLayout(
       assets: AssetManager,
       attributedString: ReadableMapBuffer,
@@ -890,22 +1087,52 @@ internal object TextLayoutManager {
       height: Float,
       heightYogaMeasureMode: YogaMeasureMode,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+      textEffectRegistry: TextEffectRegistry? = null,
+  ): PreparedLayout =
+      createPreparedLayout(
+          assets,
+          0,
+          attributedString,
+          paragraphAttributes,
+          width,
+          widthYogaMeasureMode,
+          height,
+          heightYogaMeasureMode,
+          reactTextViewManagerCallback,
+          textEffectRegistry,
+      )
+
+  @JvmStatic
+  @OptIn(UnstableReactNativeAPI::class)
+  fun createPreparedLayout(
+      assets: AssetManager,
+      fontWeightAdjustment: Int,
+      attributedString: ReadableMapBuffer,
+      paragraphAttributes: ReadableMapBuffer,
+      width: Float,
+      widthYogaMeasureMode: YogaMeasureMode,
+      height: Float,
+      heightYogaMeasureMode: YogaMeasureMode,
+      reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+      textEffectRegistry: TextEffectRegistry? = null,
   ): PreparedLayout {
     val fragments = attributedString.getMapBuffer(AS_KEY_FRAGMENTS)
     val reactTags = IntArray(fragments.count)
     val text =
         createSpannableFromAttributedString(
             assets,
+            fontWeightAdjustment,
             fragments,
             reactTextViewManagerCallback,
             reactTags,
+            textEffectRegistry,
         )
     val baseTextAttributes =
         TextAttributeProps.fromMapBuffer(attributedString.getMapBuffer(AS_KEY_BASE_ATTRIBUTES))
     val result =
         createLayout(
             text,
-            newPaintWithAttributes(baseTextAttributes, assets),
+            newPaintWithAttributes(baseTextAttributes, assets, fontWeightAdjustment),
             attributedString,
             paragraphAttributes,
             width,
@@ -1044,6 +1271,7 @@ internal object TextLayoutManager {
   }
 
   @JvmStatic
+  @OptIn(UnstableReactNativeAPI::class)
   fun measureText(
       assets: AssetManager,
       attributedString: MapBuffer,
@@ -1054,11 +1282,42 @@ internal object TextLayoutManager {
       heightYogaMeasureMode: YogaMeasureMode,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
       attachmentsPositions: FloatArray?,
+      textEffectRegistry: TextEffectRegistry? = null,
+  ): Long =
+      measureText(
+          assets,
+          0,
+          attributedString,
+          paragraphAttributes,
+          width,
+          widthYogaMeasureMode,
+          height,
+          heightYogaMeasureMode,
+          reactTextViewManagerCallback,
+          attachmentsPositions,
+          textEffectRegistry,
+      )
+
+  @JvmStatic
+  @OptIn(UnstableReactNativeAPI::class)
+  fun measureText(
+      assets: AssetManager,
+      fontWeightAdjustment: Int,
+      attributedString: MapBuffer,
+      paragraphAttributes: MapBuffer,
+      width: Float,
+      widthYogaMeasureMode: YogaMeasureMode,
+      height: Float,
+      heightYogaMeasureMode: YogaMeasureMode,
+      reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+      attachmentsPositions: FloatArray?,
+      textEffectRegistry: TextEffectRegistry? = null,
   ): Long {
     // TODO(5578671): Handle text direction (see View#getTextDirectionHeuristic)
     val layout =
         createLayoutForMeasurement(
             assets,
+            fontWeightAdjustment,
             attributedString,
             paragraphAttributes,
             width,
@@ -1066,6 +1325,7 @@ internal object TextLayoutManager {
             height,
             heightYogaMeasureMode,
             reactTextViewManagerCallback,
+            textEffectRegistry,
         )
 
     val maximumNumberOfLines =
@@ -1314,6 +1574,7 @@ internal object TextLayoutManager {
   }
 
   @JvmStatic
+  @OptIn(UnstableReactNativeAPI::class)
   fun measureLines(
       assetManager: AssetManager,
       attributedString: MapBuffer,
@@ -1321,10 +1582,35 @@ internal object TextLayoutManager {
       width: Float,
       height: Float,
       reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+      textEffectRegistry: TextEffectRegistry? = null,
+  ): WritableArray =
+      measureLines(
+          assetManager,
+          0,
+          attributedString,
+          paragraphAttributes,
+          width,
+          height,
+          reactTextViewManagerCallback,
+          textEffectRegistry,
+      )
+
+  @JvmStatic
+  @OptIn(UnstableReactNativeAPI::class)
+  fun measureLines(
+      assetManager: AssetManager,
+      fontWeightAdjustment: Int,
+      attributedString: MapBuffer,
+      paragraphAttributes: MapBuffer,
+      width: Float,
+      height: Float,
+      reactTextViewManagerCallback: ReactTextViewManagerCallback?,
+      textEffectRegistry: TextEffectRegistry? = null,
   ): WritableArray {
     val layout =
         createLayoutForMeasurement(
             assetManager,
+            fontWeightAdjustment,
             attributedString,
             paragraphAttributes,
             width,
@@ -1332,11 +1618,12 @@ internal object TextLayoutManager {
             height,
             YogaMeasureMode.EXACTLY,
             reactTextViewManagerCallback,
+            textEffectRegistry,
         )
     return FontMetricsUtil.getFontMetrics(
         layout.text,
         layout,
-        DisplayMetricsHolder.getWindowDisplayMetrics(),
+        DisplayMetricsHolder.getScreenDisplayMetrics(),
     )
   }
 
@@ -1371,5 +1658,64 @@ internal object TextLayoutManager {
     var left: Float = 0f
     var width: Float = 0f
     var height: Float = 0f
+  }
+
+  private fun jsonStringToReadableMap(json: String?): ReadableMap? {
+    if (json == null) return null
+    return try {
+      jsonObjectToReadableMap(JSONObject(json))
+    } catch (_: Exception) {
+      null
+    }
+  }
+
+  private fun jsonObjectToReadableMap(jsonObject: JSONObject): JavaOnlyMap {
+    val map = JavaOnlyMap()
+    val keys = jsonObject.keys()
+    while (keys.hasNext()) {
+      val key = keys.next()
+      putJsonValue(map, key, jsonObject.get(key))
+    }
+    return map
+  }
+
+  private fun jsonArrayToReadableArray(jsonArray: JSONArray): JavaOnlyArray {
+    val array = JavaOnlyArray()
+    for (i in 0 until jsonArray.length()) {
+      pushJsonValue(array, jsonArray.get(i))
+    }
+    return array
+  }
+
+  private fun putJsonValue(map: JavaOnlyMap, key: String, value: Any) {
+    when (value) {
+      JSONObject.NULL -> map.putNull(key)
+      is Boolean -> map.putBoolean(key, value)
+      is Number -> map.putDouble(key, value.toDouble())
+      is String -> map.putString(key, value)
+      is JSONObject -> map.putMap(key, jsonObjectToReadableMap(value))
+      is JSONArray -> map.putArray(key, jsonArrayToReadableArray(value))
+      else ->
+          FLog.w(
+              ReactConstants.TAG,
+              "Unsupported text effect prop type for key $key: ${value.javaClass.name}",
+          )
+    }
+  }
+
+  private fun pushJsonValue(array: JavaOnlyArray, value: Any) {
+    when (value) {
+      JSONObject.NULL -> array.pushNull()
+      is Boolean -> array.pushBoolean(value)
+      is Number -> array.pushDouble(value.toDouble())
+      is String -> array.pushString(value)
+      is JSONObject -> array.pushMap(jsonObjectToReadableMap(value))
+      is JSONArray -> array.pushArray(jsonArrayToReadableArray(value))
+      else ->
+          FLog.w(
+              ReactConstants.TAG,
+              "Unsupported text effect prop type: ${value.javaClass.name}",
+          )
+    }
   }
 }

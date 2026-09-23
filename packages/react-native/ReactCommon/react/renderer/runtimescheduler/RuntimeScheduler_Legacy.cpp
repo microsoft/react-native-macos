@@ -6,6 +6,9 @@
  */
 
 #include "RuntimeScheduler_Legacy.h"
+
+#ifndef RCT_REMOVE_LEGACY_ARCH
+
 #include "SchedulerPriorityUtils.h"
 
 #include <ReactCommon/RuntimeExecutorSyncUIThreadUtils.h>
@@ -42,6 +45,14 @@ void RuntimeScheduler_Legacy::scheduleWork(RawCallback&& callback) noexcept {
         startWorkLoop(runtime);
       });
 }
+
+void RuntimeScheduler_Legacy::scheduleTask(
+    [[maybe_unused]] const std::function<void()>& task) {}
+uint64_t RuntimeScheduler_Legacy::registerTaskQueueSource() {
+  return 0;
+}
+void RuntimeScheduler_Legacy::unregisterTaskQueueSource(
+    [[maybe_unused]] uint64_t sourceId) {}
 
 std::shared_ptr<Task> RuntimeScheduler_Legacy::scheduleTask(
     SchedulerPriority priority,
@@ -282,3 +293,5 @@ void RuntimeScheduler_Legacy::executeTask(
 }
 
 } // namespace facebook::react
+
+#endif // RCT_REMOVE_LEGACY_ARCH

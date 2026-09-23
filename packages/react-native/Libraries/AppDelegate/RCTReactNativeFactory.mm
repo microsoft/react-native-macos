@@ -58,7 +58,6 @@ using namespace facebook::react;
     [self _setUpFeatureFlags:releaseLevel];
 
     [RCTColorSpaceUtils applyDefaultColorSpace:[self defaultColorSpace]];
-    RCTEnableTurboModule(YES);
 
     self.rootViewFactory = [self createRCTRootViewFactory];
 
@@ -74,14 +73,14 @@ using namespace facebook::react;
 }
 
 - (void)startReactNativeWithModuleName:(NSString *)moduleName
-                              inWindow:(RCTPlatformWindow *_Nullable)window // [macOS]
+                              inWindow:(RCTPlatformWindow *_Nullable)window
                          launchOptions:(NSDictionary *_Nullable)launchOptions
 {
   [self startReactNativeWithModuleName:moduleName inWindow:window initialProperties:nil launchOptions:launchOptions];
 }
 
 - (void)startReactNativeWithModuleName:(NSString *)moduleName
-                              inWindow:(RCTPlatformWindow *_Nullable)window
+                              inWindow:(RCTPlatformWindow *_Nullable)window // [macOS]
                      initialProperties:(NSDictionary *_Nullable)initialProperties
                          launchOptions:(NSDictionary *_Nullable)launchOptions
 {
@@ -137,28 +136,6 @@ using namespace facebook::react;
 - (JSRuntimeFactoryRef)createJSRuntimeFactory
 {
   return [_delegate createJSRuntimeFactory];
-}
-
-#pragma mark - RCTArchConfiguratorProtocol
-
-- (BOOL)newArchEnabled
-{
-  return YES;
-}
-
-- (BOOL)fabricEnabled
-{
-  return YES;
-}
-
-- (BOOL)turboModuleEnabled
-{
-  return YES;
-}
-
-- (BOOL)bridgelessEnabled
-{
-  return YES;
 }
 
 #pragma mark - RCTTurboModuleManagerDelegate
@@ -267,26 +244,13 @@ using namespace facebook::react;
                                                    turboModuleEnabled:YES
                                                     bridgelessEnabled:YES];
 
-  configuration.createRootViewWithBridge = ^RCTPlatformView *(RCTBridge *bridge, NSString *moduleName, NSDictionary *initProps) {
-    return [weakSelf.delegate createRootViewWithBridge:bridge moduleName:moduleName initProps:initProps];
-  };
-
-  configuration.createBridgeWithDelegate = ^RCTBridge *(id<RCTBridgeDelegate> delegate, NSDictionary *launchOptions) {
-    return [weakSelf.delegate createBridgeWithDelegate:delegate launchOptions:launchOptions];
-  };
-
-  configuration.customizeRootView = ^(RCTPlatformView *_Nonnull rootView) {
+  configuration.customizeRootView = ^(RCTPlatformView *_Nonnull rootView) { // [macOS]
     [weakSelf.delegate customizeRootView:(RCTRootView *)rootView];
   };
 
   configuration.sourceURLForBridge = ^NSURL *_Nullable(RCTBridge *_Nonnull bridge)
   {
-#ifndef RCT_REMOVE_LEGACY_ARCH
-    return [weakSelf.delegate sourceURLForBridge:bridge];
-#else
-    // When the Legacy Arch is removed, the Delegate does not have a sourceURLForBridge method
     return [weakSelf.delegate bundleURL];
-#endif
   };
 
   if ([self.delegate respondsToSelector:@selector(extraModulesForBridge:)]) {
@@ -295,52 +259,6 @@ using namespace facebook::react;
       return [weakSelf.delegate extraModulesForBridge:bridge];
     };
   }
-
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  // When the Legacy Arch is removed, the Delegate does not have a extraLazyModuleClassesForBridge method
-  if ([self.delegate respondsToSelector:@selector(extraLazyModuleClassesForBridge:)]) {
-    configuration.extraLazyModuleClassesForBridge =
-        ^NSDictionary<NSString *, Class> *_Nonnull(RCTBridge *_Nonnull bridge)
-    {
-      return [weakSelf.delegate extraLazyModuleClassesForBridge:bridge];
-    };
-  }
-#endif
-
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  // When the Legacy Arch is removed, the Delegate does not have a bridge:didNotFindModule method
-  // We return NO, because if we have invoked this method is unlikely that the module will be actually registered
-  if ([self.delegate respondsToSelector:@selector(bridge:didNotFindModule:)]) {
-    configuration.bridgeDidNotFindModule = ^BOOL(RCTBridge *_Nonnull bridge, NSString *_Nonnull moduleName) {
-      return [weakSelf.delegate bridge:bridge didNotFindModule:moduleName];
-    };
-  }
-#endif
-
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  // When the Legacy Arch is removed, the Delegate does not have a
-  // loadSourceForBridge:onProgress:onComplete: method
-  // We then call the loadBundleAtURL:onProgress:onComplete: instead
-  if ([self.delegate respondsToSelector:@selector(loadSourceForBridge:onProgress:onComplete:)]) {
-    configuration.loadSourceForBridgeWithProgress =
-        ^(RCTBridge *_Nonnull bridge,
-          RCTSourceLoadProgressBlock _Nonnull onProgress,
-          RCTSourceLoadBlock _Nonnull loadCallback) {
-          [weakSelf.delegate loadSourceForBridge:bridge onProgress:onProgress onComplete:loadCallback];
-        };
-  }
-#endif
-
-#ifndef RCT_REMOVE_LEGACY_ARCH
-  // When the Legacy Arch is removed, the Delegate does not have a
-  // loadSourceForBridge:withBlock: method
-  // We then call the loadBundleAtURL:onProgress:onComplete: instead
-  if ([self.delegate respondsToSelector:@selector(loadSourceForBridge:withBlock:)]) {
-    configuration.loadSourceForBridge = ^(RCTBridge *_Nonnull bridge, RCTSourceLoadBlock _Nonnull loadCallback) {
-      [weakSelf.delegate loadSourceForBridge:bridge withBlock:loadCallback];
-    };
-  }
-#endif
 
   configuration.jsRuntimeConfiguratorDelegate = self;
 

@@ -18,7 +18,6 @@ plugins {
   id("com.facebook.react")
   alias(libs.plugins.android.library)
   alias(libs.plugins.download)
-  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.ktfmt)
 }
 
@@ -38,9 +37,6 @@ val downloadsDir =
     }
 val thirdPartyNdkDir = File("$buildDir/third-party-ndk")
 val reactNativeRootDir = projectDir.parent
-
-val hermesV1Enabled =
-    rootProject.extensions.getByType(PrivateReactExtension::class.java).hermesV1Enabled.get()
 
 // We put the publishing version from gradle.properties inside ext. so other
 // subprojects can access it as well.
@@ -246,6 +242,7 @@ val preparePrefab by
                       Pair("../ReactCommon/react/renderer/telemetry/", "react/renderer/telemetry/"),
                       Pair("../ReactCommon/react/renderer/uimanager/", "react/renderer/uimanager/"),
                       Pair("../ReactCommon/react/debug/", "react/debug/"),
+                      Pair("../ReactCommon/react/cxxstableapi/", "react/cxxstableapi/"),
                       Pair("../ReactCommon/react/utils/", "react/utils/"),
                       Pair("src/main/jni/react/jni", "react/jni/"),
                       // react_cxxreactpackage
@@ -557,6 +554,15 @@ android {
   defaultConfig {
     minSdk = libs.versions.minSdk.get().toInt()
 
+    aarMetadata {
+      // RN's public ABI exposes no android API newer than 34, and the source is written to
+      // compile against SDK 34 (see util/AndroidVersion.kt). compileSdk is 36 only to build
+      // against the latest platform — it is not an API requirement. Without this, AGP 9
+      // defaults minCompileSdk to compileSdk (36), needlessly forcing every consuming
+      // library/app to compileSdk 36.
+      minCompileSdk = 34
+    }
+
     consumerProguardFiles("proguard-rules.pro")
 
     buildConfigField("boolean", "IS_INTERNAL_BUILD", "false")
@@ -564,6 +570,7 @@ android {
     buildConfigField("boolean", "UNSTABLE_ENABLE_FUSEBOX_RELEASE", "false")
     buildConfigField("boolean", "ENABLE_PERFETTO", "false")
     buildConfigField("boolean", "UNSTABLE_ENABLE_MINIFY_LEGACY_ARCHITECTURE", "false")
+    buildConfigField("boolean", "UNSTABLE_REMOVE_LEGACY_COMPONENT_INTEROP", "false")
 
     resValue("integer", "react_native_dev_server_port", reactNativeDevServerPort())
     resValue("string", "react_native_dev_server_ip", "localhost")
@@ -582,10 +589,6 @@ android {
             "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
             "-DCMAKE_POLICY_DEFAULT_CMP0069=NEW",
         )
-
-        if (hermesV1Enabled) {
-          arguments("-DHERMES_V1_ENABLED=1")
-        }
 
         targets(
             "reactnative",
@@ -618,19 +621,19 @@ android {
       ":packages:react-native:ReactAndroid:hermes-engine:preBuild"
   )
 
-  sourceSets.getByName("main") {
-    res.setSrcDirs(
-        listOf(
-            "src/main/res/devsupport",
-            "src/main/res/shell",
-            "src/main/res/views/alert",
-            "src/main/res/views/modal",
-            "src/main/res/views/uimanager",
-            "src/main/res/views/view",
-        )
-    )
-    java.exclude("com/facebook/react/processing")
-    java.exclude("com/facebook/react/module/processing")
+  sourceSets {
+    named("main") {
+      res.directories.addAll(
+          listOf(
+              "src/main/res/devsupport",
+              "src/main/res/shell",
+              "src/main/res/views/alert",
+              "src/main/res/views/modal",
+              "src/main/res/views/uimanager",
+              "src/main/res/views/view",
+          )
+      )
+    }
   }
 
   lint {
@@ -720,6 +723,8 @@ dependencies {
   // It's up to the consumer to decide if hermes or other engines should be included or not.
   // Therefore hermes-engine is a compileOnly dependencies.
   compileOnly(project(":packages:react-native:ReactAndroid:hermes-engine"))
+
+  implementation(libs.androidx.collection)
 
   testImplementation(libs.junit)
   testImplementation(libs.assertj)

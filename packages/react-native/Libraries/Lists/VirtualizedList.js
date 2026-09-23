@@ -11,10 +11,13 @@
 'use strict';
 
 import VirtualizedLists from '@react-native-macos/virtualized-lists'; // [macOS]
+import * as React from 'react';
 
 type VirtualizedListType = typeof VirtualizedLists.VirtualizedList;
 const VirtualizedListComponent: VirtualizedListType =
   VirtualizedLists.VirtualizedList;
+
+export type VirtualizedListInstance = React.ElementRef<VirtualizedListType>;
 
 export type {
   ListRenderItemInfo,
