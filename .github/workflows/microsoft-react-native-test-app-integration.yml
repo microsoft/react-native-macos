@@ -49,6 +49,7 @@ jobs:
       - name: Clone react-native-test-app
         run: |
           git clone --filter=blob:none --progress https://github.com/microsoft/react-native-test-app.git
+          git -C react-native-test-app rev-parse HEAD
 
       - name: Configure react-native-test-app dependencies
         working-directory: react-native-test-app/packages/example-macos
