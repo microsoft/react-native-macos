@@ -59,9 +59,14 @@ jobs:
         run: yarn changeset status || true
       - name: Build packages
         run: yarn build
+      - name: Build local codegen
+        run: yarn workspace @react-native/codegen build
+      # Generate package types without rewriting the checked-in API snapshot.
+      - name: Build and validate generated types
+        run: yarn build-types --validate
       - name: Simulate publish (dry run)
         run: |
-          yarn workspaces foreach -vv --all --topological --no-private npm publish --tag dry-run --tolerate-republish --dry-run
+          yarn workspaces foreach -vv --all --topological --no-private --include react-native-macos --include '@react-native-macos/*' npm publish --tag dry-run --tolerate-republish --dry-run
 
   check-changesets:
     name: "Check for Changesets"
