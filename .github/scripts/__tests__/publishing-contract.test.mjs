@@ -157,13 +157,13 @@ test('registry adapter distinguishes missing packages from auth, network, and ma
   await assert.rejects(publishedMetadata(core, async () => {throw new Error('offline');}), /offline/);
 });
 
-function releaseFixture(t, {versionPrivatePackages = false} = {}) {
+function releaseFixture(t, {versionPrivatePackages = false, workspaces = graph(), config: policy} = {}) {
   const root = mkdtempSync(join(tmpdir(), 'rnm-release-api-'));
   t.after(() => rmSync(root, {recursive: true, force: true}));
   mkdirSync(join(root, '.changeset'));
   writeFileSync(join(root, 'package.json'), JSON.stringify({name: 'release-fixture', private: true, workspaces: ['packages/*']}));
   // Keep the synthetic graph independent of branch-specific release configuration.
-  const config = {
+  const config = policy ?? {
     access: 'public', baseBranch: 'origin/nonexistent',
     changelog: require.resolve('@changesets/cli/changelog'), commit: false,
     fixed: [], linked: [], ignore: [],
@@ -171,13 +171,116 @@ function releaseFixture(t, {versionPrivatePackages = false} = {}) {
     privatePackages: {version: versionPrivatePackages, tag: false},
   };
   writeFileSync(join(root, '.changeset/config.json'), JSON.stringify(config));
-  const workspaces = graph();
   for (const [index, pkg] of workspaces.entries()) {
     mkdirSync(join(root, `packages/p${index}`), {recursive: true});
     writeFileSync(join(root, `packages/p${index}/package.json`), JSON.stringify(pkg));
   }
   return {root, workspaces};
 }
+
+const repositoryRoot = new URL('../../../', import.meta.url).pathname;
+const releasePolicy = JSON.parse(readFileSync(join(repositoryRoot, '.changeset/config.json'), 'utf8'));
+const getReleasePlan = require('@changesets/get-release-plan').default;
+const semver = require('semver');
+
+test('repository Changesets policy disables private versions and tags and fixes core with lists', () => {
+  assert.deepEqual(releasePolicy.privatePackages, {version: false, tag: false});
+  assert.deepEqual(releasePolicy.fixed, [[core, lists]]);
+});
+
+test('repository Changesets policy follows the actual public and private workspace graph', async t => {
+  const workspaces = readWorkspaces(repositoryRoot);
+  const corePackage = workspaces.find(pkg => pkg.name === core);
+  const listsPackage = workspaces.find(pkg => pkg.name === lists);
+  assert.ok(corePackage && !corePackage.private, 'Missing public core workspace');
+  assert.ok(listsPackage, 'Missing lists workspace');
+  const publicPackages = listsPackage.private ? [corePackage] : [corePackage, listsPackage];
+  // Derive expectations from manifests, never from the policy or release-plan output.
+  const nextVersion = semver.inc(publicPackages.map(pkg => pkg.version).sort(semver.rcompare)[0], 'patch');
+  const expected = publicPackages.map(pkg => [pkg.name, nextVersion]).sort();
+  const {root} = releaseFixture(t, {workspaces, config: releasePolicy});
+  assert.deepEqual((await getReleasePlan(root)).releases, []);
+  for (const changed of [core, lists]) {
+    writeFileSync(join(root, '.changeset/fix.md'), `---\n"${changed}": patch\n---\n\nFix package.\n`);
+    const bumped = (await getReleasePlan(root)).releases.filter(pkg => pkg.type !== 'none');
+    assert.deepEqual(bumped.map(pkg => [pkg.name, pkg.newVersion]).sort(),
+      changed === lists && listsPackage.private ? [] : expected);
+  }
+});
+
+test('repository Changesets policy accepts a private lists fixture and skips its release', async t => {
+  const workspaces = graph('1000.0.0');
+  workspaces[1].private = true;
+  // A public package can use skipped private packages as development dependencies.
+  workspaces[0].devDependencies = {[lists]: workspaces[0].dependencies[lists]};
+  delete workspaces[0].dependencies[lists];
+  const {root} = releaseFixture(t, {workspaces, config: releasePolicy});
+  assert.deepEqual((await getReleasePlan(root)).releases, []);
+  writeFileSync(join(root, '.changeset/fix.md'), `---\n"${core}": patch\n---\n\nFix core.\n`);
+  const bumped = (await getReleasePlan(root)).releases.filter(pkg => pkg.type !== 'none');
+  assert.deepEqual(bumped.map(pkg => [pkg.name, pkg.newVersion]), [[core, '1000.0.1']]);
+  writeFileSync(join(root, '.changeset/fix.md'), `---\n"${lists}": patch\n---\n\nFix private lists.\n`);
+  assert.deepEqual((await getReleasePlan(root)).releases, []);
+});
+
+test('repository Changesets policy couples public stable packages without registry or private release edges', async t => {
+  const {root, workspaces} = releaseFixture(t, {config: releasePolicy});
+  for (const changed of [core, lists, '@react-native/codegen', 'react-native-macos-init']) {
+    writeFileSync(join(root, '.changeset/fix.md'), `---\n"${changed}": patch\n---\n\nFix package.\n`);
+    const releases = (await getReleasePlan(root)).releases.map(pkg => [pkg.name, pkg.newVersion]).sort();
+    assert.deepEqual(releases, changed === 'react-native-macos-init'
+      ? [[changed, '2.1.4']]
+      : changed === '@react-native/codegen' ? [] : [[core, '0.83.3'], [lists, '0.83.3']].sort());
+  }
+  // A consumer outside the fixed group proves that only workspace edges propagate.
+  writeFileSync(join(root, '.changeset/fix.md'), `---\n"${lists}": patch\n---\n\nFix lists.\n`);
+  for (const range of ['0.83.2', 'workspace:*']) {
+    writeFileSync(join(root, 'packages/p4/package.json'), JSON.stringify({
+      ...workspaces[4], dependencies: {[lists]: range},
+    }));
+    const release = (await getReleasePlan(root)).releases.find(pkg => pkg.name === 'react-native-macos-init');
+    assert.equal(release?.newVersion, range === 'workspace:*' ? '2.1.4' : undefined);
+  }
+});
+
+test('real Yarn constraints preserve workspace fork edges and distinguish public and private upstream consumers', t => {
+  for (const main of [true, false]) {
+    const workspaces = graph(main ? '1000.0.0' : '0.83.2');
+    workspaces[1].private = main;
+    workspaces[1].version = '0.82.0';
+    workspaces[2].private = false;
+    workspaces[3].version = '0.82.0';
+    for (const index of [0, 1, 3]) {
+      for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
+        workspaces[index][field] = {'@react-native/codegen': '*'};
+        if (index !== 1) workspaces[index][field][lists] = '*';
+      }
+    }
+    if (!main) workspaces[0].peerDependencies['react-native'] = '0.83.1';
+    const {root} = releaseFixture(t, {workspaces});
+    writeFileSync(join(root, 'yarn.lock'), '');
+    writeFileSync(join(root, 'yarn.config.cjs'), `module.exports = require(${JSON.stringify(join(repositoryRoot, 'yarn.config.cjs'))});\n`);
+    const yarn = args => execFileSync(process.execPath, [join(repositoryRoot, '.yarn/releases/yarn-4.12.0.cjs'), ...args], {
+      cwd: root, encoding: 'utf8', env: {...process.env, YARN_IGNORE_PATH: '1',
+        YARN_ENABLE_NETWORK: '0', YARN_ENABLE_IMMUTABLE_INSTALLS: '0', YARN_ENABLE_SCRIPTS: '0'},
+    });
+    yarn(['install']);
+    yarn(['constraints', '--fix']);
+    yarn(['constraints']);
+    const actual = workspaces.map((_, index) => JSON.parse(readFileSync(join(root, `packages/p${index}/package.json`), 'utf8')));
+    assert.equal(actual[0].version, workspaces[0].version);
+    assert.equal(actual[1].version, main ? '1000.0.0' : '0.83.2');
+    assert.equal(actual[2].private, true);
+    assert.equal(actual[2].version, '0.83.1');
+    assert.equal(actual[3].version, '1000.0.0');
+    for (const index of [0, 1, 3]) {
+      for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
+        assert.equal(actual[index][field]['@react-native/codegen'], main || index === 3 ? 'workspace:*' : '0.83.1');
+        if (index !== 1) assert.equal(actual[index][field][lists], 'workspace:*');
+      }
+    }
+  }
+});
 
 test('real get-release-plan reads a prepared graph without a Git base or pending changesets', async t => {
   const {root, workspaces} = releaseFixture(t);

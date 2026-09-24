@@ -11,9 +11,12 @@
 'use strict';
 
 const {parseHermesMetadata, readHermesMetadata} = require('../hermes-version');
+const fs = require('fs');
+const ini = require('ini');
+const path = require('path');
 
 const properties =
-  'HERMES_VERSION_NAME=0.14.0\nHERMES_V1_VERSION_NAME=250829098.0.2\n';
+  'HERMES_VERSION_NAME=123.4.56\nHERMES_V1_VERSION_NAME=234.5.67\n';
 
 test.each([
   ['legacy-default', undefined, false],
@@ -31,7 +34,7 @@ test.each([
   ['single', '1', false],
 ])('%s with flag %s selects the exact key and tag file', (policy, flag, v1) => {
   expect(parseHermesMetadata(properties, policy, flag)).toEqual({
-    version: v1 ? '250829098.0.2' : '0.14.0',
+    version: v1 ? '234.5.67' : '123.4.56',
     versionKey: v1 ? 'HERMES_V1_VERSION_NAME' : 'HERMES_VERSION_NAME',
     tagFile: v1 ? '.hermesv1version' : '.hermesversion',
   });
@@ -41,7 +44,7 @@ test('the pure parser defaults to legacy without reading the environment', () =>
   const previous = process.env.RCT_HERMES_V1_ENABLED;
   try {
     process.env.RCT_HERMES_V1_ENABLED = '1';
-    expect(parseHermesMetadata(properties).version).toBe('0.14.0');
+    expect(parseHermesMetadata(properties).version).toBe('123.4.56');
   } finally {
     if (previous == null) {
       delete process.env.RCT_HERMES_V1_ENABLED;
@@ -114,9 +117,17 @@ test('rejects an unknown policy', () => {
   );
 });
 
-test('reads main metadata relative to the helper', () => {
-  expect(readHermesMetadata('legacy-default', '0').version).toBe('0.14.0');
+test('reads checked-in metadata relative to the helper', () => {
+  const metadata = ini.parse(
+    fs.readFileSync(
+      path.resolve(__dirname, '../../../sdks/hermes-engine/version.properties'),
+      'utf8',
+    ),
+  );
+  expect(readHermesMetadata('legacy-default', '0').version).toBe(
+    metadata.HERMES_VERSION_NAME,
+  );
   expect(readHermesMetadata('legacy-default', '1').version).toBe(
-    '250829098.0.2',
+    metadata.HERMES_V1_VERSION_NAME,
   );
 });
