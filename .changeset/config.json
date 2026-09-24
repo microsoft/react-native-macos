@@ -1,9 +1,9 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
   "access": "public",
-  "baseBranch": "origin/main",
+  "baseBranch": "origin/0.83-stable",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "ignore": [],
+  "ignore": ["@react-native/tester"],
   "linked": []
 }

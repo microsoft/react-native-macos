@@ -143,16 +143,48 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-prebuild-macos-core.yml
 
+  # The init and test-app integration gates integration-test react-native-macos as it is
+  # consumed by a real project. That is only possible once the target minor is actually
+  # published to npm: react-native-macos-init installs a published react-native-macos, and
+  # react-native-test-app declares a supported react-native-macos range. For the very first
+  # release of a new minor (nothing published yet), skip them; they self-heal for later
+  # patch releases once the minor is on npm.
+  check-release-published:
+    name: "Check release published"
+    permissions: {}
+    if: ${{ endsWith(github.base_ref, '-stable') }}
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.check.outputs.published }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+      - name: Determine if the target react-native-macos minor is published
+        id: check
+        run: |
+          MINOR=$(node -e "const v = require('./packages/react-native/package.json').peerDependencies['react-native']; const [maj, min] = v.split('-')[0].split('.'); console.log(maj + '.' + min);")
+          echo "Target react-native-macos minor: ${MINOR}"
+          if npm view "react-native-macos@^${MINOR}.0-0" version > /dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "react-native-macos ${MINOR}.x is published; integration gates will run."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "react-native-macos ${MINOR}.x is not yet published; skipping integration gates (first release of a new minor)."
+          fi
+
   test-react-native-macos-init:
     name: "Test react-native-macos init"
     permissions: {}
-    if: ${{ endsWith(github.base_ref, '-stable') }}
+    needs: check-release-published
+    if: ${{ endsWith(github.base_ref, '-stable') && needs.check-release-published.outputs.published == 'true' }}
     uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
 
   react-native-test-app-integration:
     name: "Test react-native-test-app integration"
     permissions: {}
-    if: ${{ endsWith(github.base_ref, '-stable') }}
+    needs: check-release-published
+    if: ${{ endsWith(github.base_ref, '-stable') && needs.check-release-published.outputs.published == 'true' }}
     uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
 
   PR:
@@ -168,6 +200,7 @@ jobs:
       - javascript-tests
       - build-rntester
       - prebuild-macos-core
+      - check-release-published
       - test-react-native-macos-init
       - react-native-test-app-integration
     steps:

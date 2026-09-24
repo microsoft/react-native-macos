@@ -24,7 +24,7 @@ function exportValue(name: string, value: string): void {
   }
 }
 
-const { dependencies, peerDependencies } = manifest;
+const { peerDependencies } = manifest;
 
 exportValue("react_version", peerDependencies["react"]);
-exportValue("react_native_version", coerce(dependencies["@react-native/codegen"]));
+exportValue("react_native_version", coerce(peerDependencies["react-native"]));
