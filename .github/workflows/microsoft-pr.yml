@@ -3,7 +3,7 @@ name: PR
 on:
   pull_request:
     types: [opened, synchronize, edited]
-    branches: [ "main", "*-stable", "release/*", "*-merge" ]
+    branches: [ "main", "*-stable", "release/*", "*-merge", "review/**", "saadnajmi/0-85-redbox2-merge" ]
 
 concurrency:
   # Ensure single build of a pull request. `main` should not be affected.
@@ -59,9 +59,14 @@ jobs:
         run: yarn changeset status || true
       - name: Build packages
         run: yarn build
+      - name: Build local codegen
+        run: yarn workspace @react-native/codegen build
+      # Generate package types without rewriting the checked-in API snapshot.
+      - name: Build and validate generated types
+        run: yarn build-types --validate
       - name: Simulate publish (dry run)
         run: |
-          yarn workspaces foreach -vv --all --topological --no-private npm publish --tag dry-run --tolerate-republish --dry-run
+          yarn workspaces foreach -vv --all --topological --no-private --include react-native-macos --include '@react-native-macos/*' npm publish --tag dry-run --tolerate-republish --dry-run
 
   check-changesets:
     name: "Check for Changesets"
@@ -84,6 +89,24 @@ jobs:
         run: yarn install --immutable
       - name: Validate changesets
         run: yarn change:check
+
+  changeset-config:
+    name: "Validate Changesets Config"
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Validate Changesets config
+        run: yarn changeset:config:check
   
   yarn-constraints:
     name: "Check Yarn Constraints"
@@ -123,6 +146,9 @@ jobs:
       
       - name: Run Jest tests
         run: yarn test-ci
+
+      - name: Test CI release helpers
+        run: node --test .github/scripts/__tests__/*.test.mjs
       
       - name: Run Flow type checker
         run: yarn flow-check
@@ -143,15 +169,44 @@ jobs:
     permissions: {}
     uses: ./.github/workflows/microsoft-prebuild-macos-core.yml
 
+  # react-native-macos-init resolves a registry package, so its integration test
+  # requires a published release in the target minor. Registry errors must fail
+  # this check rather than silently bypass the integration test.
+  check-release-published:
+    name: "Check release published"
+    permissions: {}
+    if: ${{ endsWith(github.base_ref, '-stable') }}
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.check.outputs.published }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Export versions
+        id: versions
+        run: node .github/scripts/export-versions.mts
+      - name: Determine if the target react-native-macos minor is published
+        id: check
+        env:
+          REACT_NATIVE_MINOR: ${{ steps.versions.outputs.react_native_version }}
+        run: |
+          node .github/scripts/check-release-published.mjs "$REACT_NATIVE_MINOR"
+
   test-react-native-macos-init:
     name: "Test react-native-macos init"
     permissions: {}
-    if: ${{ endsWith(github.base_ref, '-stable') }}
+    needs: check-release-published
+    if: ${{ endsWith(github.base_ref, '-stable') && needs.check-release-published.outputs.published == 'true' }}
     uses: ./.github/workflows/microsoft-test-react-native-macos-init.yml
 
   react-native-test-app-integration:
     name: "Test react-native-test-app integration"
     permissions: {}
+    # This workflow supplies local tarballs, so publication is not its prerequisite.
     if: ${{ endsWith(github.base_ref, '-stable') }}
     uses: ./.github/workflows/microsoft-react-native-test-app-integration.yml
 
@@ -164,10 +219,12 @@ jobs:
       - lint-title
       - npm-publish-dry-run
       - check-changesets
+      - changeset-config
       - yarn-constraints
       - javascript-tests
       - build-rntester
       - prebuild-macos-core
+      - check-release-published
       - test-react-native-macos-init
       - react-native-test-app-integration
     steps:
