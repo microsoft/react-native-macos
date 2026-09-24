@@ -9,7 +9,7 @@
 #include <TargetConditionals.h>
 #endif
 
-#if defined(__APPLE__) && TARGET_OS_OSX // [macOS]
+#if defined(__APPLE__) && TARGET_OS_OSX // [macOS
 
 #include <react/renderer/components/view/HostPlatformViewEventEmitter.h>
 #include <react/renderer/components/view/KeyEvent.h>
@@ -216,4 +216,4 @@ void HostPlatformViewEventEmitter::onDrop(const DragEvent& dragEvent) const {
 
 } // namespace facebook::react
 
-#endif // defined(__APPLE__) && TARGET_OS_OSX
+#endif // macOS]

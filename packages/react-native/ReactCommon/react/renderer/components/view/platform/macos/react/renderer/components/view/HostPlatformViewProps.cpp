@@ -9,7 +9,7 @@
 #include <TargetConditionals.h>
 #endif
 
-#if defined(__APPLE__) && TARGET_OS_OSX // [macOS]
+#if defined(__APPLE__) && TARGET_OS_OSX // [macOS
 
 #include "HostPlatformViewProps.h"
 
@@ -167,4 +167,4 @@ void HostPlatformViewProps::setProp(
 
 } // namespace facebook::react
 
-#endif // defined(__APPLE__) && TARGET_OS_OSX
+#endif // macOS]

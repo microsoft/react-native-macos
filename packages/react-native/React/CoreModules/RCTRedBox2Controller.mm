@@ -296,7 +296,11 @@ static const NSTimeInterval kAutoRetryInterval = 20.0;
   // Remove ANSI color codes from the message
   NSString *messageWithoutAnsi = [self stripAnsi:message];
 
+#if !TARGET_OS_OSX // [macOS]
   BOOL isRootViewControllerPresented = self.presentingViewController != nil;
+#else // [macOS
+  BOOL isRootViewControllerPresented = self.view.window.sheetParent != nil;
+#endif // macOS]
   // Show if this is a new message, or if we're updating the previous message
   BOOL isNew = !isRootViewControllerPresented && !isUpdate;
   BOOL isUpdateForSameMessage = !isNew &&
