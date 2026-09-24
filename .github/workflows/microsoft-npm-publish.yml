@@ -5,6 +5,13 @@ on:
     branches:
       - "*-stable"
 
+concurrency:
+  # Serialize release lines because they share the latest and next tags.
+  group: npm-publish
+  # GitHub.com supports up to 100 pending runs; do not replace a release push.
+  queue: max
+  cancel-in-progress: false
+
 jobs:
   publish:
     name: Publish to npm
@@ -34,26 +41,14 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Verify release config
+      - name: Test publishing contract
+        run: node --test .github/scripts/__tests__/publishing-contract.test.mjs
+
+      # Changesets prepares versions in its automatic PR. This step never bumps
+      # versions and skips pushes with pending changesets or no unpublished versions.
+      - name: Publish prepared packages
         id: configure-publish
-        run: node .ado/scripts/configure-publish.mts --verbose
-
-      - name: Configure yarn for npm publishing
-        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
-        run: |
-          yarn config set npmPublishAccess public
-          yarn config set npmPublishRegistry "https://registry.npmjs.org"
-
-      - name: Publish packages
-        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
-        run: |
-          yarn workspaces foreach -vv --all --topological --no-private npm publish \
-            --provenance \
-            --tag "${{ steps.configure-publish.outputs.publishTag }}" \
-            --tolerate-republish
-
-      - name: Remove npm auth configuration
-        if: always()
-        run: |
-          yarn config unset npmPublishAccess || true
-          yarn config unset npmPublishRegistry || true
+        run: node .ado/scripts/configure-publish.mts --publish --verbose
+        env:
+          YARN_NPM_PUBLISH_ACCESS: public
+          YARN_NPM_PUBLISH_REGISTRY: https://registry.npmjs.org
