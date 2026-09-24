@@ -7,6 +7,9 @@
 
 #import "RCTFrameTimingsObserver.h"
 
+#if !TARGET_OS_OSX // [macOS]
+// This screenshot-capturing observer relies on UIKit-only APIs and is only instantiated on iOS.
+
 #import <UIKit/UIKit.h>
 
 #import <mach/thread_act.h>
@@ -296,3 +299,24 @@ struct FrameData {
 }
 
 @end
+
+#else // [macOS
+
+@implementation RCTFrameTimingsObserver
+
+- (instancetype)initWithScreenshotsEnabled:(BOOL)screenshotsEnabled callback:(RCTFrameTimingCallback)callback
+{
+  return [super init];
+}
+
+- (void)start
+{
+}
+
+- (void)stop
+{
+}
+
+@end
+
+#endif // macOS]
