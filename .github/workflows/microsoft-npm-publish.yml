@@ -46,8 +46,26 @@ jobs:
 
       # Changesets prepares versions in its automatic PR. This step never bumps
       # versions and skips pushes with pending changesets or no unpublished versions.
-      - name: Publish prepared packages
+      - name: Check publish eligibility
         id: configure-publish
+        run: node .ado/scripts/configure-publish.mts --verbose
+
+      # Build local Node tooling even when its upstream packages are private.
+      - name: Build packages
+        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
+        run: yarn build
+
+      - name: Build local codegen
+        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
+        run: yarn workspace @react-native/codegen build
+
+      # --validate still generates types_generated, but never rewrites the API snapshot.
+      - name: Build and validate generated types
+        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
+        run: yarn build-types --validate
+
+      - name: Publish prepared packages
+        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
         run: node .ado/scripts/configure-publish.mts --publish --verbose
         env:
           YARN_NPM_PUBLISH_ACCESS: public
