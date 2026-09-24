@@ -769,6 +769,7 @@ class UtilsTests < Test::Unit::TestCase
     # ===================== #
     # TEST - Add Dependency #
     # ===================== #
+    # [macOS
     data("normal" => [nil, [""]],
          "single platform" => [["iOS"], [""]],
          "three platforms" => [["iOS", "macOS", "visionOS"], ["-iOS", "-macOS", "-visionOS"]])
@@ -803,6 +804,7 @@ class UtilsTests < Test::Unit::TestCase
             }, spec.to_hash["pod_target_xcconfig"], pod_name)
         end
     end
+    # macOS]
 
     def test_addDependency_whenNoHeaderSearchPathAndNoVersion_addsThem
         spec = SpecMock.new

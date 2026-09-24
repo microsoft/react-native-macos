@@ -8,6 +8,8 @@
  * @format
  */
 
+// [macOS]
+
 'use strict';
 
 const {parseHermesMetadata, readHermesMetadata} = require('../hermes-version');

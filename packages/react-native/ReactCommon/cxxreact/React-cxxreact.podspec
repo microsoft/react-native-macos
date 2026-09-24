@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
   s.dependency "React-perflogger", version
   s.dependency "React-jsi", version
   s.dependency "React-logger", version
-  add_dependency(s, "React-debug", :version => version)
+  add_dependency(s, "React-debug", :version => version) # [macOS]
   s.dependency "React-timing", version
   add_dependency(s, "React-utils", :additional_framework_paths => ["react/utils/platform/ios"])
 

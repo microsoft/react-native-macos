@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#import <react/renderer/graphics/HostPlatformColor.h>
+#import <react/renderer/graphics/HostPlatformColor.h> // [macOS]
 
 #import <Foundation/Foundation.h>
 #import <React/RCTUIKit.h> // [macOS]

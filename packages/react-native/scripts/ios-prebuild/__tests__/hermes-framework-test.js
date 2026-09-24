@@ -8,6 +8,8 @@
  * @format
  */
 
+// [macOS]
+
 'use strict';
 
 jest.mock('child_process', () => ({execFileSync: jest.fn()}));
