@@ -8,6 +8,7 @@
  * @format
  */
 
+const {readHermesMetadata} = require('./hermes-version'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execSync} = require('child_process');
 const fs = require('fs');
@@ -27,6 +28,8 @@ import type {BuildFlavor, Destination, Platform} from './types';
  * version of hermes, use the HERMES_VERSION environment variable. The path to the artifacts will be inside
  * the .build/artifacts/hermes folder, but this can be overridden by setting the HERMES_ENGINE_TARBALL_PATH
  * environment variable. If this varuable is set, the script will use the local tarball instead of downloading it.
+ * [macOS] Without an override, use the selected version.properties pin. Only an explicit
+ * HERMES_VERSION=nightly resolves the npm nightly tag.
  */
 async function prepareHermesArtifactsAsync(
   reactNativeVersion /*:string*/,
@@ -54,7 +57,9 @@ async function prepareHermesArtifactsAsync(
   // Only check if the artifacts folder exists if we are not using a local tarball
   if (!localPath) {
     // Resolve the version from the environment variable or use the default version
-    let resolvedVersion = process.env.HERMES_VERSION ?? 'nightly';
+    // [macOS] Hermes artifacts use the selected SDK pin, not the RN version.
+    let resolvedVersion =
+      process.env.HERMES_VERSION ?? readHermesMetadata().version;
 
     if (resolvedVersion === 'nightly') {
       hermesLog('Using latest nightly tarball');
