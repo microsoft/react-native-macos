@@ -1,0 +1,59 @@
+name: Publish to npm
+
+on:
+  push:
+    branches:
+      - "*-stable"
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+
+    if: github.repository == 'microsoft/react-native-macos'
+
+    # Matches the environment name registered as a Trusted Publisher on npmjs.com.
+    environment: npm-publish
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Verify release config
+        id: configure-publish
+        run: node .ado/scripts/configure-publish.mts --verbose
+
+      - name: Configure yarn for npm publishing
+        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
+        run: |
+          yarn config set npmPublishAccess public
+          yarn config set npmPublishRegistry "https://registry.npmjs.org"
+
+      - name: Publish packages
+        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
+        run: |
+          yarn workspaces foreach -vv --all --topological --no-private npm publish \
+            --provenance \
+            --tag "${{ steps.configure-publish.outputs.publishTag }}" \
+            --tolerate-republish
+
+      - name: Remove npm auth configuration
+        if: always()
+        run: |
+          yarn config unset npmPublishAccess || true
+          yarn config unset npmPublishRegistry || true
