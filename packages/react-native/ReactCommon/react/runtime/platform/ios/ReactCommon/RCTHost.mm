@@ -38,7 +38,7 @@ using namespace facebook::react;
 @property (nonatomic, readonly) jsinspector_modern::HostTarget *inspectorTarget;
 @end
 
-#if TARGET_OS_IPHONE && defined(REACT_NATIVE_DEBUGGER_ENABLED)
+#if (TARGET_OS_IPHONE || TARGET_OS_OSX) && defined(REACT_NATIVE_DEBUGGER_ENABLED) // [macOS]
 class RCTHostTracingDelegate : public jsinspector_modern::HostTargetTracingDelegate {
  public:
   explicit RCTHostTracingDelegate(RCTHost *host) : host_(host) {}
@@ -80,7 +80,7 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
       : host_(host),
         pauseOverlayController_([[RCTPausedInDebuggerOverlayController alloc] init]),
         networkHelper_([[RCTInspectorNetworkHelper alloc] init])
-#if TARGET_OS_IPHONE && defined(REACT_NATIVE_DEBUGGER_ENABLED)
+#if (TARGET_OS_IPHONE || TARGET_OS_OSX) && defined(REACT_NATIVE_DEBUGGER_ENABLED) // [macOS]
         ,
         tracingDelegate_(host)
 #endif
@@ -237,7 +237,7 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
   }
 #endif
 
-#if TARGET_OS_IPHONE && defined(REACT_NATIVE_DEBUGGER_ENABLED)
+#if (TARGET_OS_IPHONE || TARGET_OS_OSX) && defined(REACT_NATIVE_DEBUGGER_ENABLED) // [macOS]
   jsinspector_modern::HostTargetTracingDelegate *getTracingDelegate() override
   {
     auto &inspectorFlags = jsinspector_modern::InspectorFlags::getInstance();
@@ -253,7 +253,7 @@ class RCTHostHostTargetDelegate : public facebook::react::jsinspector_modern::Ho
   __weak RCTHost *host_;
   RCTPausedInDebuggerOverlayController *pauseOverlayController_;
   RCTInspectorNetworkHelper *networkHelper_;
-#if TARGET_OS_IPHONE && defined(REACT_NATIVE_DEBUGGER_ENABLED)
+#if (TARGET_OS_IPHONE || TARGET_OS_OSX) && defined(REACT_NATIVE_DEBUGGER_ENABLED) // [macOS]
   RCTHostTracingDelegate tracingDelegate_;
 #endif
 };
