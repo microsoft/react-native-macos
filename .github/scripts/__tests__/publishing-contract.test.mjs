@@ -13,6 +13,7 @@ import {
   publishTag,
   readChangesetStatus,
   readWorkspaces,
+  validateChangesetConfig,
   validateRelease,
   validatePreparedVersionPR,
   canAdvanceTag,
@@ -190,6 +191,39 @@ const mainPolicy = {...releasePolicy, baseBranch: 'origin/main', ignore: [core, 
 test('repository Changesets policy disables private versions and tags and fixes core with lists', () => {
   assert.deepEqual(releasePolicy.privatePackages, {version: false, tag: false});
   assert.deepEqual(releasePolicy.fixed, [[core, lists]]);
+});
+
+test('dedicated Changesets config validation follows the package graph and CI base', () => {
+  const stableWorkspaces = graph();
+  assert.deepEqual(validateChangesetConfig({
+    root: repositoryRoot,
+    workspaces: stableWorkspaces,
+    config: stablePolicy,
+    baseRef: branch,
+  }), {baseBranch: `origin/${branch}`, mode: 'stable'});
+
+  const mainWorkspaces = graph('1000.0.0');
+  mainWorkspaces.find(pkg => pkg.name === lists).private = true;
+  assert.deepEqual(validateChangesetConfig({
+    root: repositoryRoot,
+    workspaces: mainWorkspaces,
+    config: mainPolicy,
+    baseRef: 'main',
+  }), {baseBranch: 'origin/main', mode: 'development'});
+
+  for (const config of [
+    {...stablePolicy, baseBranch: 'origin/main'},
+    {...stablePolicy, ignore: [core]},
+    {...stablePolicy, fixed: []},
+    {...stablePolicy, privatePackages: {version: true, tag: false}},
+  ]) {
+    assert.throws(() => validateChangesetConfig({
+      root: repositoryRoot,
+      workspaces: stableWorkspaces,
+      config,
+      baseRef: branch,
+    }));
+  }
 });
 
 test('repository Changesets policy follows the actual public and private workspace graph', async t => {

@@ -41,6 +41,7 @@
     "update-lock": "npx yarn-deduplicate",
     "change": "node .github/scripts/change.mts",
     "change:check": "node .github/scripts/change.mts --check",
+    "changeset:config:check": "node .github/scripts/validate-changeset-config.mjs",
     "changeset": "changeset",
     "changeset:version": "node .github/scripts/changeset-version-with-postbump.mts"
   },

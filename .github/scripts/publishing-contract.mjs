@@ -36,6 +36,50 @@ export function readWorkspaces(root = process.cwd(), run = execFileSync) {
   return readWorkspaceEntries(root, run).map(({pkg}) => pkg);
 }
 
+export function validateChangesetConfig({
+  root = process.cwd(),
+  config = JSON.parse(readFileSync(join(root, '.changeset/config.json'), 'utf8')),
+  workspaces = readWorkspaces(root),
+  baseRef = process.env.GITHUB_BASE_REF,
+} = {}) {
+  const core = workspaces.find(pkg => pkg.name === 'react-native-macos');
+  const lists = workspaces.find(pkg => pkg.name === '@react-native-macos/virtualized-lists');
+  if (!core || !lists) {
+    throw new Error('Missing React Native macOS release workspaces');
+  }
+
+  const main = core.version === '1000.0.0';
+  const parsed = !main && semver.parse(core.version);
+  if (!main && !parsed) {
+    throw new Error(`Invalid React Native macOS workspace version: ${core.version}`);
+  }
+
+  const expectedBase = `origin/${baseRef ?? (main ? 'main' : `${parsed.major}.${parsed.minor}-stable`)}`;
+  const expectedIgnore = main ? ['react-native-macos', '@react-native/tester'] : [];
+  const expectedFixed = [['react-native-macos', '@react-native-macos/virtualized-lists']];
+  const expectedPrivatePackages = {version: false, tag: false};
+  const assertConfig = (name, actual, expected) => {
+    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+      throw new Error(`Invalid Changesets ${name}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+    }
+  };
+
+  assertConfig('baseBranch', config.baseBranch, expectedBase);
+  assertConfig('ignore', config.ignore, expectedIgnore);
+  assertConfig('fixed groups', config.fixed, expectedFixed);
+  assertConfig('linked groups', config.linked, []);
+  assertConfig('private package policy', config.privatePackages, expectedPrivatePackages);
+  assertConfig('workspace protocol policy', config.bumpVersionsWithWorkspaceProtocolOnly, true);
+  if (Boolean(lists.private) !== main) {
+    throw new Error(`@react-native-macos/virtualized-lists must be ${main ? 'private' : 'public'}`);
+  }
+  if (lists.version !== core.version) {
+    throw new Error(`@react-native-macos/virtualized-lists@${lists.version} does not match ${core.version}`);
+  }
+
+  return {baseBranch: expectedBase, mode: main ? 'development' : 'stable'};
+}
+
 // The init CLI has its own version and release process. Never include all public
 // workspaces: only these packages follow the React Native macOS release line.
 export function releasePackages(workspaces) {

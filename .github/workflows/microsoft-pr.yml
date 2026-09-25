@@ -89,6 +89,26 @@ jobs:
         run: yarn install --immutable
       - name: Validate changesets
         run: yarn change:check
+
+  changeset-config:
+    name: "Validate Changesets Config"
+    permissions: {}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          fetch-depth: 0
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Validate Changesets config
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: yarn changeset:config:check
   
   yarn-constraints:
     name: "Check Yarn Constraints"
@@ -201,6 +221,7 @@ jobs:
       - lint-title
       - npm-publish-dry-run
       - check-changesets
+      - changeset-config
       - yarn-constraints
       - javascript-tests
       - build-rntester
