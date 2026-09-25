@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// [macOS]
+
 #pragma once
 
 #if defined(__APPLE__)

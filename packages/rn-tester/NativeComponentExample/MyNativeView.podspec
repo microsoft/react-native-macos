@@ -26,5 +26,5 @@ Pod::Spec.new do |s|
   s.requires_arc    = true
 
   install_modules_dependencies(s)
-  add_dependency(s, "ReactCodegen")
+  add_dependency(s, "ReactCodegen") # [macOS]
 end

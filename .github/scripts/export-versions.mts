@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// [macOS]
 /**
  * Export react and react-native version information from packages/react-native/package.json.
  *

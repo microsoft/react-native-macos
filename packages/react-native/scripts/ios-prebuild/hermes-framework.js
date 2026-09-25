@@ -8,6 +8,8 @@
  * @format
  */
 
+// [macOS]
+
 const {createLogger} = require('./utils');
 const {execFileSync} = require('child_process');
 const fs = require('fs');
