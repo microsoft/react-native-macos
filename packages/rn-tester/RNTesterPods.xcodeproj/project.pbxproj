@@ -12,6 +12,7 @@
 		0E3E8DF4F87D07566A9489D4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AC276E71CF27E40DFA22979F /* PrivacyInfo.xcprivacy */; };
 		0EA618032BE537D3001875EF /* RNTesterBundle.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0EA618022BE537D3001875EF /* RNTesterBundle.bundle */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		24C6EA4A2D04BAF1008C8E31 /* RCTFrameTimingsObserverTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 24C6EA492D04BAF1008C8E31 /* RCTFrameTimingsObserverTests.mm */; };
 		2DDEF0101F84BF7B00DBDF73 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DDEF00F1F84BF7B00DBDF73 /* Images.xcassets */; };
 		34BEDB34D7F11B292D818883 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 714974E163024D0E0A9FA2F5 /* PrivacyInfo.xcprivacy */; };
 		383889DA23A7398900D06C3E /* RCTConvert_UIColorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 383889D923A7398900D06C3E /* RCTConvert_UIColorTests.m */; };
@@ -150,6 +151,7 @@
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = RNTester/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = RNTester/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = RNTester/main.m; sourceTree = "<group>"; };
+		24C6EA492D04BAF1008C8E31 /* RCTFrameTimingsObserverTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTFrameTimingsObserverTests.mm; sourceTree = "<group>"; };
 		272E6B3B1BEA849E001FCF37 /* UpdatePropertiesExampleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UpdatePropertiesExampleView.h; path = RNTester/NativeExampleViews/UpdatePropertiesExampleView.h; sourceTree = "<group>"; };
 		272E6B3C1BEA849E001FCF37 /* UpdatePropertiesExampleView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = UpdatePropertiesExampleView.mm; path = RNTester/NativeExampleViews/UpdatePropertiesExampleView.mm; sourceTree = "<group>"; };
 		2734C5E31C1D7A09BF872585 /* Pods-RNTester.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester.debug.xcconfig"; path = "Target Support Files/Pods-RNTester/Pods-RNTester.debug.xcconfig"; sourceTree = "<group>"; };
@@ -463,6 +465,7 @@
 		ACC52F56299ECB8A002A2B0B /* RNTester-macOSUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				24C6EA492D04BAF1008C8E31 /* RCTFrameTimingsObserverTests.mm */,
 			);
 			path = "RNTester-macOSUnitTests";
 			sourceTree = "<group>";
@@ -1290,6 +1293,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				24C6EA4A2D04BAF1008C8E31 /* RCTFrameTimingsObserverTests.mm in Sources */,
 				AC73FCEF29B1318B0003586F /* RCTAnimationUtilsTests.m in Sources */,
 				AC73FD0729B131DA0003586F /* RCTUIManagerTests.m in Sources */,
 				AC73FCF729B131A20003586F /* RCTEventDispatcherTests.m in Sources */,
