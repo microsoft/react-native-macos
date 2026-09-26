@@ -8,6 +8,7 @@
  * @format
  */
 
+const {recomposeHermesXCFramework} = require('./hermes-framework'); // [macOS]
 const {readHermesMetadata} = require('./hermes-version'); // [macOS]
 const {computeNightlyTarballURL, createLogger} = require('./utils');
 const {execSync} = require('child_process');
@@ -98,6 +99,12 @@ async function prepareHermesArtifactsAsync(
   execSync(`tar -xzf "${localPath}" -C "${artifactsPath}"`, {
     stdio: 'inherit',
   });
+  // [macOS] All-Apple prebuilds require macOS; local overrides may omit it.
+  recomposeHermesXCFramework(
+    artifactsPath,
+    !hermesEngineTarballEnvvarDefined(),
+  );
+
   // Delete the tarball after extraction
   if (!process.env.HERMES_ENGINE_TARBALL_PATH) {
     fs.unlinkSync(localPath);
@@ -163,6 +170,7 @@ function checkExistingVersion(
   if (fs.existsSync(versionFilePath) && fs.existsSync(hermesXCFramework)) {
     const versionFileContent = fs.readFileSync(versionFilePath, 'utf8');
     if (versionFileContent.trim() === resolvedVersion) {
+      recomposeHermesXCFramework(artifactsPath); // [macOS]
       hermesLog(
         `Hermes artifacts already downloaded and up to date: ${artifactsPath}`,
       );
