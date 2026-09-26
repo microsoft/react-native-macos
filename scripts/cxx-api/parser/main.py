@@ -3,424 +3,405 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+"""
+Main entry point for building API snapshots from Doxygen XML output.
+"""
+
 from __future__ import annotations
 
 import os
 import re
-from enum import Enum
-from pprint import pprint
+from dataclasses import dataclass
 
 from doxmlparser import compound, index
 
+from .builders import (
+    _member_types_reference_excluded_symbol,
+    _should_exclude_symbol,
+    compile_exclude_patterns,
+    create_category_scope,
+    create_class_scope,
+    create_enum_scope,
+    create_interface_scope,
+    create_protocol_scope,
+    get_concept_member,
+    get_function_member,
+    get_typedef_member,
+    get_variable_member,
+)
 from .member import (
-    ConceptMember,
-    EnumMember,
+    FriendMember,
     FunctionMember,
+    PropertyMember,
     TypedefMember,
     VariableMember,
 )
-from .scope import StructLikeScopeKind
+from .scope import Scope, StructLikeScopeKind
+from .scope.extendable import Extendable
 from .snapshot import Snapshot
-from .template import Template
-from .utils import Argument, extract_qualifiers, parse_qualified_path
+from .utils import (
+    format_parsed_type,
+    has_scope_resolution_outside_angles,
+    parse_qualified_path,
+)
 
 
-def extract_namespace_from_refid(refid: str) -> str:
-    """Extract the namespace prefix from a doxygen refid.
-    e.g. 'namespacefacebook_1_1yoga_1a...' -> 'facebook::yoga'
-         'structfacebook_1_1react_1_1detail_1_1is__dynamic' -> 'facebook::react::detail::is_dynamic'
-
-    Doxygen encoding:
-    - '::' is encoded as '_1_1'
-    - '_' in identifiers is encoded as '__' (double underscore)
+def _process_namespace_sections(
+    snapshot, namespace_scope, compound_object, exclude_symbols: list[re.Pattern]
+):
     """
-    for prefix in ("namespace", "struct", "class", "union"):
-        if refid.startswith(prefix):
-            compound_part = refid[len(prefix) :]
-            idx = compound_part.find("_1a")
-            if idx != -1:
-                compound_part = compound_part[:idx]
-            # First replace '::' encoding (_1_1 -> ::)
-            result = compound_part.replace("_1_1", "::")
-            # Then replace double underscore with single underscore
-            # (Doxygen encodes '_' in identifiers as '__')
-            result = result.replace("__", "_")
-            return result
-    return ""
-
-
-class InitializerType(Enum):
-    NONE = (0,)
-    ASSIGNMENT = (1,)
-    BRACE = 2
-
-
-def resolve_linked_text_name(
-    type_def: compound.linkedTextType,
-    strip_initializers: bool = False,
-) -> (str, InitializerType):
+    Process all section definitions inside a namespace compound.
     """
-    Resolve the full text content of a linkedTextType, including all text
-    fragments and ref elements.
-    """
-    name = ""
-    in_string = False
+    compound_name = compound_object.compoundname
+    for section_def in compound_object.sectiondef:
+        if section_def.kind == "var":
+            for variable_def in section_def.memberdef:
+                # Skip out-of-class definitions (e.g. "Strct<T>::VALUE")
+                if has_scope_resolution_outside_angles(variable_def.get_name()):
+                    continue
+                qualified_name = f"{compound_name}::{variable_def.get_name()}"
+                if _should_exclude_symbol(qualified_name, exclude_symbols):
+                    continue
+                is_static = variable_def.static == "yes"
+                var_member = get_variable_member(variable_def, "public", is_static)
+                if _member_types_reference_excluded_symbol(var_member, exclude_symbols):
+                    continue
+                namespace_scope.add_member(var_member)
+        elif section_def.kind == "func":
+            for function_def in section_def.memberdef:
+                # Skip out-of-class definitions (e.g. "Strct<T>::convert")
+                if has_scope_resolution_outside_angles(function_def.get_name()):
+                    continue
+                qualified_name = f"{compound_name}::{function_def.get_name()}"
+                if _should_exclude_symbol(qualified_name, exclude_symbols):
+                    continue
+                function_static = function_def.static == "yes"
 
-    if hasattr(type_def, "content_") and type_def.content_:
-        for part in type_def.content_:
-            if part.category == 1:  # MixedContainer.CategoryText
-                in_string = part.value.count('"') % 2 != in_string
-                name += part.value
-            elif part.category == 3:  # MixedContainer.CategoryComplex (ref element)
-                # For ref elements, get the text content and fully qualify using refid
-                text = ""
-                if hasattr(part.value, "get_valueOf_"):
-                    text = part.value.get_valueOf_()
-                elif hasattr(part.value, "valueOf_"):
-                    text = part.value.valueOf_
-                else:
-                    text = str(part.value)
-
-                # Don't resolve refs inside string literals - doxygen may
-                # incorrectly treat symbols in strings as references
-                refid = getattr(part.value, "refid", None)
-                if refid and not in_string:
-                    ns = extract_namespace_from_refid(refid)
-                    if ns and not text.startswith(ns):
-                        # The text may already start with a trailing portion of
-                        # the namespace.  For example ns="facebook::react::HighResDuration"
-                        # and text="HighResDuration::zero".  We need to find the
-                        # longest suffix of ns that is a prefix of text (on a "::"
-                        # boundary) and only prepend the missing part.
-                        ns_parts = ns.split("::")
-                        prepend = ns
-                        for i in range(1, len(ns_parts)):
-                            suffix = "::".join(ns_parts[i:])
-                            if text.startswith(suffix + "::") or text == suffix:
-                                prepend = "::".join(ns_parts[:i])
-                                break
-                        text = prepend + "::" + text
-
-                name += text
-    elif type_def.ref:
-        name = type_def.ref[0].get_valueOf_()
-    else:
-        name = type_def.get_valueOf_()
-
-    initialier_type = InitializerType.NONE
-    if strip_initializers:
-        if name.startswith("="):
-            # Detect assignment initializers: = value
-            initialier_type = InitializerType.ASSIGNMENT
-            name = name[1:]
-        elif name.startswith("{") and name.endswith("}"):
-            # Detect brace initializers: {value}
-            initialier_type = InitializerType.BRACE
-            name = name[1:-1].strip()
-
-    return (name.strip(), initialier_type)
-
-
-def get_base_classes(
-    compound_object: compound.CompounddefType,
-) -> [StructLikeScopeKind.Base]:
-    """
-    Get the base classes of a compound object.
-    """
-    base_classes = []
-    if compound_object.basecompoundref:
-        for base in compound_object.basecompoundref:
-            # base is a compoundRefType with:
-            # - refid: reference ID to the base class definition
-            # - prot: protection level (public, protected, private)
-            # - virt: virtual inheritance (non-virtual, virtual, pure-virtual)
-            # - valueOf_: the name of the base class
-            base_name = base.valueOf_
-            base_prot = base.prot
-            base_virt = base.virt
-            base_refid = base.refid
-
-            if base_prot == "private":
-                # Ignore private base classes
-                continue
-
-            base_classes.append(
-                StructLikeScopeKind.Base(
-                    base_name,
-                    base_prot,
-                    base_virt == "virtual",
-                    base_refid,
-                )
+                if not function_static:
+                    func_member = get_function_member(function_def, "public")
+                    if _member_types_reference_excluded_symbol(
+                        func_member, exclude_symbols
+                    ):
+                        continue
+                    namespace_scope.add_member(func_member)
+        elif section_def.kind == "typedef":
+            for typedef_def in section_def.memberdef:
+                qualified_name = f"{compound_name}::{typedef_def.get_name()}"
+                if _should_exclude_symbol(qualified_name, exclude_symbols):
+                    continue
+                typedef_member = get_typedef_member(typedef_def, "public")
+                if _member_types_reference_excluded_symbol(
+                    typedef_member, exclude_symbols
+                ):
+                    continue
+                namespace_scope.add_member(typedef_member)
+        elif section_def.kind == "enum":
+            for enum_def in section_def.memberdef:
+                qualified_name = f"{compound_name}::{enum_def.get_name()}"
+                if _should_exclude_symbol(qualified_name, exclude_symbols):
+                    continue
+                create_enum_scope(snapshot, enum_def)
+        else:
+            print(
+                f"Unknown section kind: {section_def.kind} in {compound_object.location.file}"
             )
-    return base_classes
 
 
-def get_template_params(
-    compound_object: compound.CompounddefType,
-) -> [Template]:
+def _handle_namespace_compound(snapshot, compound_object, exclude_symbols=None):
     """
-    Get the template parameters of a compound object.
+    Handle a namespace compound definition.
     """
-    template_params = []
-    if compound_object.templateparamlist is not None:
-        for param in compound_object.templateparamlist.param:
-            template_value = (
-                resolve_linked_text_name(param.defval)[0] if param.defval else None
-            )
-            template_name = param.defname
-            template_type = resolve_linked_text_name(param.get_type())[0]
+    if exclude_symbols is None:
+        exclude_symbols = []
 
-            if template_name is None:
-                # Split type string and extract name from the end
-                # Handles: "typename T", "class T", "int N", etc.
-                parts = template_type.strip().split()
-                if len(parts) >= 2:
-                    template_type = " ".join(parts[:-1])
-                    template_name = parts[-1]
-                elif len(parts) == 1:
-                    # Check if this is an unnamed template parameter
-                    # (just "typename" or "class" with or without a default value)
-                    # In this case, we leave name as None/empty
-                    if parts[0] in ("typename", "class"):
-                        # Unnamed template parameter
-                        # e.g., "typename" or "typename = std::enable_if_t<...>"
-                        template_name = None
-                    else:
-                        # Just a name like "T" with no type keyword
-                        template_name = parts[0]
+    # Skip anonymous namespaces (internal linkage, not public API).
+    # Doxygen encodes them with a '@' prefix in the compound name.
+    if "@" in compound_object.compoundname:
+        return
 
-            template_params.append(
-                Template(template_type, template_name, template_value)
-            )
-    return template_params
+    namespace_scope = snapshot.create_or_get_namespace(compound_object.compoundname)
 
+    namespace_scope.location = compound_object.location.file
 
-def get_variable_member(
-    member_def: compound.MemberdefType,
-    visibility: str,
-    is_static: bool = False,
-) -> VariableMember:
-    """
-    Get the variable member from a member definition.
-    """
-    variable_name = member_def.get_name()
-
-    if len(variable_name) == 0:
-        # Ignore anonymous variables
-        return None
-
-    (variable_type, _) = resolve_linked_text_name(member_def.get_type())
-    variable_value = None
-    variable_definition = member_def.definition
-    variable_argstring = member_def.get_argsstring()
-
-    is_constexpr = member_def.constexpr == "yes"
-    is_mutable = member_def.mutable == "yes"
-
-    if is_constexpr and variable_type.find("constexpr") != -1:
-        variable_type = variable_type.replace("constexpr", "").strip()
-
-    is_const = variable_type.startswith("const")
-    if is_const:
-        variable_type = variable_type[5:].strip()
-
-    is_brace_initializer = False
-    if member_def.initializer is not None:
-        (variable_value, initializer_type) = resolve_linked_text_name(
-            member_def.initializer,
-            strip_initializers=True,
-        )
-        if initializer_type == InitializerType.BRACE:
-            is_brace_initializer = True
-
-    return VariableMember(
-        variable_name,
-        variable_type,
-        visibility,
-        is_const,
-        is_static,
-        is_constexpr,
-        is_mutable,
-        variable_value,
-        variable_definition,
-        variable_argstring,
-        is_brace_initializer,
+    _process_namespace_sections(
+        snapshot, namespace_scope, compound_object, exclude_symbols
     )
 
 
-def get_doxygen_params(
-    function_def: compound.MemberdefType,
-) -> list[tuple[str | None, str, str | None, str | None]] | None:
+def _handle_concept_compound(snapshot, compound_object):
     """
-    Extract structured parameter information from doxygen <param> elements.
-
-    Returns a list of Argument tuples (qualifiers, type, name, default_value),
-    or None if no <param> elements are available.
+    Handle a concept compound definition.
     """
-    params = function_def.param
-    if not params:
-        return None
-
-    arguments: list[Argument] = []
-    for param in params:
-        param_type = (
-            resolve_linked_text_name(param.get_type())[0].strip()
-            if param.get_type()
-            else ""
-        )
-        param_name = param.declname or param.defname or None
-        param_default = (
-            resolve_linked_text_name(param.defval)[0].strip() if param.defval else None
-        )
-
-        # Doxygen splits array dimensions into a separate <array> element.
-        # For complex declarators like "PropNameID (&&propertyNames)[N]",
-        # doxygen gives type="PropNameID(&&)", name="propertyNames",
-        # array="[N]".  We must reconstruct the full declarator with the
-        # name embedded inside the grouping parentheses:
-        #   PropNameID(&&propertyNames)[N]
-        param_array = param.array
-        if param_array:
-            # Match type ending with a pointer/reference declarator group:
-            # e.g. "PropNameID(&&)", "int(&)", "void(*)"
-            m = re.search(r"\([*&]+\)\s*$", param_type)
-            if m and param_name:
-                # Insert name before the closing ')' and append array
-                insert_pos = m.end() - 1  # position of trailing ')'
-                param_type = (
-                    param_type[:insert_pos]
-                    + param_name
-                    + param_type[insert_pos:]
-                    + param_array
-                )
-                param_name = None
-            else:
-                param_type += param_array
-
-        qualifiers, core_type = extract_qualifiers(param_type)
-        arguments.append((qualifiers, core_type, param_name, param_default))
-
-    return arguments
-
-
-def get_function_member(
-    function_def: compound.MemberdefType,
-    visibility: str,
-    is_static: bool = False,
-) -> FunctionMember:
-    """
-    Get the function member from a member definition.
-    """
-    function_name = function_def.get_name()
-    function_type = resolve_linked_text_name(function_def.get_type())[0]
-    function_arg_string = function_def.get_argsstring()
-    is_pure_virtual = function_def.get_virt() == "pure-virtual"
-    function_virtual = function_def.get_virt() == "virtual" or is_pure_virtual
-    is_constexpr = function_def.constexpr == "yes"
-
-    # Doxygen incorrectly merges "=0" into the return type for pure-virtual
-    # functions using trailing return types (e.g. "auto f() -> T = 0").
-    # Strip the trailing "=0" from the type string.
-    function_type = re.sub(r"\s*=\s*0\s*$", "", function_type)
-
-    doxygen_params = get_doxygen_params(function_def)
-
-    function = FunctionMember(
-        function_name,
-        function_type,
-        visibility,
-        function_arg_string,
-        function_virtual,
-        is_pure_virtual,
-        is_static,
-        doxygen_params,
-        is_constexpr,
-    )
-
-    function.add_template(get_template_params(function_def))
-
-    return function
-
-
-def get_typedef_member(
-    typedef_def: compound.memberdefType, visibility: str
-) -> TypedefMember:
-    typedef_name = typedef_def.get_name()
-    typedef_type = resolve_linked_text_name(typedef_def.get_type())[0]
-    typedef_argstring = typedef_def.get_argsstring()
-    typedef_definition = typedef_def.definition
-
-    typedef_keyword = "using"
-    if typedef_definition.startswith("typedef"):
-        typedef_keyword = "typedef"
-
-    typedef = TypedefMember(
-        typedef_name,
-        typedef_type,
-        typedef_argstring,
-        visibility,
-        typedef_keyword,
-    )
-
-    typedef.add_template(get_template_params(typedef_def))
-
-    return typedef
-
-
-def get_concept_member(
-    concept_def: compound.CompounddefType,
-) -> ConceptMember:
-    """
-    Get the concept member from a compound definition.
-    """
-    concept_name = concept_def.compoundname
+    # Concepts belong to a namespace, so we need to find or create the parent namespace
+    concept_name = compound_object.compoundname
     concept_path = parse_qualified_path(concept_name)
-    unqualified_name = concept_path[-1]
+    namespace_path = "::".join(concept_path[:-1]) if concept_path else ""
 
-    initializer = concept_def.initializer
-    constraint = ""
+    if namespace_path:
+        namespace_scope = snapshot.create_or_get_namespace(namespace_path)
+    else:
+        namespace_scope = snapshot.root_scope
 
-    if initializer:
-        # The initializer contains the entire constraind definition.
-        # We want to extract the constraint part after "="
-        initializer_text = resolve_linked_text_name(initializer)[0]
-        eq_pos = initializer_text.find("=")
-        if eq_pos != -1:
-            constraint = initializer_text[eq_pos + 1 :].strip()
-
-    concept = ConceptMember(unqualified_name, constraint)
-    concept.add_template(get_template_params(concept_def))
-
-    return concept
+    namespace_scope.add_member(get_concept_member(compound_object))
 
 
-def create_enum_scope(snapshot: Snapshot, enum_def: compound.EnumdefType):
+def _handle_class_compound(snapshot, compound_object, exclude_symbols=None):
     """
-    Create an enum scope in the snapshot.
+    Handle class, struct, and union compound definitions.
     """
-    scope = snapshot.create_enum(enum_def.qualifiedname)
-    scope.kind.type = resolve_linked_text_name(enum_def.get_type())[0]
-    scope.location = enum_def.location.file
+    # Check if this is an Objective-C interface by looking at the compound id
+    # Doxygen reports ObjC interfaces as kind="class" but with id starting with "interface"
+    is_objc_interface = (
+        compound_object.kind == "class" and compound_object.id.startswith("interface")
+    )
 
-    for enum_value_def in enum_def.enumvalue:
-        value_name = enum_value_def.get_name()
-        value_value = None
+    # Handle Objective-C interfaces separately
+    if is_objc_interface:
+        create_interface_scope(snapshot, compound_object, exclude_symbols)
+        return
 
-        if enum_value_def.initializer is not None:
-            (value_value, _) = resolve_linked_text_name(enum_value_def.initializer)
+    # classes and structs are represented by the same scope with a different kind
+    create_class_scope(snapshot, compound_object, exclude_symbols)
 
-        scope.add_member(
-            EnumMember(
-                value_name,
-                value_value,
-            ),
+
+# Dispatch table for compound kinds that map directly to a single builder call.
+_COMPOUND_HANDLERS = {
+    "class": _handle_class_compound,
+    "struct": _handle_class_compound,
+    "union": _handle_class_compound,
+    "namespace": _handle_namespace_compound,
+    "concept": _handle_concept_compound,
+    "category": create_category_scope,
+    "protocol": create_protocol_scope,
+    "interface": create_interface_scope,
+}
+
+# Compound kinds that are intentionally ignored.
+_IGNORED_COMPOUNDS = frozenset(
+    {
+        "file",
+        "dir",
+        # Contains deprecation info
+        "page",
+    }
+)
+
+
+@dataclass
+class ExcludedSymbolReference:
+    symbol: str
+    pattern: str
+    scope: str
+    context: str
+
+
+def _check_text_for_excluded_patterns(
+    text: str,
+    scope_name: str,
+    context: str,
+    exclude_symbols: list[re.Pattern],
+    results: list[ExcludedSymbolReference],
+) -> None:
+    """Append an ExcludedSymbolReference for each pattern found in *text*."""
+    for pattern in exclude_symbols:
+        if pattern.search(text):
+            results.append(
+                ExcludedSymbolReference(
+                    symbol=text,
+                    pattern=pattern.pattern,
+                    scope=scope_name,
+                    context=context,
+                )
+            )
+
+
+def _check_arguments_for_excluded_patterns(
+    arguments: list,
+    scope_name: str,
+    context_prefix: str,
+    exclude_symbols: list[re.Pattern],
+    results: list[ExcludedSymbolReference],
+) -> None:
+    """Check every argument's type string for excluded patterns."""
+    for arg in arguments:
+        # Argument is a tuple: (qualifiers, type, name, default_value)
+        arg_type = arg[1]
+        if arg_type:
+            _check_text_for_excluded_patterns(
+                arg_type,
+                scope_name,
+                f"{context_prefix} parameter type",
+                exclude_symbols,
+                results,
+            )
+
+
+def _check_member_for_excluded_patterns(
+    member,
+    scope_name: str,
+    exclude_symbols: list[re.Pattern],
+    results: list[ExcludedSymbolReference],
+) -> None:
+    """Check a single member for type references matching excluded patterns."""
+    member_name = f"{scope_name}::{member.name}"
+
+    if isinstance(member, FunctionMember):
+        if member.type:
+            _check_text_for_excluded_patterns(
+                member.type,
+                member_name,
+                "return type",
+                exclude_symbols,
+                results,
+            )
+        _check_arguments_for_excluded_patterns(
+            member.arguments,
+            member_name,
+            "function",
+            exclude_symbols,
+            results,
         )
 
+    elif isinstance(member, VariableMember):
+        type_str = format_parsed_type(member._parsed_type)
+        if type_str:
+            _check_text_for_excluded_patterns(
+                type_str,
+                member_name,
+                "variable type",
+                exclude_symbols,
+                results,
+            )
+        _check_arguments_for_excluded_patterns(
+            member._fp_arguments,
+            member_name,
+            "function pointer",
+            exclude_symbols,
+            results,
+        )
 
-def build_snapshot(xml_dir: str) -> Snapshot:
+    elif isinstance(member, TypedefMember):
+        value = member.get_value()
+        if value:
+            _check_text_for_excluded_patterns(
+                value,
+                member_name,
+                "typedef target type",
+                exclude_symbols,
+                results,
+            )
+        _check_arguments_for_excluded_patterns(
+            member._fp_arguments,
+            member_name,
+            "function pointer",
+            exclude_symbols,
+            results,
+        )
+
+    elif isinstance(member, PropertyMember):
+        if member.type:
+            _check_text_for_excluded_patterns(
+                member.type,
+                member_name,
+                "property type",
+                exclude_symbols,
+                results,
+            )
+
+    elif isinstance(member, FriendMember):
+        _check_text_for_excluded_patterns(
+            member.name,
+            member_name,
+            "friend declaration",
+            exclude_symbols,
+            results,
+        )
+
+    if member.specialization_args:
+        for arg in member.specialization_args:
+            _check_text_for_excluded_patterns(
+                arg,
+                member_name,
+                "member specialization argument",
+                exclude_symbols,
+                results,
+            )
+
+
+def _walk_scope_for_excluded_patterns(
+    scope: Scope,
+    exclude_symbols: list[re.Pattern],
+    results: list[ExcludedSymbolReference],
+) -> None:
+    """Recursively walk a scope tree checking for excluded pattern references."""
+    scope_name = scope.get_qualified_name() or "(root)"
+
+    # Check base classes (StructLikeScopeKind, ProtocolScopeKind, InterfaceScopeKind)
+    if isinstance(scope.kind, Extendable):
+        for base in scope.kind.base_classes:
+            _check_text_for_excluded_patterns(
+                base.name,
+                scope_name,
+                "base class",
+                exclude_symbols,
+                results,
+            )
+
+    # Check specialization args
+    if isinstance(scope.kind, StructLikeScopeKind) and scope.kind.specialization_args:
+        for arg in scope.kind.specialization_args:
+            _check_text_for_excluded_patterns(
+                arg,
+                scope_name,
+                "specialization argument",
+                exclude_symbols,
+                results,
+            )
+
+    for member in scope.get_members():
+        _check_member_for_excluded_patterns(
+            member, scope_name, exclude_symbols, results
+        )
+
+    for inner in scope.inner_scopes.values():
+        _walk_scope_for_excluded_patterns(inner, exclude_symbols, results)
+
+
+def find_excluded_symbol_references(
+    snapshot: Snapshot,
+    exclude_symbols: list[re.Pattern],
+) -> list[ExcludedSymbolReference]:
+    """
+    Walk the snapshot scope tree after it has been finalized and find
+    references to excluded symbols in type strings, base classes, and
+    other type references.
+
+    This detects cases where a non-excluded symbol references an excluded
+    symbol (e.g., a class inherits from an excluded base, a function returns
+    an excluded type, etc.).
+    """
+    if not exclude_symbols:
+        return []
+
+    results: list[ExcludedSymbolReference] = []
+    _walk_scope_for_excluded_patterns(snapshot.root_scope, exclude_symbols, results)
+    return results
+
+
+def build_snapshot(xml_dir: str, exclude_symbols: list[str] | None = None) -> Snapshot:
     """
     Reads the Doxygen XML output and builds a snapshot of the C++ API.
+
+    Args:
+        xml_dir: Path to the Doxygen XML output directory.
+        exclude_symbols: Optional list of regex patterns. Compounds whose
+            qualified name matches any of these patterns will be excluded.
     """
+    if exclude_symbols is None:
+        exclude_symbols = []
+
+    compiled_patterns = compile_exclude_patterns(exclude_symbols)
+
     index_path = os.path.join(xml_dir, "index.xml")
     if not os.path.exists(index_path):
         raise RuntimeError(f"Doxygen entry point not found at {index_path}")
@@ -437,141 +418,37 @@ def build_snapshot(xml_dir: str) -> Snapshot:
         doxygen_object = compound.parse(detail_file, silence=True)
 
         for compound_object in doxygen_object.compounddef:
-            # classes and structs are represented by the same scope with a different kind
-            if (
-                compound_object.kind == "class"
-                or compound_object.kind == "struct"
-                or compound_object.kind == "union"
-            ):
-                class_scope = (
-                    snapshot.create_struct_like(
-                        compound_object.compoundname, StructLikeScopeKind.Type.CLASS
-                    )
-                    if compound_object.kind == "class"
-                    else snapshot.create_struct_like(
-                        compound_object.compoundname, StructLikeScopeKind.Type.STRUCT
-                    )
-                    if compound_object.kind == "struct"
-                    else snapshot.create_struct_like(
-                        compound_object.compoundname, StructLikeScopeKind.Type.UNION
-                    )
-                )
+            if compound_object.prot == "private":
+                continue
 
-                class_scope.kind.add_base(get_base_classes(compound_object))
-                class_scope.kind.add_template(get_template_params(compound_object))
-                class_scope.location = compound_object.location.file
+            if _should_exclude_symbol(compound_object.compoundname, compiled_patterns):
+                continue
 
-                for section_def in compound_object.sectiondef:
-                    kind = section_def.kind
-                    parts = kind.split("-")
-                    visibility = parts[0]
-                    is_static = "static" in parts
-                    member_type = parts[-1]
+            kind = compound_object.kind
 
-                    if visibility == "private":
-                        pass
-                    elif visibility in ("public", "protected"):
-                        if member_type == "attrib":
-                            for member_def in section_def.memberdef:
-                                if member_def.kind == "variable":
-                                    class_scope.add_member(
-                                        get_variable_member(
-                                            member_def, visibility, is_static
-                                        )
-                                    )
-                        elif member_type == "func":
-                            for function_def in section_def.memberdef:
-                                class_scope.add_member(
-                                    get_function_member(
-                                        function_def, visibility, is_static
-                                    )
-                                )
-                        elif member_type == "type":
-                            for member_def in section_def.memberdef:
-                                if member_def.kind == "enum":
-                                    create_enum_scope(snapshot, member_def)
-                                elif member_def.kind == "typedef":
-                                    class_scope.add_member(
-                                        get_typedef_member(member_def, visibility)
-                                    )
-                                else:
-                                    print(
-                                        f"Unknown section member kind: {member_def.kind} in {compound_object.location.file}"
-                                    )
-                        else:
-                            print(
-                                f"Unknown class section kind: {kind} in {compound_object.location.file}"
-                            )
-                    elif visibility == "friend":
-                        # Ignore friend declarations, they are not meaningful for the public API surface
-                        pass
-                    elif visibility == "property":
-                        print(
-                            f"Property not supported: {compound_object.compoundname} in {compound_object.location.file}"
-                        )
-                    else:
-                        print(
-                            f"Unknown class visibility: {visibility} in {compound_object.location.file}"
-                        )
-            elif compound_object.kind == "namespace":
-                namespace_scope = snapshot.create_or_get_namespace(
-                    compound_object.compoundname
-                )
-
-                namespace_scope.location = compound_object.location.file
-
-                for section_def in compound_object.sectiondef:
-                    if section_def.kind == "var":
-                        for variable_def in section_def.memberdef:
-                            is_static = variable_def.static == "yes"
-                            namespace_scope.add_member(
-                                get_variable_member(variable_def, "public", is_static)
-                            )
-                    elif section_def.kind == "func":
-                        for function_def in section_def.memberdef:
-                            function_static = function_def.static == "yes"
-
-                            if not function_static:
-                                namespace_scope.add_member(
-                                    get_function_member(function_def, "public")
-                                )
-                    elif section_def.kind == "typedef":
-                        for typedef_def in section_def.memberdef:
-                            namespace_scope.add_member(
-                                get_typedef_member(typedef_def, "public")
-                            )
-                    elif section_def.kind == "enum":
-                        for enum_def in section_def.memberdef:
-                            create_enum_scope(snapshot, enum_def)
-                    else:
-                        print(
-                            f"Unknown section kind: {section_def.kind} in {compound_object.location.file}"
-                        )
-            elif compound_object.kind == "concept":
-                # Concepts belong to a namespace, so we need to find or create the parent namespace
-                concept_name = compound_object.compoundname
-                concept_path = parse_qualified_path(concept_name)
-                namespace_path = "::".join(concept_path[:-1]) if concept_path else ""
-
-                if namespace_path:
-                    namespace_scope = snapshot.create_or_get_namespace(namespace_path)
+            if kind in _IGNORED_COMPOUNDS:
+                pass
+            elif kind in _COMPOUND_HANDLERS:
+                handler = _COMPOUND_HANDLERS[kind]
+                if handler == _handle_namespace_compound:
+                    handler(snapshot, compound_object, compiled_patterns)
+                elif handler == _handle_class_compound:
+                    handler(snapshot, compound_object, compiled_patterns)
+                elif handler in (
+                    create_category_scope,
+                    create_protocol_scope,
+                    create_interface_scope,
+                ):
+                    handler(snapshot, compound_object, compiled_patterns)
                 else:
-                    namespace_scope = snapshot.root_scope
-
-                namespace_scope.add_member(get_concept_member(compound_object))
-            elif compound_object.kind == "file":
-                pass
-            elif compound_object.kind == "dir":
-                pass
-            elif compound_object.kind == "category":
-                print(f"Category not supported: {compound_object.compoundname}")
-            elif compound_object.kind == "page":
-                # Contains deprecation info
-                pass
-            elif compound_object.kind == "protocol":
-                print(f"Protocol not supported: {compound_object.compoundname}")
+                    handler(snapshot, compound_object)
             else:
-                print(f"Unknown compound kind: {compound_object.kind}")
+                print(f"Unknown compound kind: {kind}")
 
     snapshot.finish()
+
+    snapshot.excluded_symbol_references = find_excluded_symbol_references(
+        snapshot, compiled_patterns
+    )
+
     return snapshot

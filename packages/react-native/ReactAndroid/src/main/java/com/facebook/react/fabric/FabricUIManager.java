@@ -27,7 +27,6 @@ import android.view.accessibility.AccessibilityEvent;
 import androidx.annotation.AnyThread;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
-import androidx.core.util.Preconditions;
 import androidx.core.view.ViewCompat.FocusDirection;
 import com.facebook.common.logging.FLog;
 import com.facebook.infer.annotation.Assertions;
@@ -102,6 +101,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -194,12 +194,21 @@ public class FabricUIManager
   private final Set<SynchronousEvent> mSynchronousEvents = new HashSet<>();
 
   /**
+   * Queue of surface IDs that need their React revision merged. Drained during doFrame so that
+   * synchronous events dispatched by the merge are processed in the same frame.
+   */
+  private final ConcurrentLinkedQueue<Integer> mPendingReactRevisionMerges =
+      new ConcurrentLinkedQueue<>();
+
+  /**
    * This is used to keep track of whether or not the FabricUIManager has been destroyed. Once the
    * Catalyst instance is being destroyed, we should cease all operation here.
    */
   private volatile boolean mDestroyed = false;
 
   private boolean mDriveCxxAnimations = false;
+
+  private @Nullable ViewTransitionSnapshotManager mViewTransitionSnapshotManager;
 
   private long mDispatchViewUpdatesTime = 0l;
   private long mCommitStartTime = 0l;
@@ -537,7 +546,7 @@ public class FabricUIManager
 
     return (NativeArray)
         TextLayoutManager.measureLines(
-            mReactApplicationContext,
+            mReactApplicationContext.getAssets(),
             attributedString,
             paragraphAttributes,
             PixelUtil.toPixelFromDIP(width),
@@ -611,7 +620,6 @@ public class FabricUIManager
   @ThreadConfined(ANY)
   @UnstableReactNativeAPI
   public long measureText(
-      int surfaceId,
       ReadableMapBuffer attributedString,
       ReadableMapBuffer paragraphAttributes,
       float minWidth,
@@ -620,24 +628,10 @@ public class FabricUIManager
       float maxHeight,
       @Nullable float[] attachmentsPositions) {
 
-    ReactContext context;
-    if (surfaceId > 0) {
-      SurfaceMountingManager surfaceMountingManager =
-          mMountingManager.getSurfaceManagerEnforced(surfaceId, "measureText");
-      if (surfaceMountingManager.isStopped()) {
-        return 0;
-      }
-      context = surfaceMountingManager.getContext();
-      Assertions.assertNotNull(
-          context, "Context in SurfaceMountingManager is null. surfaceId: " + surfaceId);
-    } else {
-      context = mReactApplicationContext;
-    }
-
     ViewManager textViewManager = mViewManagerRegistry.get(ReactTextViewManager.REACT_CLASS);
 
     return TextLayoutManager.measureText(
-        context,
+        mReactApplicationContext.getAssets(),
         attributedString,
         paragraphAttributes,
         getYogaSize(minWidth, maxWidth),
@@ -654,19 +648,16 @@ public class FabricUIManager
   @ThreadConfined(ANY)
   @UnstableReactNativeAPI
   public PreparedLayout prepareTextLayout(
-      int surfaceId,
       ReadableMapBuffer attributedString,
       ReadableMapBuffer paragraphAttributes,
       float minWidth,
       float maxWidth,
       float minHeight,
       float maxHeight) {
-    SurfaceMountingManager surfaceMountingManager =
-        mMountingManager.getSurfaceManagerEnforced(surfaceId, "prepareTextLayout");
     ViewManager textViewManager = mViewManagerRegistry.get(ReactTextViewManager.REACT_CLASS);
 
     return TextLayoutManager.createPreparedLayout(
-        Preconditions.checkNotNull(surfaceMountingManager.getContext()),
+        mReactApplicationContext.getAssets(),
         attributedString,
         paragraphAttributes,
         getYogaSize(minWidth, maxWidth),
@@ -822,6 +813,40 @@ public class FabricUIManager
         ReactMarkerConstants.FABRIC_UPDATE_UI_MAIN_THREAD_END, null, commitNumber);
   }
 
+  /** Called from C++ via JNI. */
+  @SuppressLint("NotInvokedPrivateMethod")
+  @SuppressWarnings("unused")
+  @AnyThread
+  @ThreadConfined(ANY)
+  private void captureViewSnapshot(final int reactTag, final int surfaceId) {
+    getViewTransitionSnapshotManager().captureViewSnapshot(reactTag, surfaceId);
+  }
+
+  /** Called from C++ via JNI. */
+  @SuppressLint("NotInvokedPrivateMethod")
+  @SuppressWarnings("unused")
+  @AnyThread
+  @ThreadConfined(ANY)
+  private void setViewSnapshot(final int sourceTag, final int targetTag, final int surfaceId) {
+    getViewTransitionSnapshotManager().setViewSnapshot(sourceTag, targetTag);
+  }
+
+  /** Called from C++ via JNI. */
+  @SuppressLint("NotInvokedPrivateMethod")
+  @SuppressWarnings("unused")
+  @AnyThread
+  @ThreadConfined(ANY)
+  private void clearPendingSnapshots() {
+    getViewTransitionSnapshotManager().clearPendingSnapshots();
+  }
+
+  private synchronized ViewTransitionSnapshotManager getViewTransitionSnapshotManager() {
+    if (mViewTransitionSnapshotManager == null) {
+      mViewTransitionSnapshotManager = new ViewTransitionSnapshotManager(this, mMountingManager);
+    }
+    return mViewTransitionSnapshotManager;
+  }
+
   @SuppressLint("NotInvokedPrivateMethod")
   @SuppressWarnings("unused")
   @AnyThread
@@ -975,13 +1000,7 @@ public class FabricUIManager
         mBinding.mergeReactRevision(surfaceId);
       }
     } else {
-      UiThreadUtil.runOnUiThread(
-          () -> {
-            FabricUIManagerBinding binding = mBinding;
-            if (binding != null) {
-              binding.mergeReactRevision(surfaceId);
-            }
-          });
+      mPendingReactRevisionMerges.add(surfaceId);
     }
   }
 
@@ -992,15 +1011,8 @@ public class FabricUIManager
   @UnstableReactNativeAPI
   public void experimental_prefetchResources(
       int surfaceId, String componentName, ReadableMapBuffer params) {
-    if (ReactNativeFeatureFlags.enableImagePrefetchingOnUiThreadAndroid()) {
-      mMountItemDispatcher.addMountItem(
-          new PrefetchResourcesMountItem(surfaceId, componentName, params));
-    } else {
-      SurfaceMountingManager surfaceMountingManager = mMountingManager.getSurfaceManager(surfaceId);
-      if (surfaceMountingManager != null) {
-        surfaceMountingManager.experimental_prefetchResources(surfaceId, componentName, params);
-      }
-    }
+    mMountItemDispatcher.addMountItem(
+        new PrefetchResourcesMountItem(surfaceId, componentName, params));
   }
 
   void setBinding(FabricUIManagerBinding binding) {
@@ -1067,11 +1079,13 @@ public class FabricUIManager
     return surfaceManager.getView(reactTag);
   }
 
+  @Deprecated
   @Override
   public void receiveEvent(int reactTag, String eventName, @Nullable WritableMap params) {
     receiveEvent(View.NO_ID, reactTag, eventName, false, params, EventCategoryDef.UNSPECIFIED);
   }
 
+  @Deprecated
   @Override
   public void receiveEvent(
       int surfaceId, int reactTag, String eventName, @Nullable WritableMap params) {
@@ -1091,7 +1105,9 @@ public class FabricUIManager
    * @param canCoalesceEvent
    * @param params
    * @param eventCategory
+   * @deprecated Use the overload with eventTimestamp parameter instead.
    */
+  @Deprecated
   public void receiveEvent(
       int surfaceId,
       int reactTag,
@@ -1099,9 +1115,34 @@ public class FabricUIManager
       boolean canCoalesceEvent,
       @Nullable WritableMap params,
       @EventCategoryDef int eventCategory) {
-    receiveEvent(surfaceId, reactTag, eventName, canCoalesceEvent, params, eventCategory, false);
+    receiveEvent(
+        surfaceId,
+        reactTag,
+        eventName,
+        canCoalesceEvent,
+        params,
+        eventCategory,
+        false,
+        SystemClock.uptimeMillis());
   }
 
+  /**
+   * receiveEvent API that emits an event to C++. If {@code canCoalesceEvent} is true, that signals
+   * that C++ may coalesce the event optionally. Otherwise, coalescing can happen in Java before
+   * emitting.
+   *
+   * <p>{@code customCoalesceKey} is currently unused.
+   *
+   * @param surfaceId
+   * @param reactTag
+   * @param eventName
+   * @param canCoalesceEvent
+   * @param params
+   * @param eventCategory
+   * @param experimentalIsSynchronous
+   * @deprecated Use the overload with eventTimestamp parameter instead.
+   */
+  @Deprecated
   @Override
   public void receiveEvent(
       int surfaceId,
@@ -1111,6 +1152,43 @@ public class FabricUIManager
       @Nullable WritableMap params,
       @EventCategoryDef int eventCategory,
       boolean experimentalIsSynchronous) {
+    receiveEvent(
+        surfaceId,
+        reactTag,
+        eventName,
+        canCoalesceEvent,
+        params,
+        eventCategory,
+        experimentalIsSynchronous,
+        SystemClock.uptimeMillis());
+  }
+
+  /**
+   * receiveEvent API that emits an event to C++. If {@code canCoalesceEvent} is true, that signals
+   * that C++ may coalesce the event optionally. Otherwise, coalescing can happen in Java before
+   * emitting.
+   *
+   * <p>{@code customCoalesceKey} is currently unused.
+   *
+   * @param surfaceId
+   * @param reactTag
+   * @param eventName
+   * @param canCoalesceEvent
+   * @param params
+   * @param eventCategory
+   * @param experimentalIsSynchronous
+   * @param eventTimestamp
+   */
+  @Override
+  public void receiveEvent(
+      int surfaceId,
+      int reactTag,
+      String eventName,
+      boolean canCoalesceEvent,
+      @Nullable WritableMap params,
+      @EventCategoryDef int eventCategory,
+      boolean experimentalIsSynchronous,
+      long eventTimestamp) {
 
     if (ReactBuildConfig.DEBUG && surfaceId == View.NO_ID) {
       FLog.d(TAG, "Emitted event without surfaceId: [%d] %s", reactTag, eventName);
@@ -1128,7 +1206,13 @@ public class FabricUIManager
         // access to the event emitter later when the view is mounted. For now just save the event
         // in the view state and trigger it later.
         mMountingManager.enqueuePendingEvent(
-            surfaceId, reactTag, eventName, canCoalesceEvent, params, eventCategory);
+            surfaceId,
+            reactTag,
+            eventName,
+            canCoalesceEvent,
+            params,
+            eventCategory,
+            eventTimestamp);
       } else {
         // This can happen if the view has disappeared from the screen (because of async events)
         FLog.i(TAG, "Unable to invoke event: " + eventName + " for reactTag: " + reactTag);
@@ -1142,13 +1226,13 @@ public class FabricUIManager
       boolean firstEventForFrame =
           mSynchronousEvents.add(new SynchronousEvent(surfaceId, reactTag, eventName));
       if (firstEventForFrame) {
-        eventEmitter.dispatchEventSynchronously(eventName, params);
+        eventEmitter.dispatchEventSynchronously(eventName, params, eventTimestamp);
       }
     } else {
       if (canCoalesceEvent) {
-        eventEmitter.dispatchUnique(eventName, params);
+        eventEmitter.dispatchUnique(eventName, params, eventTimestamp);
       } else {
-        eventEmitter.dispatch(eventName, params, eventCategory);
+        eventEmitter.dispatch(eventName, params, eventCategory, eventTimestamp);
       }
     }
   }
@@ -1503,6 +1587,18 @@ public class FabricUIManager
       if (mDestroyed) {
         FLog.w(TAG, "Not flushing pending UI operations: FabricUIManager is destroyed");
         return;
+      }
+
+      // Drain pending React revision merges first so that animations,
+      // preallocation, and mount items operate against the latest revision.
+      if (ReactNativeFeatureFlags.enableFabricCommitBranching()) {
+        FabricUIManagerBinding binding = mBinding;
+        if (binding != null) {
+          Integer mergeSurfaceId;
+          while ((mergeSurfaceId = mPendingReactRevisionMerges.poll()) != null) {
+            binding.mergeReactRevision(mergeSurfaceId);
+          }
+        }
       }
 
       // Drive any animations from C++.

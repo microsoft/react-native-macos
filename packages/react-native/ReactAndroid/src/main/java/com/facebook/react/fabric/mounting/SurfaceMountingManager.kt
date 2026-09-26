@@ -8,12 +8,16 @@
 package com.facebook.react.fabric.mounting
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.os.SystemClock
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
 import androidx.annotation.AnyThread
 import androidx.annotation.UiThread
+import androidx.collection.MutableIntObjectMap
 import androidx.collection.SparseArrayCompat
+import androidx.core.graphics.drawable.toDrawable
 import com.facebook.common.logging.FLog
 import com.facebook.infer.annotation.ThreadConfined
 import com.facebook.react.bridge.GuardedRunnable
@@ -53,7 +57,10 @@ import java.util.ArrayDeque
 import java.util.LinkedList
 import java.util.Queue
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.Volatile
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 
 /** Returns true if the collection contains [key]. */
 private operator fun <T> SparseArrayCompat<T>.contains(key: Int): Boolean = containsKey(key)
@@ -81,7 +88,20 @@ internal constructor(
   public var context: ThemedReactContext? = reactContext
     private set
 
-  private val tagToViewState: ConcurrentHashMap<Int, ViewState> = ConcurrentHashMap() // any thread
+  private val tagToViewState: ConcurrentHashMap<Int, ViewState>?
+  private val optimizedTagToViewState: MutableIntObjectMap<ViewState>?
+  private val registryLock = ReentrantReadWriteLock()
+
+  init {
+    if (ReactNativeFeatureFlags.useOptimizedViewRegistryOnAndroid()) {
+      tagToViewState = null
+      optimizedTagToViewState = MutableIntObjectMap()
+    } else {
+      tagToViewState = ConcurrentHashMap()
+      optimizedTagToViewState = null
+    }
+  }
+
   private val onViewAttachMountItems: Queue<MountItem> = ArrayDeque()
 
   // These are all non-null, until StopSurface is called
@@ -123,7 +143,7 @@ internal constructor(
       return
     }
 
-    tagToViewState[surfaceId] = ViewState(surfaceId, rootView, rootViewManager, true)
+    registryPut(surfaceId, ViewState(surfaceId, rootView, rootViewManager, true))
 
     val runnable: Runnable =
         object : GuardedRunnable(checkNotNull(context)) {
@@ -187,7 +207,7 @@ internal constructor(
     if (tagSetForStoppedSurface?.containsKey(tag) == true) {
       return true
     }
-    return tagToViewState.containsKey(tag)
+    return registryContains(tag)
   }
 
   @UiThread
@@ -233,7 +253,7 @@ internal constructor(
     // Reset all StateWrapper objects
     // Since this can happen on any thread, is it possible to race between StateWrapper destruction
     // and some accesses from View classes in the UI thread?
-    for (viewState in tagToViewState.values) {
+    registryForEachValue { viewState ->
       viewState.stateWrapper?.destroyState()
       viewState.stateWrapper = null
 
@@ -245,15 +265,30 @@ internal constructor(
       if (ReactNativeFeatureFlags.enableViewRecycling()) {
         viewManagerRegistry?.onSurfaceStopped(surfaceId)
       }
-      val tagSetForStoppedSurface =
-          SparseArrayCompat<Any>().also { this.tagSetForStoppedSurface = it }
-      for ((key, value) in tagToViewState) {
-        // Using this as a placeholder value in the map. We're using SparseArrayCompat
-        // since it can efficiently represent the list of pending tags
-        tagSetForStoppedSurface[key] = this
 
-        // We must call `onDropViewInstance` on all remaining Views
-        onViewStateDeleted(value)
+      if (optimizedTagToViewState != null) {
+        val viewStatesToDelete: ArrayList<ViewState>
+        registryLock.write {
+          val tagSetForStoppedSurface =
+              SparseArrayCompat<Any>().also { this.tagSetForStoppedSurface = it }
+          viewStatesToDelete = ArrayList(optimizedTagToViewState.size)
+          optimizedTagToViewState.forEach { key, value ->
+            tagSetForStoppedSurface[key] = this@SurfaceMountingManager
+            viewStatesToDelete.add(value)
+          }
+          optimizedTagToViewState.clear()
+        }
+        for (viewState in viewStatesToDelete) {
+          onViewStateDeleted(viewState)
+        }
+      } else {
+        val tagSetForStoppedSurface =
+            SparseArrayCompat<Any>().also { this.tagSetForStoppedSurface = it }
+        for ((key, value) in tagToViewState!!) {
+          tagSetForStoppedSurface[key] = this
+          onViewStateDeleted(value)
+        }
+        tagToViewState!!.clear()
       }
 
       // Evict all views from cache and memory
@@ -261,7 +296,6 @@ internal constructor(
       rootViewManager = null
       mountItemExecutor = null
       context = null
-      tagToViewState.clear()
       onViewAttachMountItems.clear()
       tagToSynchronousMountProps.clear()
       FLog.e(TAG, "Surface [$surfaceId] was stopped on SurfaceMountingManager.")
@@ -281,7 +315,14 @@ internal constructor(
       return
     }
 
-    val parentViewState = getViewState(parentTag)
+    val parentViewState = getNullableViewState(parentTag)
+    if (parentViewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag: [$parentTag] for addViewAt"),
+      )
+      return
+    }
     if (parentViewState.view !is ViewGroup) {
       val message =
           "Unable to add a view into a view that is not a ViewGroup. ParentTag: $parentTag - Tag: $tag - Index: $index"
@@ -289,7 +330,14 @@ internal constructor(
       throw IllegalStateException(message)
     }
     val parentView = parentViewState.view as ViewGroup
-    val viewState = getViewState(tag)
+    val viewState = getNullableViewState(tag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag: [$tag] for addViewAt"),
+      )
+      return
+    }
     val view = viewState.view
     checkNotNull(view) { "Unable to find view for viewState $viewState and tag $tag" }
 
@@ -555,7 +603,7 @@ internal constructor(
             this.stateWrapper = stateWrapper
             this.eventEmitter = eventEmitterWrapper
           }
-      tagToViewState[reactTag] = viewState
+      registryPut(reactTag, viewState)
 
       if (isLayoutable) {
         @Suppress("UNCHECKED_CAST")
@@ -607,7 +655,14 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
+    val viewState = getNullableViewState(reactTag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag $reactTag for updateProps"),
+      )
+      return
+    }
 
     if (
         ReactNativeFeatureFlags.overrideBySynchronousMountPropsAtMountingAndroid() &&
@@ -623,7 +678,7 @@ internal constructor(
       viewState.currentProps = ReactStylesDiffMap(props)
     }
 
-    val view: View = checkNotNull(viewState.view) { "Unable to find view for tag [$reactTag]" }
+    val view: View = viewState.view ?: return
     checkNotNull(viewState.viewManager).updateProperties(view, viewState.currentProps)
   }
 
@@ -738,13 +793,20 @@ internal constructor(
       return
     }
 
-    val viewState = getViewState(reactTag)
+    val viewState = getNullableViewState(reactTag)
+    if (viewState == null) {
+      ReactSoftExceptionLogger.logSoftException(
+          ReactSoftExceptionLogger.Categories.SURFACE_MOUNTING_MANAGER_MISSING_VIEWSTATE,
+          ReactNoCrashSoftException("Unable to find viewState for tag $reactTag for updateLayout"),
+      )
+      return
+    }
     // Do not layout Root Views
     if (viewState.isRoot) {
       return
     }
 
-    val viewToUpdate = checkNotNull(viewState.view) { "Unable to find View for tag: $reactTag" }
+    val viewToUpdate = viewState.view ?: return
 
     viewToUpdate.layoutDirection =
         when (layoutDirection) {
@@ -890,13 +952,19 @@ internal constructor(
       return
     }
 
-    var viewState = tagToViewState[reactTag]
-    if (viewState == null) {
-      // TODO T62717437 - Use a flag to determine that these event emitters belong to virtual nodes
-      // only.
-      viewState = ViewState(reactTag)
-      tagToViewState[reactTag] = viewState
-    }
+    // TODO T62717437 - Use a flag to determine that these event emitters belong to virtual nodes
+    // only.
+    val viewState: ViewState =
+        if (optimizedTagToViewState != null) {
+          registryLock.write { optimizedTagToViewState.getOrPut(reactTag) { ViewState(reactTag) } }
+        } else {
+          var vs = tagToViewState!![reactTag]
+          if (vs == null) {
+            vs = ViewState(reactTag)
+            tagToViewState!![reactTag] = vs
+          }
+          vs
+        }
     val previousEventEmitterWrapper = viewState.eventEmitter
     viewState.eventEmitter = eventEmitter
 
@@ -1008,7 +1076,7 @@ internal constructor(
       // To delete we simply remove the tag from the registry.
       // We want to rely on the correct set of MountInstructions being sent to the platform,
       // or StopSurface being called, so we do not handle deleting descendants of the View.
-      tagToViewState.remove(reactTag)
+      registryRemove(reactTag)
 
       onViewStateDeleted(viewState)
     }
@@ -1053,16 +1121,63 @@ internal constructor(
   }
 
   private fun getViewState(reactTag: Int): ViewState =
-      tagToViewState[reactTag]
+      registryGet(reactTag)
           ?: throw RetryableMountingLayerException(
               "Unable to find viewState for tag $reactTag. Surface stopped: $isStopped"
           )
 
-  private fun getNullableViewState(reactTag: Int): ViewState? = tagToViewState[reactTag]
+  private fun getNullableViewState(reactTag: Int): ViewState? = registryGet(reactTag)
+
+  private fun registryGet(tag: Int): ViewState? {
+    return if (optimizedTagToViewState != null) {
+      registryLock.read { optimizedTagToViewState[tag] }
+    } else {
+      tagToViewState!![tag]
+    }
+  }
+
+  private fun registryPut(tag: Int, state: ViewState) {
+    if (optimizedTagToViewState != null) {
+      registryLock.write { optimizedTagToViewState[tag] = state }
+    } else {
+      tagToViewState!![tag] = state
+    }
+  }
+
+  private fun registryRemove(tag: Int) {
+    if (optimizedTagToViewState != null) {
+      registryLock.write { optimizedTagToViewState.remove(tag) }
+    } else {
+      tagToViewState!!.remove(tag)
+    }
+  }
+
+  private fun registryContains(tag: Int): Boolean {
+    return if (optimizedTagToViewState != null) {
+      registryLock.read { optimizedTagToViewState.containsKey(tag) }
+    } else {
+      tagToViewState!!.containsKey(tag)
+    }
+  }
+
+  private inline fun registryForEachValue(action: (ViewState) -> Unit) {
+    if (optimizedTagToViewState != null) {
+      registryLock.read { optimizedTagToViewState.forEachValue(action) }
+    } else {
+      tagToViewState!!.values.forEach(action)
+    }
+  }
+
+  /** Applies a bitmap as the background of the view with the given tag, if it exists. */
+  @UiThread
+  public fun applyViewSnapshot(tag: Int, bitmap: Bitmap) {
+    val view = getNullableViewState(tag)?.view ?: return
+    view.background = bitmap.toDrawable(view.resources)
+  }
 
   public fun printSurfaceState(): Unit {
     FLog.e(TAG, "Views created for surface $surfaceId:")
-    for (viewState in tagToViewState.values) {
+    registryForEachValue { viewState ->
       val viewManagerName = viewState.viewManager?.name
       val view = viewState.view
       val parent = if (view != null) view.parent as View? else null
@@ -1083,16 +1198,36 @@ internal constructor(
       params: WritableMap?,
       @EventCategoryDef eventCategory: Int,
   ): Unit {
+    enqueuePendingEvent(
+        reactTag,
+        eventName,
+        canCoalesceEvent,
+        params,
+        eventCategory,
+        SystemClock.uptimeMillis(),
+    )
+  }
+
+  @AnyThread
+  public fun enqueuePendingEvent(
+      reactTag: Int,
+      eventName: String,
+      canCoalesceEvent: Boolean,
+      params: WritableMap?,
+      @EventCategoryDef eventCategory: Int,
+      eventTimestamp: Long,
+  ): Unit {
     // When the surface stopped we will reset the view state map. We are not going to enqueue
     // pending events as they are not expected to be dispatched anyways.
-    val viewState = tagToViewState[reactTag]
+    val viewState = registryGet(reactTag)
 
     if (viewState == null) {
       // Cannot queue event without view state. Do nothing here.
       return
     }
 
-    val viewEvent = PendingViewEvent(eventName, params, eventCategory, canCoalesceEvent)
+    val viewEvent =
+        PendingViewEvent(eventName, params, eventCategory, canCoalesceEvent, eventTimestamp)
     UiThreadUtil.runOnUiThread {
       val eventEmitter = viewState.eventEmitter
       if (eventEmitter != null) {
@@ -1145,12 +1280,13 @@ internal constructor(
       private val params: WritableMap?,
       @field:EventCategoryDef private val eventCategory: Int,
       private val canCoalesceEvent: Boolean,
+      private val eventTimestamp: Long,
   ) {
     fun dispatch(eventEmitter: EventEmitterWrapper) {
       if (canCoalesceEvent) {
-        eventEmitter.dispatchUnique(eventName, params)
+        eventEmitter.dispatchUnique(eventName, params, eventTimestamp)
       } else {
-        eventEmitter.dispatch(eventName, params, eventCategory)
+        eventEmitter.dispatch(eventName, params, eventCategory, eventTimestamp)
       }
     }
   }

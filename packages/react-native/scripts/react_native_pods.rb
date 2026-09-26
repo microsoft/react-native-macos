@@ -90,7 +90,7 @@ def use_react_native! (
   react_native_path = Pod::Config.instance.installation_root.join(path)
   prefix = react_native_path.relative_path_from(Pod::Config.instance.installation_root)
 
-  hermes_enabled= true
+  hermes_enabled= !use_third_party_jsc()
   # Set the app_path as env variable so the podspecs can access it.
   ENV['APP_PATH'] = app_path
   ENV['REACT_NATIVE_PATH'] = react_native_path.to_s
@@ -170,6 +170,8 @@ def use_react_native! (
   pod 'React-microtasksnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/microtasks"
   pod 'React-idlecallbacksnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/idlecallbacks"
   pod 'React-intersectionobservernativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/intersectionobserver"
+  pod 'React-mutationobservernativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/mutationobserver"
+  pod 'React-viewtransitionnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/viewtransition"
   pod 'React-webperformancenativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/webperformance"
   pod 'React-domnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/dom"
   pod 'React-defaultsnativemodule', :path => "#{prefix}/ReactCommon/react/nativemodule/defaults"
@@ -542,7 +544,16 @@ def react_native_post_install(
   ReactNativePodsUtils.fix_library_search_paths(installer)
   ReactNativePodsUtils.update_search_paths(installer)
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "USE_HERMES", value: use_hermes())
-  ReactNativePodsUtils.set_build_setting(installer, build_setting: "REACT_NATIVE_PATH", value: File.join("${PODS_ROOT}", "..", react_native_path))
+  # Compute REACT_NATIVE_PATH relative to PODS_ROOT using real (physical)
+  # paths, so the relative traversal is correct even when Pods/ is a symlink.
+  pods_dir_real = Pathname.new(Pod::Config.instance.sandbox_root.to_s).realpath
+  rn_absolute = File.expand_path(react_native_path, Pod::Config.instance.installation_root.to_s)
+  rn_real = Pathname.new(rn_absolute).realpath
+  rn_relative_to_pods = rn_real.relative_path_from(pods_dir_real)
+  ReactNativePodsUtils.set_build_setting(installer, build_setting: "REACT_NATIVE_PATH", value: File.join("${PODS_ROOT}", rn_relative_to_pods.to_s))
+  # Store the Podfile directory as a build setting so that shell scripts can
+  # locate it without relying on PODS_ROOT/.. (breaks when Pods/ is a symlink).
+  ReactNativePodsUtils.set_build_setting(installer, build_setting: "PODFILE_DIR", value: Pod::Config.instance.installation_root.to_s)
   ReactNativePodsUtils.set_build_setting(installer, build_setting: "SWIFT_ACTIVE_COMPILATION_CONDITIONS", value: ['$(inherited)', 'DEBUG'], config_name: "Debug")
 
   if (ENV['RCT_REMOVE_LEGACY_ARCH'] == '1')
