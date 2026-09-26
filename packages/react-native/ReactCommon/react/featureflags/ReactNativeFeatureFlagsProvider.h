@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<5dcaab263795b1605da54dbbb617264f>>
+ * @generated SignedSource<<75595b7640dd5849fcd3c40a965582fe>>
  */
 
 /**
@@ -55,11 +55,13 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableImmediateUpdateModeForContentOffsetChanges() = 0;
   virtual bool enableImperativeFocus() = 0;
   virtual bool enableInteropViewManagerClassLookUpOptimizationIOS() = 0;
+  virtual bool enableIntersectionObserverByDefault() = 0;
   virtual bool enableKeyEvents() = 0;
   virtual bool enableLayoutAnimationsOnAndroid() = 0;
   virtual bool enableLayoutAnimationsOnIOS() = 0;
   virtual bool enableMainQueueCoordinatorOnIOS() = 0;
   virtual bool enableModuleArgumentNSNullConversionIOS() = 0;
+  virtual bool enableMutationObserverByDefault() = 0;
   virtual bool enableNativeCSSParsing() = 0;
   virtual bool enableNetworkEventReporting() = 0;
   virtual bool enablePreparedTextLayout() = 0;
@@ -79,14 +81,19 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableVirtualViewWindowFocusDetection() = 0;
   virtual bool enableWebPerformanceAPIsByDefault() = 0;
   virtual bool fixMappingOfEventPrioritiesBetweenFabricAndReact() = 0;
+  virtual bool fuseboxAssertSingleHostState() = 0;
   virtual bool fuseboxEnabledRelease() = 0;
+  virtual bool fuseboxFrameRecordingEnabled() = 0;
   virtual bool fuseboxNetworkInspectionEnabled() = 0;
+  virtual bool fuseboxScreenshotCaptureEnabled() = 0;
   virtual bool hideOffscreenVirtualViewsOnIOS() = 0;
   virtual bool overrideBySynchronousMountPropsAtMountingAndroid() = 0;
   virtual bool perfIssuesEnabled() = 0;
   virtual bool perfMonitorV2Enabled() = 0;
   virtual double preparedTextCacheSize() = 0;
   virtual bool preventShadowTreeCommitExhaustion() = 0;
+  virtual bool redBoxV2Android() = 0;
+  virtual bool redBoxV2IOS() = 0;
   virtual bool shouldPressibilityUseW3CPointerEventsForHover() = 0;
   virtual bool shouldTriggerResponderTransferOnScrollAndroid() = 0;
   virtual bool skipActivityIdentityAssertionOnHostPause() = 0;

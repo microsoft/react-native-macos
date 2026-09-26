@@ -37,7 +37,7 @@ publishing {
             pom {
                 name = "react-native"
                 description = "A framework for building native apps with React"
-                url = "https://github.com/facebook/react-native"
+                url = "https://github.com/react/react-native"
 
                 developers {
                     developer {
@@ -49,15 +49,15 @@ publishing {
                 licenses {
                     license {
                         name = "MIT License"
-                        url = "https://github.com/facebook/react-native/blob/HEAD/LICENSE"
+                        url = "https://github.com/react/react-native/blob/HEAD/LICENSE"
                         distribution = "repo"
                     }
                 }
 
                 scm {
-                    url = "https://github.com/facebook/react-native.git"
-                    connection = "scm:git:https://github.com/facebook/react-native.git"
-                    developerConnection = "scm:git:git@github.com:facebook/react-native.git"
+                    url = "https://github.com/react/react-native.git"
+                    connection = "scm:git:https://github.com/react/react-native.git"
+                    developerConnection = "scm:git:git@github.com:react/react-native.git"
                 }
             }
         }

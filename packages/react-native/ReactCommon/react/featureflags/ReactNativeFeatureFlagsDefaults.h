@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<a0a1898f3a4c14179bd03d5dbe97adfa>>
+ * @generated SignedSource<<97d5c101032335f047a9a9bb06dab093>>
  */
 
 /**
@@ -147,6 +147,10 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool enableIntersectionObserverByDefault() override {
+    return false;
+  }
+
   bool enableKeyEvents() override {
     return false;
   }
@@ -167,12 +171,16 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool enableMutationObserverByDefault() override {
+    return false;
+  }
+
   bool enableNativeCSSParsing() override {
     return false;
   }
 
   bool enableNetworkEventReporting() override {
-    return false;
+    return true;
   }
 
   bool enablePreparedTextLayout() override {
@@ -184,7 +192,7 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool enableResourceTimingAPI() override {
-    return false;
+    return true;
   }
 
   bool enableSwiftUIBasedFilters() override {
@@ -243,11 +251,23 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
     return false;
   }
 
+  bool fuseboxAssertSingleHostState() override {
+    return true;
+  }
+
   bool fuseboxEnabledRelease() override {
     return false;
   }
 
+  bool fuseboxFrameRecordingEnabled() override {
+    return false;
+  }
+
   bool fuseboxNetworkInspectionEnabled() override {
+    return true;
+  }
+
+  bool fuseboxScreenshotCaptureEnabled() override {
     return false;
   }
 
@@ -272,6 +292,14 @@ class ReactNativeFeatureFlagsDefaults : public ReactNativeFeatureFlagsProvider {
   }
 
   bool preventShadowTreeCommitExhaustion() override {
+    return false;
+  }
+
+  bool redBoxV2Android() override {
+    return false;
+  }
+
+  bool redBoxV2IOS() override {
     return false;
   }
 

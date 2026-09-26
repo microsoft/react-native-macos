@@ -746,7 +746,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
   /**
    * Remove spans from the SpannableStringBuilder which can be represented by TextAppearance
    * attributes on the underlying EditText. This works around instability on Samsung devices with
-   * the presence of spans https://github.com/facebook/react-native/issues/35936 (S318090)
+   * the presence of spans https://github.com/react/react-native/issues/35936 (S318090)
    */
   private fun stripStyleEquivalentSpans(sb: SpannableStringBuilder) {
     stripSpansOfKind(sb, ReactAbsoluteSizeSpan::class.java) { span: ReactAbsoluteSizeSpan ->
@@ -987,7 +987,7 @@ public open class ReactEditText public constructor(context: Context) : AppCompat
     val selectionEnd = selectionEnd
 
     // Used to ensure that text is selectable inside of removeClippedSubviews
-    // See https://github.com/facebook/react-native/issues/6805 for original
+    // See https://github.com/react/react-native/issues/6805 for original
     // fix that was ported to here.
     super.setTextIsSelectable(true)
 

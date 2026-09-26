@@ -1304,7 +1304,7 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 // Ensure that newly typed text will inherit any custom attributes. We follow the logic of RN Android, where attributes
 // to the left of the cursor are copied into new text, unless we are at the start of the field, in which case we will
 // copy the attributes from text to the right. This allows consistency between backed input and new AttributedText
-// https://github.com/facebook/react-native/blob/3102a58df38d96f3dacef0530e4dbb399037fcd2/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/text/internal/span/SetSpanOperation.kt#L30
+// https://github.com/react/react-native/blob/3102a58df38d96f3dacef0530e4dbb399037fcd2/packages/react-native/ReactAndroid/src/main/java/com/facebook/react/views/text/internal/span/SetSpanOperation.kt#L30
 - (void)_updateTypingAttributes
 {
 #if !TARGET_OS_OSX // [macOS

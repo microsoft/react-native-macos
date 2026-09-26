@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6b61490a8d6b1df1d6264016455382f8>>
+ * @generated SignedSource<<99e9d1149773ffdb867c2abed02b0302>>
  */
 
 /**
@@ -83,6 +83,8 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun enableInteropViewManagerClassLookUpOptimizationIOS(): Boolean
 
+  @DoNotStrip public fun enableIntersectionObserverByDefault(): Boolean
+
   @DoNotStrip public fun enableKeyEvents(): Boolean
 
   @DoNotStrip public fun enableLayoutAnimationsOnAndroid(): Boolean
@@ -92,6 +94,8 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun enableMainQueueCoordinatorOnIOS(): Boolean
 
   @DoNotStrip public fun enableModuleArgumentNSNullConversionIOS(): Boolean
+
+  @DoNotStrip public fun enableMutationObserverByDefault(): Boolean
 
   @DoNotStrip public fun enableNativeCSSParsing(): Boolean
 
@@ -131,9 +135,15 @@ public interface ReactNativeFeatureFlagsProvider {
 
   @DoNotStrip public fun fixMappingOfEventPrioritiesBetweenFabricAndReact(): Boolean
 
+  @DoNotStrip public fun fuseboxAssertSingleHostState(): Boolean
+
   @DoNotStrip public fun fuseboxEnabledRelease(): Boolean
 
+  @DoNotStrip public fun fuseboxFrameRecordingEnabled(): Boolean
+
   @DoNotStrip public fun fuseboxNetworkInspectionEnabled(): Boolean
+
+  @DoNotStrip public fun fuseboxScreenshotCaptureEnabled(): Boolean
 
   @DoNotStrip public fun hideOffscreenVirtualViewsOnIOS(): Boolean
 
@@ -146,6 +156,10 @@ public interface ReactNativeFeatureFlagsProvider {
   @DoNotStrip public fun preparedTextCacheSize(): Double
 
   @DoNotStrip public fun preventShadowTreeCommitExhaustion(): Boolean
+
+  @DoNotStrip public fun redBoxV2Android(): Boolean
+
+  @DoNotStrip public fun redBoxV2IOS(): Boolean
 
   @DoNotStrip public fun shouldPressibilityUseW3CPointerEventsForHover(): Boolean
 

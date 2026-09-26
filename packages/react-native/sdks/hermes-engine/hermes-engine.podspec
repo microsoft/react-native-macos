@@ -4,6 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 require "json"
+require "pathname"
 require_relative "./hermes-utils.rb"
 
 # [macOS]
@@ -75,14 +76,15 @@ Pod::Spec.new do |spec|
     # In other cases, when using Hermes V1, the prebuilt versioned binaries can be used.
     if source_type != HermesEngineSourceType::LOCAL_PREBUILT_TARBALL
       hermes_compiler_path = File.dirname(Pod::Executable.execute_command('node', ['-p',
-        'require.resolve(
-        "hermes-compiler",
-        {paths: [process.argv[1]]}
-        )', __dir__]).strip
+        "require.resolve(\"hermes-compiler\", {paths: [\"#{react_native_path}\"]})", __dir__]).strip
       )
+      hermesc_path = File.join(hermes_compiler_path, 'hermesc', 'osx-bin', 'hermesc')
+
+      pods_root = Pod::Config.instance.sandbox.root
+      relative_hermesc = Pathname.new(hermesc_path).relative_path_from(pods_root)
 
       spec.user_target_xcconfig = {
-        'HERMES_CLI_PATH' => "#{hermes_compiler_path}/hermesc/osx-bin/hermesc"
+        'HERMES_CLI_PATH' => "$(PODS_ROOT)/#{relative_hermesc}"
       }
     end
 

@@ -116,7 +116,7 @@ function configureAppMenu() {
           label: 'Release Notes',
           click: () =>
             shell.openExternal(
-              'https://github.com/facebook/react-native/releases',
+              'https://github.com/react/react-native/releases',
             ),
         },
       ],

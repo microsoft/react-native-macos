@@ -119,7 +119,7 @@ function main() {
   );
 
   const cleanup = remove.map(
-    id => `gh cache delete ${id} --repo facebook/react-native`,
+    id => `gh cache delete ${id} --repo react/react-native`,
   );
   for (const cmd of cleanup) {
     if (dryRun) {

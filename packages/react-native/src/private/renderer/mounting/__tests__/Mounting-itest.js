@@ -413,10 +413,10 @@ describe('reconciliation of setNativeProps and React commit', () => {
     const element = ensureInstance(nodeRef.current, ReactNativeElement);
 
     Fantom.runTask(() => {
-      // Calling `setNativeProps` forces bug https://github.com/facebook/react-native/issues/47476 to manifest.
+      // Calling `setNativeProps` forces bug https://github.com/react/react-native/issues/47476 to manifest.
       // The bug is about a collision between `setNativeProps` and `props` and how they must be applied in the correct order.
       // When a prop is set via regular React commit, it must be respected by `setNativeProps` and vice versa.
-      // Learn more https://github.com/facebook/react-native/pull/47669.
+      // Learn more https://github.com/react/react-native/pull/47669.
       element.setNativeProps({testID: 'second test id'});
     });
 

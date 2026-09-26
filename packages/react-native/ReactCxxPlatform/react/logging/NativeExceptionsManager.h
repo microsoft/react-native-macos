@@ -18,7 +18,7 @@
 
 namespace facebook::react {
 
-// https://github.com/facebook/react-native/blob/v0.71.1/Libraries/Core/NativeExceptionsManager.js#L17-L35
+// https://github.com/react/react-native/blob/v0.71.1/Libraries/Core/NativeExceptionsManager.js#L17-L35
 using StackFrame = NativeExceptionsManagerStackFrame<
     std::optional<int32_t>,
     std::optional<std::string>,

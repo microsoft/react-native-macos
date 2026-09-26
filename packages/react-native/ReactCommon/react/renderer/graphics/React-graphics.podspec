@@ -8,7 +8,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "..", "..", "..", "..", "package.json")))
 version = package['version']
 
-source = { :git => 'https://github.com/facebook/react-native.git' }
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = `git rev-parse HEAD`.strip if system("git rev-parse --git-dir > /dev/null 2>&1")
@@ -32,6 +32,7 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources(source_files, ["*.h", "platform/ios/**/*.h"])
   s.header_dir             = "react/renderer/graphics"
+  s.frameworks             = "CoreGraphics" # [macOS]
   # [macOS Restrict UIKit to iOS and visionOS
   s.ios.framework = "UIKit" 
   s.visionos.framework = "UIKit" 

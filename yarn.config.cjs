@@ -69,7 +69,7 @@ function enforcePrivateReactNativeScopedPackages({Yarn}) {
 
 /**
  * Enforce that react-native-macos declares a peer dependency on react-native on release branches,
- * and that this version is consistent across all @react-native/ scoped packages.
+ * and that this version is consistent across public @react-native/ scoped packages.
  * Do not enforce on the main branch, where there is no published version of React Native to align to.
  * @param {Context} context
  */
@@ -77,9 +77,14 @@ function enforceReactNativeVersionConsistency({Yarn}) {
     if (!isMainBranch({Yarn})) {
         const reactNativePeerDependency = getReactNativePeerDependency({Yarn});
 
-        // Enforce this version on all @react-native/ scoped packages
+        // Private workspaces are never published and retain their branch-local
+        // development versions.
         for (const workspace of Yarn.workspaces()) {
-            if (workspace.ident?.startsWith('@react-native/') && !PACKAGES_TO_IGNORE.includes(workspace.ident)) {
+            if (
+                workspace.ident?.startsWith('@react-native/') &&
+                !PACKAGES_TO_IGNORE.includes(workspace.ident) &&
+                !workspace.manifest.private
+            ) {
                 workspace.set('version', reactNativePeerDependency);
             }
         }
@@ -99,10 +104,10 @@ function enforceReactNativeDependencyConsistency({Yarn}) {
                 const reactNativeVersion = getReactNativePeerDependency({Yarn});
 
                 const isRNM = dependency.workspace.ident === 'react-native-macos';
-                const isRNMForkedPackage = dependency.workspace.ident?.startsWith('@react-native-macos/');
+                const isRNMForkedPackage = dependency.workspace.ident?.startsWith('@react-native-macos/') && !dependency.workspace.manifest.private;
 
                 if (isRNM || isRNMForkedPackage) {
-                    // Don't use `workspace:*` for packages we publish until nx release with Yarn 4 supports it.
+                    // Published upstream packages are registry inputs, not Changesets release dependencies.
                     dependency.update(reactNativeVersion);
                 } else {
                     dependency.update('workspace:*');
@@ -138,22 +143,14 @@ function enforceReactNativeMacosVersionConsistency({Yarn}) {
 }
 
 /**
- * Enforce that all @react-native-macos/ scoped dependencies use the same version
- * as the react-native-macos
- * Do not enforce on the main branch, where there is no published version of React Native to align to.
+ * Use workspace dependencies for forked packages so Changesets tracks their release graph.
+ * Yarn replaces workspace:* with the exact package version when packing or publishing.
  * @param {Context} context
  */
 function enforceReactNativeMacOSDependencyConsistency({Yarn}) {
-    const rnmWorkspace = getReactNativeMacOSWorkspace({Yarn});
-    const rnmVersion = rnmWorkspace?.manifest.version;
-
     for (const dependency of Yarn.dependencies()) {
         if (dependency.ident.startsWith('@react-native-macos/')) {
-            if (!isMainBranch({Yarn})) {
-                dependency.update(rnmVersion);
-            } else {
-                dependency.update('workspace:*');
-            }
+            dependency.update('workspace:*');
         }
     }
 }

@@ -158,7 +158,7 @@ function _callReactNativeMicrotasksPass() {
   reactNativeMicrotasks = [];
 
   // Use for loop rather than forEach as per @vjeux's advice
-  // https://github.com/facebook/react-native/commit/c8fd9f7588ad02d2293cac7224715f4af7b0f352#commitcomment-14570051
+  // https://github.com/react/react-native/commit/c8fd9f7588ad02d2293cac7224715f4af7b0f352#commitcomment-14570051
   for (let i = 0; i < passReactNativeMicrotasks.length; ++i) {
     _callTimer(passReactNativeMicrotasks[i], 0);
   }

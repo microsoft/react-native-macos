@@ -36,7 +36,6 @@ import okhttp3.JavaNetCookieJar
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
-import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
@@ -166,7 +165,7 @@ public class NetworkingModule(
 
   @Deprecated(
       """To be removed in a future release. See
-        https://github.com/facebook/react-native/pull/37798#pullrequestreview-1518338914"""
+        https://github.com/react/react-native/pull/37798#pullrequestreview-1518338914"""
   )
   public interface CustomClientBuilder : com.facebook.react.modules.network.CustomClientBuilder
 
@@ -310,21 +309,14 @@ public class NetworkingModule(
         if (handler.supports(uri, responseType)) {
           val (res, rawBody) = handler.fetch(uri)
           val encodedDataLength = res.toString().toByteArray().size
-          // fix: UriHandlers which are not using file:// scheme fail in whatwg-fetch at this line
-          // https://github.com/JakeChampion/fetch/blob/main/fetch.js#L547
-          val response =
-              Response.Builder()
-                  .protocol(Protocol.HTTP_1_1)
-                  .request(Request.Builder().url(url.orEmpty()).build())
-                  .code(200)
-                  .message("OK")
-                  .build()
           NetworkEventUtil.onResponseReceived(
               reactApplicationContext,
               requestId,
               devToolsRequestId,
               url,
-              response,
+              200,
+              emptyMap(),
+              encodedDataLength.toLong(),
           )
           NetworkEventUtil.onDataReceived(
               reactApplicationContext,
@@ -487,7 +479,7 @@ public class NetworkingModule(
         } else {
           // Use getBytes() to convert the body into a byte[], preventing okhttp from
           // appending the character set to the Content-Type header when otherwise unspecified
-          // https://github.com/facebook/react-native/issues/8237
+          // https://github.com/react/react-native/issues/8237
           val charset =
               if (contentMediaType == null) {
                 StandardCharsets.UTF_8
@@ -644,8 +636,10 @@ public class NetworkingModule(
                     reactApplicationContext,
                     requestId,
                     devToolsRequestId,
-                    url,
-                    response,
+                    response.request().url().toString(),
+                    response.code(),
+                    NetworkEventUtil.okHttpHeadersToMap(response.headers()),
+                    response.body()?.contentLength() ?: 0L,
                 )
 
                 try {

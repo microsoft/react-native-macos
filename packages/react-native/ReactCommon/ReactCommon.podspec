@@ -8,7 +8,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "..", "package.json")))
 version = package['version']
 
-source = { :git => 'https://github.com/facebook/react-native.git' }
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = `git rev-parse HEAD`.strip if system("git rev-parse --git-dir > /dev/null 2>&1")
@@ -63,10 +63,12 @@ Pod::Spec.new do |s|
 
     ss.subspec "core" do |sss|
       sss.source_files = podspec_sources("react/nativemodule/core/ReactCommon/**/*.{cpp,h}", "react/nativemodule/core/ReactCommon/**/*.h")
-      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_featureflags.framework/Headers\" \"$(PODS_CONFIGURATION_BUILD_DIR)/React-utils/React_utils.framework/Headers\"" }
-      sss.dependency "React-debug", version
-      sss.dependency "React-featureflags", version
-      sss.dependency "React-utils", version
+      # [macOS
+      sss.pod_target_xcconfig  = { "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/ReactCommon\"" }
+      add_dependency(sss, "React-debug", :version => version)
+      add_dependency(sss, "React-featureflags", :version => version)
+      add_dependency(sss, "React-utils", :version => version)
+      # macOS]
     end
   end
 end

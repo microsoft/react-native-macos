@@ -18,7 +18,7 @@ Array [
     "[test.tar.gz] Uploading to release...",
   ],
   Array [
-    "[test.tar.gz] Uploaded to https://github.com/facebook/react-native/releases/download/untagged-0b602d8af97c6d3b784c/test.tar.gz",
+    "[test.tar.gz] Uploaded to https://github.com/react/react-native/releases/download/untagged-0b602d8af97c6d3b784c/test.tar.gz",
   ],
 ]
 `;
@@ -83,7 +83,7 @@ Array [
 ]
 `;
 
-exports[`uploadReleaseAssetsForDotSlashFile fails loudly if asset has been renamed by GitHub 1`] = `"Asset name was changed while uploading to the draft release: expected test.tar.gz, got test-renamed.tar.gz. <tmpDir>/entry-point has already been published to npm with the following URL, which will not work when the release is published on GitHub: https://github.com/facebook/react-native/releases/download/v1000.0.1/test.tar.gz"`;
+exports[`uploadReleaseAssetsForDotSlashFile fails loudly if asset has been renamed by GitHub 1`] = `"Asset name was changed while uploading to the draft release: expected test.tar.gz, got test-renamed.tar.gz. <tmpDir>/entry-point has already been published to npm with the following URL, which will not work when the release is published on GitHub: https://github.com/react/react-native/releases/download/v1000.0.1/test.tar.gz"`;
 
 exports[`uploadReleaseAssetsForDotSlashFile fails loudly if asset has been renamed by GitHub: console.log calls 1`] = `
 Array [
@@ -177,7 +177,7 @@ Array [
     "[test.tar.gz] Uploading to release...",
   ],
   Array [
-    "[test.tar.gz] Uploaded to https://github.com/facebook/react-native/releases/download/untagged-0b602d8af97c6d3b784c/test.tar.gz",
+    "[test.tar.gz] Uploaded to https://github.com/react/react-native/releases/download/untagged-0b602d8af97c6d3b784c/test.tar.gz",
   ],
 ]
 `;

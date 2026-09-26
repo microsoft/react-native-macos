@@ -1190,8 +1190,8 @@ public class SurfaceMountingManager {
       // If the view that went offscreen is still being touched, we can't delete it yet.
       // We have to delay the deletion till the touch is completed.
       // This is causing bugs like those otherwise:
-      // - https://github.com/facebook/react-native/issues/44610
-      // - https://github.com/facebook/react-native/issues/45126
+      // - https://github.com/react/react-native/issues/44610
+      // - https://github.com/react/react-native/issues/45126
       mViewsToDeleteAfterTouchFinishes.add(reactTag);
     } else {
       // To delete we simply remove the tag from the registry.

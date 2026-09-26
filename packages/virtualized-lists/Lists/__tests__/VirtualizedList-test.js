@@ -768,7 +768,7 @@ describe('VirtualizedList', () => {
 
     await act(() => {
       // We want to test the unusual case of onContentSizeChange firing after
-      // onLayout, which can cause https://github.com/facebook/react-native/issues/16067
+      // onLayout, which can cause https://github.com/react/react-native/issues/16067
       instance._onContentSizeChange(300, initialContentHeight);
       instance._onContentSizeChange(300, data.length * ITEM_HEIGHT);
       performAllBatches();

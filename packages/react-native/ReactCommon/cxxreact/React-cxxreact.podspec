@@ -9,7 +9,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "..", "..", "package.json")))
 version = package['version']
 
-source = { :git => 'https://github.com/facebook/react-native.git' }
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = `git rev-parse HEAD`.strip if system("git rev-parse --git-dir > /dev/null 2>&1")
@@ -29,7 +29,6 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources("*.{cpp,h}", "*.h")
   s.pod_target_xcconfig    = {
-    "HEADER_SEARCH_PATHS" => "\"$(PODS_CONFIGURATION_BUILD_DIR)/React-debug/React_debug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-runtimeexecutor/React_runtimeexecutor.framework/Headers\"",
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
   }
   s.header_dir             = "cxxreact"
@@ -42,8 +41,9 @@ Pod::Spec.new do |s|
   s.dependency "React-perflogger", version
   s.dependency "React-jsi", version
   s.dependency "React-logger", version
-  s.dependency "React-debug", version
+  add_dependency(s, "React-debug", :version => version) # [macOS]
   s.dependency "React-timing", version
+  add_dependency(s, "React-utils", :additional_framework_paths => ["react/utils/platform/ios"])
 
   s.resource_bundles = {'React-cxxreact_privacy' => 'PrivacyInfo.xcprivacy'}
 

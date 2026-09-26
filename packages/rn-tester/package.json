@@ -1,12 +1,12 @@
 {
   "name": "@react-native/tester",
-  "version": "0.83.0-main",
+  "version": "0.83.10",
   "private": true,
   "description": "React Native tester app.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/facebook/react-native.git",
+    "url": "git+https://github.com/react/react-native.git",
     "directory": "packages/rn-tester"
   },
   "engines": {

@@ -371,7 +371,7 @@ export type AccessibilityProps = $ReadOnly<{
 
   /**
    * Alias for accessibilityLabel  https://reactnative.dev/docs/view#accessibilitylabel
-   * https://github.com/facebook/react-native/issues/34424
+   * https://github.com/react/react-native/issues/34424
    */
   'aria-label'?: ?Stringish,
 

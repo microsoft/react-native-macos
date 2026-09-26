@@ -563,7 +563,7 @@ static RCTImageLoaderCancellationBlock RCTLoadImageURLFromLoader(
     // Add missing png extension
     if (request.URL.fileURL && request.URL.pathExtension.length == 0) {
       // Check if there exists a file with that url on disk already
-      // This should fix issue https://github.com/facebook/react-native/issues/46870
+      // This should fix issue https://github.com/react/react-native/issues/46870
       if ([[NSFileManager defaultManager] fileExistsAtPath:request.URL.path]) {
         mutableRequest.URL = request.URL;
       } else {

@@ -17,6 +17,18 @@ InspectorFlags& InspectorFlags::getInstance() {
   return instance;
 }
 
+bool InspectorFlags::getAssertSingleHostState() const {
+  return loadFlagsAndAssertUnchanged().assertSingleHostState;
+}
+
+bool InspectorFlags::getScreenshotCaptureEnabled() const {
+  return loadFlagsAndAssertUnchanged().screenshotCaptureEnabled;
+}
+
+bool InspectorFlags::getFrameRecordingEnabled() const {
+  return loadFlagsAndAssertUnchanged().frameRecordingEnabled;
+}
+
 bool InspectorFlags::getFuseboxEnabled() const {
   if (fuseboxDisabledForTest_) {
     return false;
@@ -48,6 +60,12 @@ void InspectorFlags::dangerouslyDisableFuseboxForTest() {
 const InspectorFlags::Values& InspectorFlags::loadFlagsAndAssertUnchanged()
     const {
   InspectorFlags::Values newValues = {
+      .assertSingleHostState =
+          ReactNativeFeatureFlags::fuseboxAssertSingleHostState(),
+      .screenshotCaptureEnabled =
+          ReactNativeFeatureFlags::fuseboxScreenshotCaptureEnabled(),
+      .frameRecordingEnabled =
+          ReactNativeFeatureFlags::fuseboxFrameRecordingEnabled(),
       .fuseboxEnabled =
 #if defined(REACT_NATIVE_DEBUGGER_ENABLED)
           true,
