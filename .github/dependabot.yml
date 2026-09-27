@@ -15,7 +15,6 @@ updates:
     directories:
       - "/packages/react-native"
       - "/packages/react-native-macos-init"
-      - "/packages/nx-release-version"
       - "/packages/virtualized-lists"
     schedule:
       interval: "weekly"

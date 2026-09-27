@@ -10,7 +10,7 @@ So, for example:
 
 ```
 cd private/react-native-bots && yarn
-DANGER_GITHUB_API_TOKEN=ghp_<REDACTED> yarn danger pr https://github.com/facebook/react-native/pull/1234
+DANGER_GITHUB_API_TOKEN=ghp_<REDACTED> yarn danger pr https://github.com/react/react-native/pull/1234
 ```
 
 ## Code Analysis Bot

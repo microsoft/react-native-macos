@@ -132,7 +132,7 @@ export type ButtonProps = $ReadOnly<{
 
   /**
    * Alias for accessibilityLabel  https://reactnative.dev/docs/view#accessibilitylabel
-   * https://github.com/facebook/react-native/issues/34424
+   * https://github.com/react/react-native/issues/34424
    */
   'aria-label'?: ?string,
   /**
@@ -152,11 +152,6 @@ export type ButtonProps = $ReadOnly<{
    * Custom accessibility role -- otherwise we use button
    */
   accessibilityRole?: ?AccessibilityRole,
-
-  /**
-   * Accessibility action handlers
-   */
-  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
 
   /**
    * Handler to be called when the button receives key focus
@@ -213,7 +208,7 @@ export type ButtonProps = $ReadOnly<{
   [button:examples].
 
   [button:source]:
-  https://github.com/facebook/react-native/blob/HEAD/Libraries/Components/Button.js
+  https://github.com/react/react-native/blob/HEAD/Libraries/Components/Button.js
 
   [button:examples]:
   https://js.coach/?menu%5Bcollections%5D=React%20Native&page=1&query=button

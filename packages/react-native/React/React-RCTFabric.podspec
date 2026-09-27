@@ -8,7 +8,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "..", "package.json")))
 version = package['version']
 
-source = { :git => 'https://github.com/facebook/react-native.git' }
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = `git rev-parse HEAD`.strip if system("git rev-parse --git-dir > /dev/null 2>&1")
@@ -52,6 +52,7 @@ Pod::Spec.new do |s|
   # [macOS MobileCoreServices not available on macOS
   s.ios.framework          = "MobileCoreServices"
   s.visionos.framework     = "MobileCoreServices"
+  s.osx.frameworks         = ["UniformTypeIdentifiers"]
   # macOS]
   s.pod_target_xcconfig    = {
     "HEADER_SEARCH_PATHS" => header_search_paths,
@@ -93,6 +94,7 @@ Pod::Spec.new do |s|
   add_dependency(s, "React-runtimeexecutor", :additional_framework_paths => ["platform/ios"])
   add_dependency(s, "React-runtimescheduler")
   add_dependency(s, "React-RCTAnimation", :framework_name => 'RCTAnimation')
+  add_dependency(s, "React-RCTUIKit", :framework_name => 'RCTUIKit') # [macOS]
   add_dependency(s, "React-jsinspector", :framework_name => 'jsinspector_modern')
   add_dependency(s, "React-jsinspectorcdp", :framework_name => 'jsinspector_moderncdp')
   add_dependency(s, "React-jsinspectortracing", :framework_name => 'jsinspector_moderntracing')

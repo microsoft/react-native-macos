@@ -16,6 +16,8 @@
 #import "RCTUIView.h"
 #import "RCTUIScrollView.h"
 #import "RCTUISlider.h"
+#import "RCTUITableView.h"
+#import "RCTUIButton.h"
 #import "RCTUILabel.h"
 #import "RCTUISwitch.h"
 #import "RCTUIActivityIndicatorView.h"

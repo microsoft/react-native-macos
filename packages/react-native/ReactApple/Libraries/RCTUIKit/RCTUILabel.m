@@ -31,6 +31,31 @@
   [self setStringValue:text];
 }
 
+- (NSString *)text
+{
+  return self.stringValue;
+}
+
+- (void)setNumberOfLines:(NSInteger)numberOfLines
+{
+  self.maximumNumberOfLines = numberOfLines;
+}
+
+- (NSInteger)numberOfLines
+{
+  return self.maximumNumberOfLines;
+}
+
+- (void)setTextAlignment:(NSTextAlignment)textAlignment
+{
+  self.alignment = textAlignment;
+}
+
+- (NSTextAlignment)textAlignment
+{
+  return self.alignment;
+}
+
 @end
 
 #endif

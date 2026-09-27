@@ -141,7 +141,7 @@ export default async function getLatestRelease(
 }
 
 function buildChangelogUrl(version: string) {
-  return `https://github.com/facebook/react-native/releases/tag/v${version}`;
+  return `https://github.com/react/react-native/releases/tag/v${version}`;
 }
 
 function buildDiffUrl(oldVersion: string, newVersion: string) {

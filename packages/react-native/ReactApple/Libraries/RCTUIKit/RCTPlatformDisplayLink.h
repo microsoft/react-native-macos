@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)invalidate;
 
 @property (readonly, nonatomic) CFTimeInterval timestamp;
+@property (readonly, nonatomic) CFTimeInterval targetTimestamp;
 @property (readonly, nonatomic) CFTimeInterval duration;
 
 @property (getter=isPaused, nonatomic) BOOL paused;

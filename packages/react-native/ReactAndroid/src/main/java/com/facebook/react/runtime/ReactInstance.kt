@@ -563,7 +563,7 @@ internal class ReactInstance(
             // We need to null check here because some Java implementation of the
             // `ViewManagerOnDemandReactPackage` interface could still return null even
             // if the method is marked as returning a non-nullable collection in Kotlin.
-            // See https://github.com/facebook/react-native/issues/52014
+            // See https://github.com/react/react-native/issues/52014
             @Suppress("SENSELESS_COMPARISON")
             if (names == null) {
               RNLog.w(

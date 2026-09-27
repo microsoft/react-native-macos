@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<0b1f3b307c28d6798d4c15029ad5bc58>>
+ * @generated SignedSource<<8ef0f9289aa8f259fd110b70a8fd2294>>
  * @flow strict
  * @noformat
  */
@@ -55,11 +55,13 @@ export interface Spec extends TurboModule {
   +enableImmediateUpdateModeForContentOffsetChanges?: () => boolean;
   +enableImperativeFocus?: () => boolean;
   +enableInteropViewManagerClassLookUpOptimizationIOS?: () => boolean;
+  +enableIntersectionObserverByDefault?: () => boolean;
   +enableKeyEvents?: () => boolean;
   +enableLayoutAnimationsOnAndroid?: () => boolean;
   +enableLayoutAnimationsOnIOS?: () => boolean;
   +enableMainQueueCoordinatorOnIOS?: () => boolean;
   +enableModuleArgumentNSNullConversionIOS?: () => boolean;
+  +enableMutationObserverByDefault?: () => boolean;
   +enableNativeCSSParsing?: () => boolean;
   +enableNetworkEventReporting?: () => boolean;
   +enablePreparedTextLayout?: () => boolean;
@@ -79,14 +81,19 @@ export interface Spec extends TurboModule {
   +enableVirtualViewWindowFocusDetection?: () => boolean;
   +enableWebPerformanceAPIsByDefault?: () => boolean;
   +fixMappingOfEventPrioritiesBetweenFabricAndReact?: () => boolean;
+  +fuseboxAssertSingleHostState?: () => boolean;
   +fuseboxEnabledRelease?: () => boolean;
+  +fuseboxFrameRecordingEnabled?: () => boolean;
   +fuseboxNetworkInspectionEnabled?: () => boolean;
+  +fuseboxScreenshotCaptureEnabled?: () => boolean;
   +hideOffscreenVirtualViewsOnIOS?: () => boolean;
   +overrideBySynchronousMountPropsAtMountingAndroid?: () => boolean;
   +perfIssuesEnabled?: () => boolean;
   +perfMonitorV2Enabled?: () => boolean;
   +preparedTextCacheSize?: () => number;
   +preventShadowTreeCommitExhaustion?: () => boolean;
+  +redBoxV2Android?: () => boolean;
+  +redBoxV2IOS?: () => boolean;
   +shouldPressibilityUseW3CPointerEventsForHover?: () => boolean;
   +shouldTriggerResponderTransferOnScrollAndroid?: () => boolean;
   +skipActivityIdentityAssertionOnHostPause?: () => boolean;

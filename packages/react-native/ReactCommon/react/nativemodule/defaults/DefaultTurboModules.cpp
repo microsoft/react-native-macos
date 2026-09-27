@@ -10,7 +10,9 @@
 #include <react/nativemodule/dom/NativeDOM.h>
 #include <react/nativemodule/featureflags/NativeReactNativeFeatureFlags.h>
 #include <react/nativemodule/idlecallbacks/NativeIdleCallbacks.h>
+#include <react/nativemodule/intersectionobserver/NativeIntersectionObserver.h>
 #include <react/nativemodule/microtasks/NativeMicrotasks.h>
+#include <react/nativemodule/mutationobserver/NativeMutationObserver.h>
 #include <react/nativemodule/webperformance/NativePerformance.h>
 
 #ifdef REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY
@@ -41,6 +43,18 @@ namespace facebook::react {
   if (ReactNativeFeatureFlags::enableWebPerformanceAPIsByDefault()) {
     if (name == NativePerformance::kModuleName) {
       return std::make_shared<NativePerformance>(jsInvoker);
+    }
+  }
+
+  if (ReactNativeFeatureFlags::enableIntersectionObserverByDefault()) {
+    if (name == NativeIntersectionObserver::kModuleName) {
+      return std::make_shared<NativeIntersectionObserver>(jsInvoker);
+    }
+  }
+
+  if (ReactNativeFeatureFlags::enableMutationObserverByDefault()) {
+    if (name == NativeMutationObserver::kModuleName) {
+      return std::make_shared<NativeMutationObserver>(jsInvoker);
     }
   }
 

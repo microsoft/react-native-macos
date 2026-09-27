@@ -477,7 +477,7 @@ void ObjCInteropTurboModule::setInvocationArg(
       // Handle the special case where there is an argument and it must be nil
       // Without this check, the JS side will receive an object.
       // See: discussion at
-      // https://github.com/facebook/react-native/pull/49250#issuecomment-2668465893
+      // https://github.com/react/react-native/pull/49250#issuecomment-2668465893
       if (arg == [NSNull null]) {
         return;
       }

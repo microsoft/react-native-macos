@@ -1,11 +1,11 @@
 {
   "name": "@react-native/babel-preset",
-  "version": "0.83.0-main",
+  "version": "0.83.10",
   "private": true,
   "description": "Babel preset for React Native applications",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/facebook/react-native.git"
+    "url": "git+ssh://git@github.com/react/react-native.git"
   },
   "keywords": [
     "babel",

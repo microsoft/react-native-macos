@@ -8,7 +8,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "..", "package.json")))
 version = package['version']
 
-source = { :git => 'https://github.com/facebook/react-native.git' }
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = `git rev-parse HEAD`.strip if system("git rev-parse --git-dir > /dev/null 2>&1")
@@ -54,7 +54,7 @@ Pod::Spec.new do |s|
   depend_on_js_engine(s)
   add_rn_third_party_dependencies(s)
   add_rncore_dependency(s)
-  
+
   s.subspec "animated" do |ss|
     ss.source_files         = podspec_sources("react/renderer/animated/**/*.{m,mm,cpp,h}", "react/renderer/animated/**/*.{h}")
     ss.exclude_files        = "react/renderer/animated/tests"
@@ -66,7 +66,7 @@ Pod::Spec.new do |s|
     ss.exclude_files        = "react/renderer/animations/tests"
     ss.header_dir           = "react/renderer/animations"
   end
-  
+
   s.subspec "animationbackend" do |ss|
     ss.source_files         = podspec_sources("react/renderer/animationbackend/**/*.{m,mm,cpp,h}", "react/renderer/animationbackend/**/*.{h}")
     ss.header_dir           = "react/renderer/animationbackend"
@@ -132,6 +132,14 @@ Pod::Spec.new do |s|
       sss.source_files         = "react/renderer/components/view/**/*.{m,mm,cpp,h}" # [macOS]
       sss.exclude_files        = "react/renderer/components/view/tests", "react/renderer/components/view/platform/android", "react/renderer/components/view/platform/windows" # [macOS]
       sss.header_dir           = "react/renderer/components/view"
+      # [macOS Keep the canonical wrappers and their physical headers in separate namespaces.
+      # The view sources also remain present with prebuilt RNCore, where the root mapping is not set.
+      sss.header_mappings_dir  = ENV['USE_FRAMEWORKS'] ? "./" : "react/renderer/components/view"
+      sss.osx.exclude_files    = "react/renderer/components/view/platform/cxx/**/*.h"
+      sss.ios.exclude_files    = "react/renderer/components/view/platform/macos/**/HostPlatform*.h"
+      sss.tvos.exclude_files   = "react/renderer/components/view/platform/macos/**/HostPlatform*.h"
+      sss.visionos.exclude_files = "react/renderer/components/view/platform/macos/**/HostPlatform*.h"
+      # macOS]
     end
 
     ss.subspec "scrollview" do |sss|
@@ -179,6 +187,18 @@ Pod::Spec.new do |s|
       sss.source_files         = podspec_sources("react/renderer/observers/events/**/*.{m,mm,cpp,h}", "react/renderer/observers/events/**/*.h")
       sss.exclude_files        = "react/renderer/observers/events/tests"
       sss.header_dir           = "react/renderer/observers/events"
+    end
+
+    ss.subspec "intersection" do |sss|
+      sss.source_files         = podspec_sources("react/renderer/observers/intersection/**/*.{m,mm,cpp,h}", "react/renderer/observers/intersection/**/*.h")
+      sss.exclude_files        = "react/renderer/observers/intersection/tests"
+      sss.header_dir           = "react/renderer/observers/intersection"
+    end
+
+    ss.subspec "mutation" do |sss|
+      sss.source_files         = podspec_sources("react/renderer/observers/mutation/**/*.{m,mm,cpp,h}", "react/renderer/observers/mutation/**/*.h")
+      sss.exclude_files        = "react/renderer/observers/mutation/tests"
+      sss.header_dir           = "react/renderer/observers/mutation"
     end
   end
 

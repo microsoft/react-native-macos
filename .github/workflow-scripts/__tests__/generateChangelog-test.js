@@ -191,7 +191,7 @@ N/A`;
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.github.com/repos/facebook/react-native/pulls',
+        'https://api.github.com/repos/react/react-native/pulls',
         {
           method: 'POST',
           headers: headers,
@@ -202,8 +202,7 @@ N/A`;
     it('Returns the pr url', async () => {
       const currentVersion = '0.79.0-rc5';
       const token = 'token';
-      const expectedPrURL =
-        'https://github.com/facebook/react-native/pulls/1234';
+      const expectedPrURL = 'https://github.com/react/react-native/pulls/1234';
 
       const returnedObject = {
         status: 201,
@@ -238,7 +237,7 @@ N/A`;
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.github.com/repos/facebook/react-native/pulls',
+        'https://api.github.com/repos/react/react-native/pulls',
         {
           method: 'POST',
           headers: headers,

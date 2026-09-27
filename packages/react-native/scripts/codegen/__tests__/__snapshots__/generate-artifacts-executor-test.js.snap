@@ -79,8 +79,8 @@ exports[`execute test-app "ReactAppDependencyProvider/ReactAppDependencyProvider
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-version = \\"1000.0.0\\"
-source = { :git => 'https://github.com/facebook/react-native.git' }
+version = \\"0.83.0\\"
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = \`git rev-parse HEAD\`.strip if system(\\"git rev-parse --git-dir > /dev/null 2>&1\\")
@@ -399,8 +399,8 @@ exports[`execute test-app "ReactCodegen/ReactCodegen.podspec" should match snaps
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-version = \\"1000.0.0\\"
-source = { :git => 'https://github.com/facebook/react-native.git' }
+version = \\"0.83.0\\"
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = \`git rev-parse HEAD\`.strip if system(\\"git rev-parse --git-dir > /dev/null 2>&1\\")
@@ -586,8 +586,8 @@ exports[`execute test-app-legacy "ReactAppDependencyProvider/ReactAppDependencyP
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-version = \\"1000.0.0\\"
-source = { :git => 'https://github.com/facebook/react-native.git' }
+version = \\"0.83.0\\"
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = \`git rev-parse HEAD\`.strip if system(\\"git rev-parse --git-dir > /dev/null 2>&1\\")
@@ -878,8 +878,8 @@ exports[`execute test-app-legacy "ReactCodegen/ReactCodegen.podspec" should matc
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-version = \\"1000.0.0\\"
-source = { :git => 'https://github.com/facebook/react-native.git' }
+version = \\"0.83.0\\"
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = \`git rev-parse HEAD\`.strip if system(\\"git rev-parse --git-dir > /dev/null 2>&1\\")

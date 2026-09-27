@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<99624bd7682ad34476ac395e8acc43c7>>
+ * @generated SignedSource<<1b5ca84f5d82d6861379191ed93d8b63>>
  */
 
 /**
@@ -96,6 +96,8 @@ class NativeReactNativeFeatureFlags
 
   bool enableInteropViewManagerClassLookUpOptimizationIOS(jsi::Runtime& runtime);
 
+  bool enableIntersectionObserverByDefault(jsi::Runtime& runtime);
+
   bool enableKeyEvents(jsi::Runtime& runtime);
 
   bool enableLayoutAnimationsOnAndroid(jsi::Runtime& runtime);
@@ -105,6 +107,8 @@ class NativeReactNativeFeatureFlags
   bool enableMainQueueCoordinatorOnIOS(jsi::Runtime& runtime);
 
   bool enableModuleArgumentNSNullConversionIOS(jsi::Runtime& runtime);
+
+  bool enableMutationObserverByDefault(jsi::Runtime& runtime);
 
   bool enableNativeCSSParsing(jsi::Runtime& runtime);
 
@@ -144,9 +148,15 @@ class NativeReactNativeFeatureFlags
 
   bool fixMappingOfEventPrioritiesBetweenFabricAndReact(jsi::Runtime& runtime);
 
+  bool fuseboxAssertSingleHostState(jsi::Runtime& runtime);
+
   bool fuseboxEnabledRelease(jsi::Runtime& runtime);
 
+  bool fuseboxFrameRecordingEnabled(jsi::Runtime& runtime);
+
   bool fuseboxNetworkInspectionEnabled(jsi::Runtime& runtime);
+
+  bool fuseboxScreenshotCaptureEnabled(jsi::Runtime& runtime);
 
   bool hideOffscreenVirtualViewsOnIOS(jsi::Runtime& runtime);
 
@@ -159,6 +169,10 @@ class NativeReactNativeFeatureFlags
   double preparedTextCacheSize(jsi::Runtime& runtime);
 
   bool preventShadowTreeCommitExhaustion(jsi::Runtime& runtime);
+
+  bool redBoxV2Android(jsi::Runtime& runtime);
+
+  bool redBoxV2IOS(jsi::Runtime& runtime);
 
   bool shouldPressibilityUseW3CPointerEventsForHover(jsi::Runtime& runtime);
 

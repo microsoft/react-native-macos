@@ -326,7 +326,7 @@ public open class JavaTimerManager(
 
       // If the JS thread is busy for multiple frames we cancel any other pending runnable.
       // We also capture the idleCallbackRunnable to tentatively fix:
-      // https://github.com/facebook/react-native/issues/44842
+      // https://github.com/react/react-native/issues/44842
       currentIdleCallbackRunnable?.cancel()
       currentIdleCallbackRunnable = IdleCallbackRunnable(frameTimeNanos)
       reactApplicationContext.runOnJSQueueThread(currentIdleCallbackRunnable)

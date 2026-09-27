@@ -13,8 +13,10 @@ begin
     )', __dir__]).strip
   )
 rescue => e
-  # Fallback to the parent directory if the above command fails (e.g when building locally in OOT Platform)
-  react_native_path = File.join(__dir__, "..", "..")
+  # [macOS
+  # Fallback to the package directory if the above command fails (e.g when building locally in OOT Platform)
+  react_native_path = File.join(__dir__, "..")
+  # macOS]
 end
 
 # package.json
@@ -28,7 +30,7 @@ Pod::Spec.new do |spec|
   spec.version              = version
   spec.summary              = 'React Native Dependencies'
   spec.description          = 'ReactNativeDependencies is a podspec that contains all the third-party dependencies of React Native.'
-  spec.homepage             = 'https://github.com/facebook/react-native'
+  spec.homepage             = 'https://github.com/react/react-native'
   spec.license              = package['license']
   spec.authors              = 'meta'
   spec.platforms            = min_supported_versions

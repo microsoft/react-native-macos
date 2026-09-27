@@ -8,7 +8,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "../../../../..", "package.json")))
 version = package['version']
 
-source = { :git => 'https://github.com/facebook/react-native.git' }
+source = { :git => 'https://github.com/react/react-native.git' }
 if version == '1000.0.0'
   # This is an unpublished version, use the latest commit hash of the react-native repo, which we’re presumably in.
   source[:commit] = `git rev-parse HEAD`.strip if system("git rev-parse --git-dir > /dev/null 2>&1")
@@ -49,12 +49,12 @@ Pod::Spec.new do |s|
   s.dependency "React-Core/Default"
   s.dependency "React-CoreModules"
   s.dependency "React-NativeModulesApple"
-  s.dependency "React-RCTFabric"
+  add_dependency(s, "React-RCTFabric", :framework_name => "RCTFabric") # [macOS]
   s.dependency "React-RuntimeCore"
   s.dependency "React-Mapbuffer"
   s.dependency "React-jserrorhandler"
   s.dependency "React-jsinspector"
-  s.dependency "React-featureflags"
+  add_dependency(s, "React-featureflags") # [macOS]
   add_dependency(s, "React-jsitooling", :framework_name => "JSITooling")
   add_dependency(s, "React-RCTFBReactNativeSpec")
   add_dependency(s, "React-utils", :additional_framework_paths => ["react/utils/platform/ios"])
