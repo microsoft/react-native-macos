@@ -3,7 +3,7 @@
   "private": true,
   "version": "1000.0.0",
   "license": "MIT",
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "yarn@4.18.1",
   "scripts": {
     "android": "yarn --cwd packages/rn-tester android",
     "build-android": "./gradlew :packages:react-native:ReactAndroid:build",
