@@ -45,12 +45,6 @@ jobs:
         id: configure-publish
         run: node .ado/scripts/configure-publish.mts --verbose
 
-      - name: Configure yarn for npm publishing
-        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
-        run: |
-          yarn config set npmPublishAccess public
-          yarn config set npmPublishRegistry "https://registry.npmjs.org"
-
       - name: Publish packages
         if: steps.configure-publish.outputs.publish_react_native_macos == '1'
         run: |
@@ -58,9 +52,6 @@ jobs:
             --provenance \
             --tag "${{ steps.configure-publish.outputs.publishTag }}" \
             --tolerate-republish
-
-      - name: Remove npm auth configuration
-        if: always()
-        run: |
-          yarn config unset npmPublishAccess || true
-          yarn config unset npmPublishRegistry || true
+        env:
+          YARN_NPM_PUBLISH_ACCESS: public
+          YARN_NPM_PUBLISH_REGISTRY: https://registry.npmjs.org
