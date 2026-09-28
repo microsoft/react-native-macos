@@ -65,7 +65,7 @@
     "@babel/runtime": "^7.25.2",
     "@babel/traverse": "^7.25.2",
     "@babel/types": "^7.25.2",
-    "@changesets/cli": "^2.28.1",
+    "@changesets/cli": "^3.0.3",
     "@electron/packager": "^18.3.6",
     "@expo/spawn-async": "^1.7.2",
     "@jest/create-cache-key-function": "^29.7.0",
