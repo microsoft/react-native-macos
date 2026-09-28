@@ -5,11 +5,9 @@ import * as util from "node:util";
 
 /**
  * Apply additional dist-tags to published packages
- * Usage: node apply-additional-tags.mjs --tags <tags>
+ * Usage: node apply-additional-tags.mjs --tags <tags> --token <token>
  *        node apply-additional-tags.mjs --tags <tags> --dry-run
  * Where tags is a comma-separated list of tags (e.g., "next,v0.79-stable")
- *
- * Auth token is read from the NODE_AUTH_TOKEN environment variable.
  */
 
 const registry = "https://registry.npmjs.org/";
@@ -21,6 +19,7 @@ const packages = [
 /**
  * @typedef {{
  *   tags?: string;
+ *   token?: string;
  *   "dry-run"?: boolean;
  * }} Options;
  */
@@ -29,18 +28,14 @@ const packages = [
  * @param {Options} options
  * @returns {number}
  */
-function main({ tags, "dry-run": dryRun }) {
+function main({ tags, token, "dry-run": dryRun }) {
   if (!tags) {
     console.log("No additional tags to apply");
     return 0;
   }
 
-  const token = process.env.NODE_AUTH_TOKEN;
-
   if (!dryRun && !token) {
-    console.error(
-      "Error: NODE_AUTH_TOKEN is required (use --dry-run to preview)"
-    );
+    console.error("Error: npm auth token is required (use --dry-run to preview)");
     return 1;
   }
 
@@ -63,10 +58,17 @@ function main({ tags, "dry-run": dryRun }) {
   for (const tag of tags.split(",")) {
     for (const pkg of packages) {
       console.log(`Adding dist-tag '${tag}' to ${pkg}@${version}`);
-
       const result = spawnSync(
         "npm",
-        ["dist-tag", "add", `${pkg}@${version}`, tag, "--registry", registry],
+        [
+          "dist-tag",
+          "add",
+          `${pkg}@${version}`,
+          tag,
+          "--registry",
+          registry,
+          `--//registry.npmjs.org/:_authToken=${token}`,
+        ],
         { stdio: "inherit", shell: true }
       );
 
@@ -84,6 +86,9 @@ const { values } = util.parseArgs({
   args: process.argv.slice(2),
   options: {
     tags: {
+      type: "string",
+    },
+    token: {
       type: "string",
     },
     "dry-run": {
