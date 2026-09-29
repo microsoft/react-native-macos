@@ -63,9 +63,20 @@ jobs:
         id: configure-publish
         run: node .ado/scripts/configure-publish.mts --verbose
 
+      - name: Generate token for version PR
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-pull-requests: write # version PRs (Changesets)
+
       - name: Version packages
         id: version
         uses: changesets/action/version@v2
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: yarn changeset:version
 
   publish:
     if: needs.select-mode.outputs.mode == 'publish'
@@ -91,11 +102,17 @@ jobs:
       - name: Verify release config
         id: configure-publish
         run: node .ado/scripts/configure-publish.mts --verbose
+  
+      - name: Generate token for version PR
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-contents: write # for GH releases and Git tags (Changesets)
 
       - name: Publish packages
         uses: changesets/action/publish@v2
         with:
           pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
-        env:
-          YARN_NPM_PUBLISH_ACCESS: public
-          YARN_NPM_PUBLISH_REGISTRY: https://registry.npmjs.org
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
