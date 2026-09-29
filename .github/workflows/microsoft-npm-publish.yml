@@ -4,39 +4,115 @@ on:
   push:
     branches:
       - "*-stable"
+    workflow_dispatch:
 
+# recommended: reset permissions and explicitly specify for each job
+permissions: {}
+
+# recommended: avoid concurrent runs for the same branch
 concurrency:
-  # Serialize release lines because they share the latest and next tags.
-  group: npm-publish
-  # GitHub.com supports up to 100 pending runs; do not replace a release push.
-  queue: max
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  publish:
-    name: Publish to npm
-    runs-on: ubuntu-latest
-
+  select-mode:
     if: github.repository == 'microsoft/react-native-macos'
-
-    # Matches the environment name registered as a Trusted Publisher on npmjs.com.
-    environment: npm-publish
-
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.select-mode.outputs.mode }}
+      publish-plan-artifact-id: ${{ steps.select-mode.outputs.publish-plan-artifact-id }}
     permissions:
-      contents: read
-      id-token: write
-
+      contents: read # to check out repo (actions/checkout)
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Check out repo
+        uses: actions/checkout@v7
         with:
-          filter: blob:none
-          fetch-depth: 0
+          persist-credentials: false # recommended: do not persist git credentials on disk
 
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Select Changesets mode
+        id: select-mode
+        uses: changesets/action/select-mode@v2
+
+  version:
+    if: needs.select-mode.outputs.mode == 'version' && github.repository == 'microsoft/react-native-macos'
+    needs: select-mode
+    runs-on: ubuntu-latest
+    outputs:
+      version-dir-artifact-id: ${{ steps.version.outputs.version-dir-artifact-id }}
+    permissions:
+      contents: write # to check out repo (actions/checkout) and commit version changes (changesets/action/version)
+      pull-requests: write # to create pull request (changesets/action/version)
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v7
         with:
-          node-version: "22"
+          persist-credentials: false # recommended: do not persist git credentials on disk
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+
+      - name: Install dependencies
+        run: yarn install --immutable
+  
+      - name: Verify release config
+        id: configure-publish
+        run: node .ado/scripts/configure-publish.mts --verbose
+
+      - name: Version packages
+        id: version
+        uses: changesets/action/version@v2
+
+  pack:
+    if: needs.select-mode.outputs.mode == 'publish'
+    needs: select-mode
+    runs-on: ubuntu-latest
+    outputs:
+      pack-dir-artifact-id: ${{ steps.pack.outputs.pack-dir-artifact-id }}
+    permissions:
+      contents: read # to check out repo (actions/checkout)
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false # recommended: do not persist git credentials on disk
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Verify release config
+        id: configure-publish
+        run: node .ado/scripts/configure-publish.mts --verbose
+
+      - name: Pack packages
+        id: pack
+        uses: changesets/action/pack@v2
+        with:
+          publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
+
+  publish:
+    needs: pack
+    runs-on: ubuntu-latest
+    # Matches the environment name registered as a Trusted Publisher on npmjs.com.
+    environment: npm-publish
+    permissions:
+      contents: write # to check out repo (actions/checkout) and to create releases (changesets/action/publish)
+      id-token: write # for trusted publishing (changesets/action/publish)
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false # recommended: do not persist git credentials on disk
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -46,12 +122,9 @@ jobs:
         run: node .ado/scripts/configure-publish.mts --verbose
 
       - name: Publish packages
-        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
-        run: |
-          yarn workspaces foreach -vv --all --topological --no-private npm publish \
-            --provenance \
-            --tag "${{ steps.configure-publish.outputs.publishTag }}" \
-            --tolerate-republish
+        uses: changesets/action/publish@v2
+        with:
+          pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
         env:
           YARN_NPM_PUBLISH_ACCESS: public
           YARN_NPM_PUBLISH_REGISTRY: https://registry.npmjs.org
