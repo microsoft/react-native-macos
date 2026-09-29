@@ -2,6 +2,8 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/docsite"
+    cooldown:
+      default-days: 7
     schedule:
       interval: "weekly"
     groups:
@@ -16,15 +18,20 @@ updates:
       - "/packages/react-native"
       - "/packages/react-native-macos-init"
       - "/packages/virtualized-lists"
+    cooldown:
+      default-days: 7
     schedule:
       interval: "weekly"
     groups:
       all:
         patterns:
           - "*"
+    versioning-strategy: "lockfile-only"
 
   - package-ecosystem: "github-actions"
     directory: "/"
+    cooldown:
+      default-days: 7
     schedule:
       interval: "weekly"
     groups:
