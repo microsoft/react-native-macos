@@ -1,10 +1,10 @@
-name: Publish to npm
+name: Changesets
 
 on:
   push:
     branches:
       - "*-stable"
-    workflow_dispatch:
+  workflow_dispatch:
 
 # recommended: reset permissions and explicitly specify for each job
 permissions: {}

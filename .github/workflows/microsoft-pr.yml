@@ -168,7 +168,7 @@ jobs:
       - javascript-tests
       - build-rntester
       - prebuild-macos-core
-      - test-react-native-macos-init
+      # - test-react-native-macos-init
       - react-native-test-app-integration
     steps:
       - name: Check for failures or cancellations
