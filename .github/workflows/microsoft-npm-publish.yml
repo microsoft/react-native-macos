@@ -39,7 +39,7 @@ jobs:
         uses: changesets/action/select-mode@v2
 
   version:
-    if: needs.select-mode.outputs.mode == 'version' && github.repository == 'microsoft/react-native-macos'
+    if: needs.select-mode.outputs.mode == 'version'
     needs: select-mode
     runs-on: ubuntu-latest
     outputs:
@@ -63,39 +63,21 @@ jobs:
         id: configure-publish
         run: node .ado/scripts/configure-publish.mts --verbose
 
+      - name: Generate token for version PR
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-contents: write # for GH releases and Git tags (Changesets)
+          permission-pull-requests: write # version PRs (Changesets)
+
       - name: Version packages
         id: version
         uses: changesets/action/version@v2
-
-  pack:
-    if: needs.select-mode.outputs.mode == 'publish'
-    needs: select-mode
-    runs-on: ubuntu-latest
-    outputs:
-      pack-dir-artifact-id: ${{ steps.pack.outputs.pack-dir-artifact-id }}
-    permissions:
-      contents: read # to check out repo (actions/checkout)
-    steps:
-      - name: Check out repo
-        uses: actions/checkout@v7
         with:
-          persist-credentials: false # recommended: do not persist git credentials on disk
-
-      - name: Setup toolchain
-        uses: ./.github/actions/microsoft-setup-toolchain
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Verify release config
-        id: configure-publish
-        run: node .ado/scripts/configure-publish.mts --verbose
-
-      - name: Pack packages
-        id: pack
-        uses: changesets/action/pack@v2
-        with:
-          publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: yarn changeset:version
 
   publish:
     needs: pack
@@ -121,10 +103,18 @@ jobs:
         id: configure-publish
         run: node .ado/scripts/configure-publish.mts --verbose
 
+      - name: Generate token for version PR
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-contents: write # for GH releases and Git tags (Changesets)
+
       - name: Publish packages
         uses: changesets/action/publish@v2
         with:
-          pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
+          github-token: ${{ steps.app-token.outputs.token }}
         env:
           YARN_NPM_PUBLISH_ACCESS: public
           YARN_NPM_PUBLISH_REGISTRY: https://registry.npmjs.org
