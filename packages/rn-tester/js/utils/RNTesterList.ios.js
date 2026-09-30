@@ -197,6 +197,11 @@ const APIs: Array<RNTesterModuleInfo> = ([
   {
     key: 'Focus Ring',
     module: require('../examples/FocusRing/FocusRingExample'),
+  },
+  {
+    key: 'WindowManagerExample',
+    module: require('../examples/WindowManager/WindowManagerExample'),
+    category: 'macOS',
   }, // macOS]
   {
     key: 'AccessibilityExample',
