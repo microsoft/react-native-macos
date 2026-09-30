@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<6bc2fbc946e21d0b51dd9bc71ac041e7>>
+ * @generated SignedSource<<db4650fb28b7c07c73eb75775a7e7811>>
  * @flow strict
  * @noformat
  */
@@ -40,6 +40,7 @@ export type ReactNativeFeatureFlagsJsOnly = $ReadOnly<{
   reduceDefaultPropsInImage: Getter<boolean>,
   reduceDefaultPropsInText: Getter<boolean>,
   shouldUseAnimatedObjectForTransform: Getter<boolean>,
+  shouldUseLinkRoleForPressableText: Getter<boolean>,
   shouldUseRemoveClippedSubviewsAsDefaultOnIOS: Getter<boolean>,
   shouldUseSetNativePropsInFabric: Getter<boolean>,
   virtualViewActivityBehavior: Getter<string>,
@@ -53,14 +54,16 @@ export type ReactNativeFeatureFlags = $ReadOnly<{
   commonTestFlagWithoutNativeImplementation: Getter<boolean>,
   cdpInteractionMetricsEnabled: Getter<boolean>,
   cxxNativeAnimatedEnabled: Getter<boolean>,
-  cxxNativeAnimatedRemoveJsSync: Getter<boolean>,
   disableEarlyViewCommandExecution: Getter<boolean>,
-  disableFabricCommitInCXXAnimated: Getter<boolean>,
+  disableImageViewPreallocationAndroid: Getter<boolean>,
   disableMountItemReorderingAndroid: Getter<boolean>,
   disableOldAndroidAttachmentMetricsWorkarounds: Getter<boolean>,
+  disableSubviewClippingAndroid: Getter<boolean>,
   disableTextLayoutManagerCacheAndroid: Getter<boolean>,
+  disableViewPreallocationAndroid: Getter<boolean>,
   enableAccessibilityOrder: Getter<boolean>,
   enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean>,
+  enableAndroidAntialiasedBorderRadiusClipping: Getter<boolean>,
   enableAndroidLinearText: Getter<boolean>,
   enableAndroidTextMeasurementOptimizations: Getter<boolean>,
   enableBridgelessArchitecture: Getter<boolean>,
@@ -70,16 +73,19 @@ export type ReactNativeFeatureFlags = $ReadOnly<{
   enableDoubleMeasurementFixAndroid: Getter<boolean>,
   enableEagerMainQueueModulesOnIOS: Getter<boolean>,
   enableEagerRootViewAttachment: Getter<boolean>,
+  enableExclusivePropsUpdateAndroid: Getter<boolean>,
   enableFabricLogs: Getter<boolean>,
   enableFabricRenderer: Getter<boolean>,
   enableFontScaleChangesUpdatingLayout: Getter<boolean>,
   enableIOSTextBaselineOffsetPerLine: Getter<boolean>,
   enableIOSViewClipToPaddingBox: Getter<boolean>,
   enableImagePrefetchingAndroid: Getter<boolean>,
+  enableImagePrefetchingJNIBatchingAndroid: Getter<boolean>,
   enableImagePrefetchingOnUiThreadAndroid: Getter<boolean>,
   enableImmediateUpdateModeForContentOffsetChanges: Getter<boolean>,
   enableImperativeFocus: Getter<boolean>,
   enableInteropViewManagerClassLookUpOptimizationIOS: Getter<boolean>,
+  enableIntersectionObserverByDefault: Getter<boolean>,
   enableKeyEvents: Getter<boolean>,
   enableLayoutAnimationsOnAndroid: Getter<boolean>,
   enableLayoutAnimationsOnIOS: Getter<boolean>,
@@ -89,7 +95,6 @@ export type ReactNativeFeatureFlags = $ReadOnly<{
   enableNetworkEventReporting: Getter<boolean>,
   enablePreparedTextLayout: Getter<boolean>,
   enablePropsUpdateReconciliationAndroid: Getter<boolean>,
-  enableResourceTimingAPI: Getter<boolean>,
   enableSwiftUIBasedFilters: Getter<boolean>,
   enableViewCulling: Getter<boolean>,
   enableViewRecycling: Getter<boolean>,
@@ -97,13 +102,14 @@ export type ReactNativeFeatureFlags = $ReadOnly<{
   enableViewRecyclingForScrollView: Getter<boolean>,
   enableViewRecyclingForText: Getter<boolean>,
   enableViewRecyclingForView: Getter<boolean>,
-  enableVirtualViewClippingWithoutScrollViewClipping: Getter<boolean>,
   enableVirtualViewContainerStateExperimental: Getter<boolean>,
   enableVirtualViewDebugFeatures: Getter<boolean>,
   enableVirtualViewRenderState: Getter<boolean>,
   enableVirtualViewWindowFocusDetection: Getter<boolean>,
   enableWebPerformanceAPIsByDefault: Getter<boolean>,
   fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean>,
+  fixTextClippingAndroid15useBoundsForWidth: Getter<boolean>,
+  fuseboxAssertSingleHostState: Getter<boolean>,
   fuseboxEnabledRelease: Getter<boolean>,
   fuseboxNetworkInspectionEnabled: Getter<boolean>,
   hideOffscreenVirtualViewsOnIOS: Getter<boolean>,
@@ -113,17 +119,17 @@ export type ReactNativeFeatureFlags = $ReadOnly<{
   preparedTextCacheSize: Getter<number>,
   preventShadowTreeCommitExhaustion: Getter<boolean>,
   shouldPressibilityUseW3CPointerEventsForHover: Getter<boolean>,
+  shouldResetClickableWhenRecyclingView: Getter<boolean>,
+  shouldResetOnClickListenerWhenRecyclingView: Getter<boolean>,
+  shouldSetEnabledBasedOnAccessibilityState: Getter<boolean>,
+  shouldSetIsClickableByDefault: Getter<boolean>,
   shouldTriggerResponderTransferOnScrollAndroid: Getter<boolean>,
   skipActivityIdentityAssertionOnHostPause: Getter<boolean>,
-  sweepActiveTouchOnChildNativeGesturesAndroid: Getter<boolean>,
   traceTurboModulePromiseRejectionsOnAndroid: Getter<boolean>,
   updateRuntimeShadowNodeReferencesOnCommit: Getter<boolean>,
   useAlwaysAvailableJSErrorHandling: Getter<boolean>,
   useFabricInterop: Getter<boolean>,
-  useNativeEqualsInNativeReadableArrayAndroid: Getter<boolean>,
-  useNativeTransformHelperAndroid: Getter<boolean>,
   useNativeViewConfigsInBridgelessMode: Getter<boolean>,
-  useOptimizedEventBatchingOnAndroid: Getter<boolean>,
   useRawPropsJsiValue: Getter<boolean>,
   useShadowNodeStateOnClone: Getter<boolean>,
   useSharedAnimatedBackend: Getter<boolean>,
@@ -196,6 +202,11 @@ export const reduceDefaultPropsInText: Getter<boolean> = createJavaScriptFlagGet
 export const shouldUseAnimatedObjectForTransform: Getter<boolean> = createJavaScriptFlagGetter('shouldUseAnimatedObjectForTransform', false);
 
 /**
+ * Set accessibilityRole to "link" for pressable Text components by default.
+ */
+export const shouldUseLinkRoleForPressableText: Getter<boolean> = createJavaScriptFlagGetter('shouldUseLinkRoleForPressableText', true);
+
+/**
  * removeClippedSubviews prop will be used as the default in FlatList on iOS to match Android
  */
 export const shouldUseRemoveClippedSubviewsAsDefaultOnIOS: Getter<boolean> = createJavaScriptFlagGetter('shouldUseRemoveClippedSubviewsAsDefaultOnIOS', false);
@@ -227,17 +238,13 @@ export const cdpInteractionMetricsEnabled: Getter<boolean> = createNativeFlagGet
  */
 export const cxxNativeAnimatedEnabled: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedEnabled', false);
 /**
- * Removes JS sync at end of native animation
- */
-export const cxxNativeAnimatedRemoveJsSync: Getter<boolean> = createNativeFlagGetter('cxxNativeAnimatedRemoveJsSync', false);
-/**
  * Dispatch view commands in mount item order.
  */
 export const disableEarlyViewCommandExecution: Getter<boolean> = createNativeFlagGetter('disableEarlyViewCommandExecution', false);
 /**
- * Prevents use of Fabric commit in C++ Animated implementation
+ * Force disable view preallocation for images triggered from createNode off the main thread on Android
  */
-export const disableFabricCommitInCXXAnimated: Getter<boolean> = createNativeFlagGetter('disableFabricCommitInCXXAnimated', false);
+export const disableImageViewPreallocationAndroid: Getter<boolean> = createNativeFlagGetter('disableImageViewPreallocationAndroid', false);
 /**
  * Prevent FabricMountingManager from reordering mountItems, which may lead to invalid state on the UI thread
  */
@@ -247,9 +254,17 @@ export const disableMountItemReorderingAndroid: Getter<boolean> = createNativeFl
  */
 export const disableOldAndroidAttachmentMetricsWorkarounds: Getter<boolean> = createNativeFlagGetter('disableOldAndroidAttachmentMetricsWorkarounds', true);
 /**
+ * Force disable subview clipping for ReactViewGroup on Android
+ */
+export const disableSubviewClippingAndroid: Getter<boolean> = createNativeFlagGetter('disableSubviewClippingAndroid', false);
+/**
  * Turns off the global measurement cache used by TextLayoutManager on Android.
  */
 export const disableTextLayoutManagerCacheAndroid: Getter<boolean> = createNativeFlagGetter('disableTextLayoutManagerCacheAndroid', false);
+/**
+ * Force disable view preallocation triggered from createNode off the main thread on Android
+ */
+export const disableViewPreallocationAndroid: Getter<boolean> = createNativeFlagGetter('disableViewPreallocationAndroid', false);
 /**
  * When enabled, the accessibilityOrder prop will propagate to native platforms and define the accessibility order.
  */
@@ -258,6 +273,10 @@ export const enableAccessibilityOrder: Getter<boolean> = createNativeFlagGetter(
  * When enabled, Android will accumulate updates in rawProps to reduce the number of mounting instructions for cascading re-renders.
  */
 export const enableAccumulatedUpdatesInRawPropsAndroid: Getter<boolean> = createNativeFlagGetter('enableAccumulatedUpdatesInRawPropsAndroid', false);
+/**
+ * Enable antialiased border radius clipping for Android API 28 and below using manual masking with Porter-Duff compositing
+ */
+export const enableAndroidAntialiasedBorderRadiusClipping: Getter<boolean> = createNativeFlagGetter('enableAndroidAntialiasedBorderRadiusClipping', false);
 /**
  * Enables linear text rendering on Android wherever subpixel text rendering is enabled
  */
@@ -295,6 +314,10 @@ export const enableEagerMainQueueModulesOnIOS: Getter<boolean> = createNativeFla
  */
 export const enableEagerRootViewAttachment: Getter<boolean> = createNativeFlagGetter('enableEagerRootViewAttachment', false);
 /**
+ * When enabled, Android will disable Props 1.5 raw value merging when Props 2.0 is available.
+ */
+export const enableExclusivePropsUpdateAndroid: Getter<boolean> = createNativeFlagGetter('enableExclusivePropsUpdateAndroid', false);
+/**
  * This feature flag enables logs for Fabric.
  */
 export const enableFabricLogs: Getter<boolean> = createNativeFlagGetter('enableFabricLogs', false);
@@ -319,6 +342,10 @@ export const enableIOSViewClipToPaddingBox: Getter<boolean> = createNativeFlagGe
  */
 export const enableImagePrefetchingAndroid: Getter<boolean> = createNativeFlagGetter('enableImagePrefetchingAndroid', false);
 /**
+ * When enabled, Android will build and initiate image prefetch requests on ImageShadowNode::layout and batch them together in a single JNI call
+ */
+export const enableImagePrefetchingJNIBatchingAndroid: Getter<boolean> = createNativeFlagGetter('enableImagePrefetchingJNIBatchingAndroid', false);
+/**
  * When enabled, Android will initiate image prefetch requested on ImageShadowNode::layout on the UI thread
  */
 export const enableImagePrefetchingOnUiThreadAndroid: Getter<boolean> = createNativeFlagGetter('enableImagePrefetchingOnUiThreadAndroid', false);
@@ -334,6 +361,10 @@ export const enableImperativeFocus: Getter<boolean> = createNativeFlagGetter('en
  * This is to fix the issue with interop view manager where component descriptor lookup is causing ViewManager to preload.
  */
 export const enableInteropViewManagerClassLookUpOptimizationIOS: Getter<boolean> = createNativeFlagGetter('enableInteropViewManagerClassLookUpOptimizationIOS', false);
+/**
+ * Enables the IntersectionObserver Web API in React Native.
+ */
+export const enableIntersectionObserverByDefault: Getter<boolean> = createNativeFlagGetter('enableIntersectionObserverByDefault', false);
 /**
  * Enables key up/down/press events to be sent to JS from components
  */
@@ -359,9 +390,9 @@ export const enableModuleArgumentNSNullConversionIOS: Getter<boolean> = createNa
  */
 export const enableNativeCSSParsing: Getter<boolean> = createNativeFlagGetter('enableNativeCSSParsing', false);
 /**
- * Enable network event reporting hooks in each native platform through `NetworkReporter`. This flag should be combined with `enableResourceTimingAPI` and `fuseboxNetworkInspectionEnabled` to enable end-to-end reporting behaviour via the Web Performance API and CDP debugging respectively.
+ * Enable network event reporting hooks in each native platform through `NetworkReporter` (Web Perf APIs + CDP). This flag should be combined with `fuseboxNetworkInspectionEnabled` to enable Network CDP debugging.
  */
-export const enableNetworkEventReporting: Getter<boolean> = createNativeFlagGetter('enableNetworkEventReporting', false);
+export const enableNetworkEventReporting: Getter<boolean> = createNativeFlagGetter('enableNetworkEventReporting', true);
 /**
  * Enables caching text layout artifacts for later reuse
  */
@@ -370,10 +401,6 @@ export const enablePreparedTextLayout: Getter<boolean> = createNativeFlagGetter(
  * When enabled, Android will receive prop updates based on the differences between the last rendered shadow node and the last committed shadow node.
  */
 export const enablePropsUpdateReconciliationAndroid: Getter<boolean> = createNativeFlagGetter('enablePropsUpdateReconciliationAndroid', false);
-/**
- * Enables the reporting of network resource timings through `PerformanceObserver`.
- */
-export const enableResourceTimingAPI: Getter<boolean> = createNativeFlagGetter('enableResourceTimingAPI', false);
 /**
  * When enabled, it will use SwiftUI for filter effects like blur on iOS.
  */
@@ -403,10 +430,6 @@ export const enableViewRecyclingForText: Getter<boolean> = createNativeFlagGette
  */
 export const enableViewRecyclingForView: Getter<boolean> = createNativeFlagGetter('enableViewRecyclingForView', true);
 /**
- * Set clipping to drawingRect of ScrollView.
- */
-export const enableVirtualViewClippingWithoutScrollViewClipping: Getter<boolean> = createNativeFlagGetter('enableVirtualViewClippingWithoutScrollViewClipping', true);
-/**
  * Enables the experimental version of `VirtualViewContainerState`.
  */
 export const enableVirtualViewContainerStateExperimental: Getter<boolean> = createNativeFlagGetter('enableVirtualViewContainerStateExperimental', false);
@@ -431,13 +454,21 @@ export const enableWebPerformanceAPIsByDefault: Getter<boolean> = createNativeFl
  */
 export const fixMappingOfEventPrioritiesBetweenFabricAndReact: Getter<boolean> = createNativeFlagGetter('fixMappingOfEventPrioritiesBetweenFabricAndReact', false);
 /**
+ * Fix text clipping starting in Android 15 due to usage of useBoundsForWidth
+ */
+export const fixTextClippingAndroid15useBoundsForWidth: Getter<boolean> = createNativeFlagGetter('fixTextClippingAndroid15useBoundsForWidth', false);
+/**
+ * Enable system assertion validating that Fusebox is configured with a single host. When set, the CDP backend will dynamically disable features (Perf and Network) in the event that multiple hosts are registered (undefined behaviour), and broadcast this over `ReactNativeApplication.systemStateChanged`.
+ */
+export const fuseboxAssertSingleHostState: Getter<boolean> = createNativeFlagGetter('fuseboxAssertSingleHostState', true);
+/**
  * Flag determining if the React Native DevTools (Fusebox) CDP backend should be enabled in release builds. This flag is global and should not be changed across React Host lifetimes.
  */
 export const fuseboxEnabledRelease: Getter<boolean> = createNativeFlagGetter('fuseboxEnabledRelease', false);
 /**
  * Enable network inspection support in the React Native DevTools CDP backend. Requires `enableBridgelessArchitecture`. This flag is global and should not be changed across React Host lifetimes.
  */
-export const fuseboxNetworkInspectionEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxNetworkInspectionEnabled', false);
+export const fuseboxNetworkInspectionEnabled: Getter<boolean> = createNativeFlagGetter('fuseboxNetworkInspectionEnabled', true);
 /**
  * Hides offscreen VirtualViews on iOS by setting hidden = YES to avoid extra cost of views
  */
@@ -447,7 +478,7 @@ export const hideOffscreenVirtualViewsOnIOS: Getter<boolean> = createNativeFlagG
  */
 export const overrideBySynchronousMountPropsAtMountingAndroid: Getter<boolean> = createNativeFlagGetter('overrideBySynchronousMountPropsAtMountingAndroid', false);
 /**
- * Enable reporting Performance Issues (`detail.rnPerfIssue`). Displayed in the V2 Performance Monitor and the "Performance Issues" sub-panel in DevTools.
+ * Enable reporting Performance Issues (`detail.devtools.performanceIssue`). Displayed in the V2 Performance Monitor and the "Performance Issues" sub-panel in DevTools.
  */
 export const perfIssuesEnabled: Getter<boolean> = createNativeFlagGetter('perfIssuesEnabled', false);
 /**
@@ -467,6 +498,22 @@ export const preventShadowTreeCommitExhaustion: Getter<boolean> = createNativeFl
  */
 export const shouldPressibilityUseW3CPointerEventsForHover: Getter<boolean> = createNativeFlagGetter('shouldPressibilityUseW3CPointerEventsForHover', false);
 /**
+ * Reset isClickable to false when recycling views on Android to avoid accessibility tools finding views with incorrect state after recycling.
+ */
+export const shouldResetClickableWhenRecyclingView: Getter<boolean> = createNativeFlagGetter('shouldResetClickableWhenRecyclingView', true);
+/**
+ * Reset OnClickListener to null when recycling views on Android to avoid accessibility tools finding views with incorrect state after recycling.
+ */
+export const shouldResetOnClickListenerWhenRecyclingView: Getter<boolean> = createNativeFlagGetter('shouldResetOnClickListenerWhenRecyclingView', true);
+/**
+ * Fix BaseViewManager to properly set view.setEnabled() based on accessibilityState.disabled.
+ */
+export const shouldSetEnabledBasedOnAccessibilityState: Getter<boolean> = createNativeFlagGetter('shouldSetEnabledBasedOnAccessibilityState', true);
+/**
+ * Sets isClickable=true by default on all React Native views on Android to improve UI harvesting detection while maintaining focusable=false to preserve expected behavior.
+ */
+export const shouldSetIsClickableByDefault: Getter<boolean> = createNativeFlagGetter('shouldSetIsClickableByDefault', false);
+/**
  * Do not emit touchcancel from Android ScrollView, instead native topScroll event will trigger responder transfer and terminate in RN renderer.
  */
 export const shouldTriggerResponderTransferOnScrollAndroid: Getter<boolean> = createNativeFlagGetter('shouldTriggerResponderTransferOnScrollAndroid', false);
@@ -474,10 +521,6 @@ export const shouldTriggerResponderTransferOnScrollAndroid: Getter<boolean> = cr
  * Skip activity identity assertion in ReactHostImpl::onHostPause()
  */
 export const skipActivityIdentityAssertionOnHostPause: Getter<boolean> = createNativeFlagGetter('skipActivityIdentityAssertionOnHostPause', false);
-/**
- * A flag to tell Fabric to sweep active touches from JSTouchDispatcher in Android when a child native gesture is started.
- */
-export const sweepActiveTouchOnChildNativeGesturesAndroid: Getter<boolean> = createNativeFlagGetter('sweepActiveTouchOnChildNativeGesturesAndroid', true);
 /**
  * Enables storing js caller stack when creating promise in native module. This is useful in case of Promise rejection and tracing the cause.
  */
@@ -495,21 +538,9 @@ export const useAlwaysAvailableJSErrorHandling: Getter<boolean> = createNativeFl
  */
 export const useFabricInterop: Getter<boolean> = createNativeFlagGetter('useFabricInterop', true);
 /**
- * Use a native implementation of equals in NativeReadableArray.
- */
-export const useNativeEqualsInNativeReadableArrayAndroid: Getter<boolean> = createNativeFlagGetter('useNativeEqualsInNativeReadableArrayAndroid', true);
-/**
- * Use a native implementation of TransformHelper
- */
-export const useNativeTransformHelperAndroid: Getter<boolean> = createNativeFlagGetter('useNativeTransformHelperAndroid', true);
-/**
  * When enabled, the native view configs are used in bridgeless mode.
  */
 export const useNativeViewConfigsInBridgelessMode: Getter<boolean> = createNativeFlagGetter('useNativeViewConfigsInBridgelessMode', false);
-/**
- * Uses an optimized mechanism for event batching on Android that does not need to wait for a Choreographer frame callback.
- */
-export const useOptimizedEventBatchingOnAndroid: Getter<boolean> = createNativeFlagGetter('useOptimizedEventBatchingOnAndroid', false);
 /**
  * Instead of using folly::dynamic as internal representation in RawProps and RawValue, use jsi::Value
  */
@@ -517,7 +548,7 @@ export const useRawPropsJsiValue: Getter<boolean> = createNativeFlagGetter('useR
 /**
  * Use the state stored on the source shadow node when cloning it instead of reading in the most recent state on the shadow node family.
  */
-export const useShadowNodeStateOnClone: Getter<boolean> = createNativeFlagGetter('useShadowNodeStateOnClone', false);
+export const useShadowNodeStateOnClone: Getter<boolean> = createNativeFlagGetter('useShadowNodeStateOnClone', true);
 /**
  * Use shared animation backend in C++ Animated
  */

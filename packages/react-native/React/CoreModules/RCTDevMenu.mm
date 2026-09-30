@@ -545,6 +545,14 @@ RCT_EXPORT_METHOD(show)
   }
 #endif // [macOS]
 
+#if TARGET_OS_OSX // [macOS
+  NSString *bridgeDescription = _bridge.bridgeDescription;
+  NSString *description =
+      bridgeDescription.length > 0 ? [NSString stringWithFormat:@"Running %@", bridgeDescription] : nil;
+  NSString *devMenuType = [self.bridge isKindOfClass:RCTBridge.class] ? @"Bridge" : @"Bridgeless";
+  NSString *devMenuTitle = [NSString stringWithFormat:@"React Native Dev Menu (%@)", devMenuType];
+#endif // macOS]
+
 #if !TARGET_OS_OSX // [macOS]
   // On larger devices we don't have an anchor point for the action sheet
   UIAlertControllerStyle style = [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone
@@ -581,7 +589,8 @@ RCT_EXPORT_METHOD(show)
   [RCTPresentedViewController() presentViewController:_actionSheet animated:YES completion:nil];
 #else // [macOS
   _alert = [NSAlert new];
-  [_alert setMessageText:@"React Native Dev Menu"];
+  [_alert setMessageText:devMenuTitle];
+  [_alert setInformativeText:description];
   [_alert setAlertStyle:NSAlertStyleInformational];
 
   NSArray<RCTDevMenuItem *> *items = [self _menuItemsToPresent];

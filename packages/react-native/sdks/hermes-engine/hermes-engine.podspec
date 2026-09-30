@@ -10,7 +10,7 @@ require_relative "./hermes-utils.rb"
 begin
   react_native_path = File.dirname(Pod::Executable.execute_command('node', ['-p',
     'require.resolve(
-    "react-native-macos",
+    "react-native-macos", 
     {paths: [process.argv[1]]},
     )', __dir__]).strip
   )
@@ -21,12 +21,24 @@ end
 
 # package.json
 package = JSON.parse(File.read(File.join(react_native_path, "package.json")))
-versionProperties = Hash[*File.read("version.properties").split(/[=\n]+/)]
+version = findMatchingHermesVersion(package) # [macOS] Use special logic instead of just package['version']
 
-if ENV['RCT_HERMES_V1_ENABLED'] == "1"
-  version = versionProperties['HERMES_V1_VERSION_NAME']
-else
-  version = versionProperties['HERMES_VERSION_NAME']
+if version.nil?
+  versionProperties = Hash[*File.read("version.properties").split(/[=\n]+/)]
+
+  if ENV['RCT_HERMES_V1_ENABLED'] == "1"
+    version = versionProperties['HERMES_V1_VERSION_NAME']
+  else
+    version = versionProperties['HERMES_VERSION_NAME']
+  end
+
+  # Local monorepo build
+  if package['version'] == "1000.0.0" then
+    hermesCompilerVersion = package['dependencies']['hermes-compiler']
+    if hermesCompilerVersion != "0.0.0" then
+      version = hermesCompilerVersion
+    end
+  end
 end
 
 source_type = hermes_source_type(version, react_native_path)
@@ -75,10 +87,7 @@ Pod::Spec.new do |spec|
     # In other cases, when using Hermes V1, the prebuilt versioned binaries can be used.
     if source_type != HermesEngineSourceType::LOCAL_PREBUILT_TARBALL
       hermes_compiler_path = File.dirname(Pod::Executable.execute_command('node', ['-p',
-        'require.resolve(
-        "hermes-compiler",
-        {paths: [process.argv[1]]}
-        )', __dir__]).strip
+        "require.resolve(\"hermes-compiler\", {paths: [\"#{react_native_path}\"]})", __dir__]).strip
       )
 
       spec.user_target_xcconfig = {

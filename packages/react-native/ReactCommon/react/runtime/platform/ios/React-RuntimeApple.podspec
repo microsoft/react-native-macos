@@ -49,12 +49,12 @@ Pod::Spec.new do |s|
   s.dependency "React-Core/Default"
   s.dependency "React-CoreModules"
   s.dependency "React-NativeModulesApple"
-  s.dependency "React-RCTFabric"
+  add_dependency(s, "React-RCTFabric", :framework_name => "RCTFabric")
   s.dependency "React-RuntimeCore"
   s.dependency "React-Mapbuffer"
   s.dependency "React-jserrorhandler"
   s.dependency "React-jsinspector"
-  s.dependency "React-featureflags"
+  add_dependency(s, "React-featureflags")
   add_dependency(s, "React-jsitooling", :framework_name => "JSITooling")
   add_dependency(s, "React-RCTFBReactNativeSpec")
   add_dependency(s, "React-utils", :additional_framework_paths => ["react/utils/platform/ios"])

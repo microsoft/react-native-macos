@@ -25,10 +25,10 @@
 
 const babel = require('@babel/core');
 const fs = require('fs');
-const glob = require('glob');
 const micromatch = require('micromatch');
 const path = require('path');
 const prettier = require('prettier');
+const {globSync} = require('tinyglobby');
 const {styleText} = require('util');
 
 const prettierConfig = JSON.parse(
@@ -60,17 +60,18 @@ function getBuildPath(file, buildFolder) {
 
 async function buildFile(file, silent) {
   const destPath = getBuildPath(file, BUILD_DIR);
+  const relativeFile = path.relative(PACKAGE_DIR, file);
 
   fs.mkdirSync(path.dirname(destPath), {recursive: true});
 
-  if (micromatch.isMatch(file, IGNORE_PATTERN)) {
+  if (micromatch.isMatch(relativeFile, IGNORE_PATTERN)) {
     silent ||
       process.stdout.write(
         styleText('dim', '  \u2022 ') +
           path.relative(PACKAGE_DIR, file) +
           ' (ignore)\n',
       );
-  } else if (!micromatch.isMatch(file, JS_FILES_PATTERN)) {
+  } else if (!micromatch.isMatch(relativeFile, JS_FILES_PATTERN)) {
     fs.createReadStream(file).pipe(fs.createWriteStream(destPath));
     silent ||
       process.stdout.write(
@@ -106,8 +107,11 @@ async function buildFile(file, silent) {
 }
 
 const srcDir = path.resolve(__dirname, '..', SRC_DIR);
-const pattern = path.resolve(srcDir, '**/*');
-const files = glob.sync(pattern, {nodir: true});
+const files = globSync('**/*', {
+  cwd: srcDir,
+  absolute: true,
+  onlyFiles: true,
+});
 
 process.stdout.write(fixedWidth(`${path.basename(PACKAGE_DIR)}\n`));
 

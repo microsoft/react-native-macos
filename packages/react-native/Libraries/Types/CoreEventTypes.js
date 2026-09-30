@@ -331,7 +331,6 @@ export type MouseEvent = NativeSyntheticEvent<
     timestamp: number,
   }>,
 >;
-
 // [macOS
 export type DataTransferFile = $ReadOnly<{
   name: string,
@@ -364,26 +363,6 @@ export type DragEvent = NativeSyntheticEvent<
   }>,
 >;
 
-export type KeyEvent = NativeSyntheticEvent<
-  $ReadOnly<{|
-    // Modifier keys
-    capsLockKey: boolean,
-    shiftKey: boolean,
-    ctrlKey: boolean,
-    altKey: boolean,
-    metaKey: boolean,
-    numericPadKey: boolean,
-    helpKey: boolean,
-    functionKey: boolean,
-    // Key options
-    ArrowLeft: boolean,
-    ArrowRight: boolean,
-    ArrowUp: boolean,
-    ArrowDown: boolean,
-    key: string,
-  |}>,
->;
-
 /**
  * Represents a key that could be passed to `KeyDownEvents` and `KeyUpEvents`.
  *
@@ -403,3 +382,47 @@ export type HandledKeyEvent = $ReadOnly<{|
   key: string,
 |}>;
 // macOS]
+
+export type KeyboardEventPayload = $ReadOnly<{
+  /**
+   * The actual key that was pressed. For example, F would be "f" or "F" depending on the shift key.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
+   */
+  key: string,
+  /**
+   * The key code of the key that was pressed. For example, F would be "KeyF"
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code
+   */
+  code?: string, // macOS does not currently emit a physical key code.
+  altKey: boolean,
+  ctrlKey: boolean,
+  metaKey: boolean,
+  shiftKey: boolean,
+  /**
+   * A boolean value that is true if the given key is being held down such that it is automatically repeating.
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/repeat
+   */
+  repeat?: boolean,
+  /**
+   * Returns a boolean value indicating if the event is fired within a composition session
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/CompositionEvent/isComposing
+   */
+  isComposing?: boolean,
+  // [macOS
+  /** @platform macos */
+  capsLockKey?: boolean,
+  /** @platform macos */
+  numericPadKey?: boolean,
+  /** @platform macos */
+  helpKey?: boolean,
+  /** @platform macos */
+  functionKey?: boolean,
+  // macOS]
+}>;
+
+export type KeyUpEvent = NativeSyntheticEvent<KeyboardEventPayload>;
+
+export type KeyDownEvent = NativeSyntheticEvent<KeyboardEventPayload>;
+
+/** @deprecated Use KeyDownEvent or KeyUpEvent instead. */
+export type KeyEvent = KeyDownEvent;

@@ -74,7 +74,7 @@ module.name_mapper='^@react-native/fantom$' -> '<PROJECT_ROOT>/private/react-nat
 module.name_mapper='^@react-native/fantom/\(.*\)$' -> '<PROJECT_ROOT>/private/react-native-fantom/\1'
 module.name_mapper='^@react-native/core-cli-utils$' -> '<PROJECT_ROOT>/packages/core-cli-utils/src/index.flow.js'
 ; macOS]
-module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\|xml\|ktx\)$' -> '<PROJECT_ROOT>/packages/react-native/Libraries/Image/RelativeImageStub'
+module.name_mapper='^@?[./a-zA-Z0-9$_-]+\.\(bmp\|gif\|jpg\|jpeg\|png\|psd\|svg\|webp\|m4v\|mov\|mp4\|mpeg\|mpg\|webm\|aac\|aiff\|caf\|m4a\|mp3\|wav\|html\|pdf\|xml\|ktx\|heic\|heif\)$' -> '<PROJECT_ROOT>/packages/react-native/Libraries/Image/RelativeImageStub'
 
 module.system.haste.module_ref_prefix=m#
 
@@ -103,4 +103,4 @@ untyped-import
 untyped-type-import
 
 [version]
-^0.289.0
+^0.295.0

@@ -23,54 +23,6 @@ const RE_COMPONENT_STACK_LINE = /\n {4}(in|at) /;
 const RE_COMPONENT_STACK_LINE_GLOBAL = /\n {4}(in|at) /g;
 const RE_COMPONENT_STACK_LINE_OLD = / {4}in/;
 const RE_COMPONENT_STACK_LINE_NEW = / {4}at/;
-const RE_COMPONENT_STACK_LINE_STACK_FRAME = /@.*\n/;
-
-// "TransformError " (Optional) and either "SyntaxError: " or "ReferenceError: "
-// Capturing groups:
-// 1: error message
-// 2: file path
-// 3: line number
-// 4: column number
-// \n\n
-// 5: code frame
-const RE_BABEL_TRANSFORM_ERROR_FORMAT =
-  /^(?:TransformError )?(?:SyntaxError: |ReferenceError: )(.*): (.*) \((\d+):(\d+)\)\n\n([\s\S]+)/;
-
-// Capturing groups:
-// 1: component name
-// "at"
-// 2: file path including extension
-// 3: line number
-const RE_COMPONENT_STACK_WITH_SOURCE =
-  /(.*) \(at (.*\.(?:js|jsx|ts|tsx)):([\d]+)\)/;
-
-// Capturing groups:
-// 1: component name
-// "at"
-// 2: parent component name
-const RE_COMPONENT_STACK_NO_SOURCE = /(.*) \(created by .*\)/;
-
-// Capturing groups:
-// - non-capturing "TransformError " (optional)
-// - non-capturing Error message
-// 1: file path
-// 2: file name
-// 3: error message
-// 4: code frame, which includes code snippet indicators or terminal escape sequences for formatting.
-const RE_BABEL_CODE_FRAME_ERROR_FORMAT =
-  // eslint-disable-next-line no-control-regex
-  /^(?:TransformError )?(?:.*):? (?:.*?)(\/.*): ([\s\S]+?)\n([ >]{2}[\d\s]+ \|[\s\S]+|\u{001b}[\s\S]+)/u;
-
-// Capturing groups:
-// - non-capturing "InternalError Metro has encountered an error:"
-// 1: error title
-// 2: error message
-// 3: file path
-// 4: line number
-// 5: column number
-// 6: code frame, which includes code snippet indicators or terminal escape sequences for formatting.
-const RE_METRO_ERROR_FORMAT =
-  /^(?:InternalError Metro has encountered an error:) (.*): (.*) \((\d+):(\d+)\)\n\n([\s\S]+)/u;
 
 // https://github.com/babel/babel/blob/33dbb85e9e9fe36915273080ecc42aee62ed0ade/packages/babel-code-frame/src/index.ts#L183-L184
 const RE_BABEL_CODE_FRAME_MARKER_PATTERN = new RegExp(
@@ -93,7 +45,7 @@ const RE_BABEL_CODE_FRAME_MARKER_PATTERN = new RegExp(
   'm',
 );
 
-export function hasComponentStack(args: $ReadOnlyArray<mixed>): boolean {
+export function hasComponentStack(args: $ReadOnlyArray<unknown>): boolean {
   for (const arg of args) {
     if (typeof arg === 'string' && isComponentStack(arg)) {
       return true;
@@ -136,7 +88,7 @@ export type ComponentStackType = 'legacy' | 'stack';
 
 const SUBSTITUTION = UTFSequence.BOM + '%s';
 
-export function parseInterpolation(args: $ReadOnlyArray<mixed>): $ReadOnly<{
+export function parseInterpolation(args: $ReadOnlyArray<unknown>): $ReadOnly<{
   category: Category,
   message: Message,
 }> {
@@ -216,14 +168,187 @@ function isComponentStack(consoleArgument: string) {
     RE_COMPONENT_STACK_LINE_OLD.test(consoleArgument);
   const isNewComponentStackFormat =
     RE_COMPONENT_STACK_LINE_NEW.test(consoleArgument);
+  const stackFrameStart = consoleArgument.indexOf('@');
   const isNewJSCComponentStackFormat =
-    RE_COMPONENT_STACK_LINE_STACK_FRAME.test(consoleArgument);
+    stackFrameStart !== -1 &&
+    consoleArgument.indexOf('\n', stackFrameStart + 1) !== -1;
 
   return (
     isOldComponentStackFormat ||
     isNewComponentStackFormat ||
     isNewJSCComponentStackFormat
   );
+}
+
+function parseErrorWithLocation(
+  message: string,
+  prefixes: $ReadOnlyArray<string>,
+  splitFromEnd: boolean,
+): ?[string, string, string, string, string] {
+  const prefix = prefixes.find(candidate => message.startsWith(candidate));
+  if (prefix == null) {
+    return null;
+  }
+
+  const codeFrameStart = message.indexOf('\n\n', prefix.length);
+  if (codeFrameStart === -1) {
+    return null;
+  }
+
+  const header = message.slice(prefix.length, codeFrameStart);
+  if (!header.endsWith(')')) {
+    return null;
+  }
+
+  const locationStart = header.lastIndexOf(' (');
+  if (locationStart === -1) {
+    return null;
+  }
+
+  const location = header.slice(locationStart + 2, -1);
+  const locationSeparator = location.indexOf(':');
+  if (locationSeparator === -1) {
+    return null;
+  }
+
+  const row = location.slice(0, locationSeparator);
+  const column = location.slice(locationSeparator + 1);
+  if (!/^\d+$/.test(row) || !/^\d+$/.test(column)) {
+    return null;
+  }
+
+  const body = header.slice(0, locationStart);
+  const fieldSeparator = splitFromEnd
+    ? body.lastIndexOf(': ')
+    : body.indexOf(': ');
+  if (fieldSeparator === -1) {
+    return null;
+  }
+
+  return [
+    body.slice(0, fieldSeparator),
+    body.slice(fieldSeparator + 2),
+    row,
+    column,
+    message.slice(codeFrameStart + 2),
+  ];
+}
+
+function parseLegacyStackWithSource(
+  stackLine: string,
+): ?[string, string, string] {
+  const marker = ' (at ';
+  let markerStart = stackLine.lastIndexOf(marker);
+
+  while (markerStart !== -1) {
+    const sourceStart = markerStart + marker.length;
+    const sourceEnd = stackLine.indexOf(')', sourceStart);
+    if (sourceEnd !== -1) {
+      const sourceAndRow = stackLine.slice(sourceStart, sourceEnd);
+      const rowSeparator = sourceAndRow.lastIndexOf(':');
+      if (rowSeparator !== -1) {
+        const fileName = sourceAndRow.slice(0, rowSeparator);
+        const row = sourceAndRow.slice(rowSeparator + 1);
+        const hasSupportedExtension = ['.js', '.jsx', '.ts', '.tsx'].some(
+          extension => fileName.endsWith(extension),
+        );
+        if (
+          hasSupportedExtension &&
+          !fileName.includes(':') &&
+          /^\d+$/.test(row)
+        ) {
+          return [stackLine.slice(0, markerStart), fileName, row];
+        }
+      }
+    }
+    markerStart = stackLine.lastIndexOf(marker, markerStart - 1);
+  }
+
+  return null;
+}
+
+function parseLegacyStackWithoutSource(stackLine: string): ?string {
+  const marker = ' (created by ';
+  let markerStart = stackLine.lastIndexOf(marker);
+
+  while (markerStart !== -1) {
+    if (stackLine.indexOf(')', markerStart + marker.length) !== -1) {
+      return stackLine.slice(0, markerStart);
+    }
+    markerStart = stackLine.lastIndexOf(marker, markerStart - 1);
+  }
+
+  return null;
+}
+
+function isPlainCodeFrameLine(line: string): boolean {
+  if (
+    line.length < 4 ||
+    (line[0] !== ' ' && line[0] !== '>') ||
+    (line[1] !== ' ' && line[1] !== '>')
+  ) {
+    return false;
+  }
+
+  const gutter = line.indexOf('|', 2);
+  if (gutter <= 3 || line[gutter - 1] !== ' ') {
+    return false;
+  }
+
+  for (let index = 2; index < gutter - 1; index++) {
+    const code = line.charCodeAt(index);
+    if (line[index] !== ' ' && (code < 48 || code > 57)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function parseBabelCodeFrameError(message: string): ?[string, string, string] {
+  let lineStart = message.indexOf('\n');
+  let codeFrameStart = -1;
+
+  while (lineStart !== -1) {
+    lineStart++;
+    const lineEnd = message.indexOf('\n', lineStart);
+    const line = message.slice(
+      lineStart,
+      lineEnd === -1 ? message.length : lineEnd,
+    );
+    if (line.startsWith('\u001b') || isPlainCodeFrameLine(line)) {
+      codeFrameStart = lineStart;
+      break;
+    }
+    lineStart = lineEnd;
+  }
+
+  if (codeFrameStart === -1) {
+    return null;
+  }
+
+  const headerAndContent = message.slice(0, codeFrameStart - 1);
+  const firstLineEnd = headerAndContent.indexOf('\n');
+  const firstLine = headerAndContent.slice(
+    0,
+    firstLineEnd === -1 ? headerAndContent.length : firstLineEnd,
+  );
+  const pathMarker = firstLine.lastIndexOf(' /');
+  if (pathMarker === -1) {
+    return null;
+  }
+
+  const pathStart = pathMarker + 1;
+  const pathEnd = firstLine.indexOf(': ', pathStart);
+  if (pathEnd === -1) {
+    return null;
+  }
+
+  return [
+    firstLine.slice(pathStart, pathEnd),
+    headerAndContent.slice(pathEnd + 2),
+    message.slice(codeFrameStart),
+  ];
 }
 
 export function parseComponentStack(message: string): {
@@ -254,9 +379,9 @@ export function parseComponentStack(message: string): {
       if (!s) {
         return null;
       }
-      const match = s.match(RE_COMPONENT_STACK_WITH_SOURCE);
+      const match = parseLegacyStackWithSource(s);
       if (match) {
-        let [content, fileName, row] = match.slice(1);
+        const [content, fileName, row] = match;
         return {
           content,
           fileName,
@@ -265,10 +390,10 @@ export function parseComponentStack(message: string): {
       }
 
       // In some cases, the component stack doesn't have a source.
-      const matchWithoutSource = s.match(RE_COMPONENT_STACK_NO_SOURCE);
-      if (matchWithoutSource) {
+      const contentWithoutSource = parseLegacyStackWithoutSource(s);
+      if (contentWithoutSource != null) {
         return {
-          content: matchWithoutSource[1],
+          content: contentWithoutSource,
           fileName: '',
           location: null,
         };
@@ -290,10 +415,13 @@ export function parseLogBoxException(
   const message =
     error.originalMessage != null ? error.originalMessage : 'Unknown';
 
-  const metroInternalError = message.match(RE_METRO_ERROR_FORMAT);
+  const metroInternalError = parseErrorWithLocation(
+    message,
+    ['InternalError Metro has encountered an error: '],
+    true,
+  );
   if (metroInternalError) {
-    const [content, fileName, row, column, codeFrame] =
-      metroInternalError.slice(1);
+    const [content, fileName, row, column, codeFrame] = metroInternalError;
 
     return {
       level: 'fatal',
@@ -319,11 +447,19 @@ export function parseLogBoxException(
     };
   }
 
-  const babelTransformError = message.match(RE_BABEL_TRANSFORM_ERROR_FORMAT);
+  const babelTransformError = parseErrorWithLocation(
+    message,
+    [
+      'TransformError SyntaxError: ',
+      'TransformError ReferenceError: ',
+      'SyntaxError: ',
+      'ReferenceError: ',
+    ],
+    false,
+  );
   if (babelTransformError) {
     // Transform errors are thrown from inside the Babel transformer.
-    const [fileName, content, row, column, codeFrame] =
-      babelTransformError.slice(1);
+    const [fileName, content, row, column, codeFrame] = babelTransformError;
 
     return {
       level: 'syntax',
@@ -351,11 +487,11 @@ export function parseLogBoxException(
   // Perform a cheap match first before trying to parse the full message, which
   // can get expensive for arbitrary input.
   if (RE_BABEL_CODE_FRAME_MARKER_PATTERN.test(message)) {
-    const babelCodeFrameError = message.match(RE_BABEL_CODE_FRAME_ERROR_FORMAT);
+    const babelCodeFrameError = parseBabelCodeFrameError(message);
 
     if (babelCodeFrameError) {
       // Codeframe errors are thrown from any use of buildCodeFrameError.
-      const [fileName, content, codeFrame] = babelCodeFrameError.slice(1);
+      const [fileName, content, codeFrame] = babelCodeFrameError;
       return {
         level: 'syntax',
         stack: [],
@@ -444,7 +580,7 @@ export function parseLogBoxException(
   };
 }
 
-export function withoutANSIColorStyles(message: mixed): mixed {
+export function withoutANSIColorStyles(message: unknown): unknown {
   if (typeof message !== 'string') {
     return message;
   }
@@ -456,14 +592,14 @@ export function withoutANSIColorStyles(message: mixed): mixed {
   );
 }
 
-export function parseLogBoxLog(args: $ReadOnlyArray<mixed>): {
+export function parseLogBoxLog(args: $ReadOnlyArray<unknown>): {
   componentStack: ComponentStack,
   componentStackType: ComponentStackType,
   category: Category,
   message: Message,
 } {
   const message = withoutANSIColorStyles(args[0]);
-  let argsWithoutComponentStack: Array<mixed> = [];
+  let argsWithoutComponentStack: Array<unknown> = [];
   let componentStack: ComponentStack = [];
   let componentStackType = 'legacy';
 

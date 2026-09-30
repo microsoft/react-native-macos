@@ -8,9 +8,12 @@
 #include "ImageFetcher.h"
 
 #include <react/common/mapbuffer/JReadableMapBuffer.h>
+#include <react/featureflags/ReactNativeFeatureFlags.h>
 #include <react/renderer/imagemanager/conversions.h>
 
 namespace facebook::react {
+
+extern const char ImageFetcherKey[] = "ImageFetcher";
 
 ImageFetcher::ImageFetcher(
     std::shared_ptr<const ContextContainer> contextContainer)
@@ -21,22 +24,32 @@ ImageRequest ImageFetcher::requestImage(
     SurfaceId surfaceId,
     const ImageRequestParams& imageRequestParams,
     Tag tag) {
-  items_[surfaceId].emplace_back(
-      ImageRequestItem{
-          .imageSource = imageSource,
-          .imageRequestParams = imageRequestParams,
-          .tag = tag});
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    items_[surfaceId].emplace_back(
+        ImageRequestItem{
+            .imageSource = imageSource,
+            .imageRequestParams = imageRequestParams,
+            .tag = tag});
+  }
 
   auto telemetry = std::make_shared<ImageTelemetry>(surfaceId);
 
-  flushImageRequests();
+  if (!ReactNativeFeatureFlags::enableImagePrefetchingJNIBatchingAndroid()) {
+    flushImageRequests();
+  }
 
-  return {imageSource, telemetry};
+  return ImageRequest{imageSource, telemetry};
 }
 
 void ImageFetcher::flushImageRequests() {
-  if (items_.empty()) {
-    return;
+  std::unordered_map<SurfaceId, std::vector<ImageRequestItem>> items;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (items_.empty()) {
+      return;
+    }
+    items.swap(items_);
   }
 
   auto fabricUIManager_ =
@@ -47,14 +60,12 @@ void ImageFetcher::flushImageRequests() {
               SurfaceId, std::string, JReadableMapBuffer::javaobject)>(
               "experimental_prefetchResources");
 
-  for (auto& [surfaceId, surfaceImageRequests] : items_) {
+  for (auto& [surfaceId, surfaceImageRequests] : items) {
     auto readableMapBuffer = JReadableMapBuffer::createWithContents(
         serializeImageRequests(surfaceImageRequests));
     prefetchResources(
         fabricUIManager_, surfaceId, "RCTImageView", readableMapBuffer.get());
   }
-
-  items_.clear();
 }
 
 } // namespace facebook::react

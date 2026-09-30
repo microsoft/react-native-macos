@@ -200,21 +200,20 @@ let reactCxxReact = RNTarget(
   searchPaths: [CallInvokerPath],
   excludedPaths: ["tests"],
   dependencies: [.reactNativeDependencies, .jsi, .reactPerfLogger, .logger, .reactDebug, .reactJsInspector]
-
-)
-
-/// React-jsiexecutor.podspec
-let reactJsiExecutor = RNTarget(
-  name: .reactJsiExecutor,
-  path: "ReactCommon/jsiexecutor",
-  dependencies: [.reactNativeDependencies, .jsi, .reactPerfLogger, .reactCxxReact, .reactJsInspector]
 )
 
 /// React-jsitooling.podspec
 let reactJsiTooling = RNTarget(
   name: .reactJsiTooling,
   path: "ReactCommon/jsitooling",
-  dependencies: [.reactNativeDependencies, .reactJsInspector, .reactJsInspectorTracing, .reactCxxReact, .jsi, .reactRuntimeExecutor]
+  dependencies: [.reactNativeDependencies, .jsi, .reactJsInspector, .reactJsInspectorTracing, .reactCxxReact]
+)
+
+/// React-jsiexecutor.podspec
+let reactJsiExecutor = RNTarget(
+  name: .reactJsiExecutor,
+  path: "ReactCommon/jsiexecutor",
+  dependencies: [.reactNativeDependencies, .jsi, .reactCxxReact, .reactJsiTooling]
 )
 
 /// React-hermes.podspec
@@ -321,7 +320,7 @@ let reactTurboModuleCore = RNTarget(
 let reactTurboModuleCoreDefaults = RNTarget(
   name: .reactTurboModuleCoreDefaults,
   path: "ReactCommon/react/nativemodule/defaults",
-  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactTurboModuleCore]
+  dependencies: [.reactNativeDependencies, .jsi, .reactJsiExecutor, .reactTurboModuleCore, .reactFabric]
 )
 
 /// React-microtasknativemodule.podspec
@@ -343,6 +342,13 @@ let reactWebPerformanceNativeModule = RNTarget(
   name: .reactWebPerformanceNativeModule,
   path: "ReactCommon/react/nativemodule/webperformance",
   dependencies: [.reactNativeDependencies, .reactCxxReact, .reactTurboModuleCore, .reactPerformanceTimeline]
+)
+
+/// React-intersectionobservernativemodule.podspec
+let reactIntersectionObserverNativeModule = RNTarget(
+  name: .reactIntersectionObserverNativeModule,
+  path: "ReactCommon/react/nativemodule/intersectionobserver",
+  dependencies: [.reactNativeDependencies, .reactCxxReact, .reactFabric, .reactTurboModuleBridging, .reactTurboModuleCore, .reactGraphics, .reactGraphicsApple, .reactRuntimeScheduler, .yoga]
 )
 
 /// React-featureflagnativemodule.podspec
@@ -421,15 +427,10 @@ let reactCore = RNTarget(
 )
 
 /// React-Fabric.podspec
-// [macOS
-#if os(macOS)
-let reactFabricViewPlatformSources = ["components/view/platform/macos"]
-let reactFabricViewPlatformExcludes = ["components/view/platform/cxx"]
-#else
-let reactFabricViewPlatformSources = ["components/view/platform/cxx"]
-let reactFabricViewPlatformExcludes = ["components/view/platform/macos"]
-#endif
-// macOS]
+// [macOS] Compile the guarded macOS implementations through components/view.
+// The implementations use TargetConditionals for the build destination.
+// Do not add a platform directory to sources: RNTarget also adds it to the header
+// search paths, bypassing those dispatch headers when cross-compiling.
 let reactFabric = RNTarget(
   name: .reactFabric,
   path: "ReactCommon/react/renderer",
@@ -465,9 +466,9 @@ let reactFabric = RNTarget(
     "components/virtualview",
     "components/virtualviewexperimental",
     "components/root/tests",
-  ] + reactFabricViewPlatformExcludes, // [macOS]
+  ],
   dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .yoga],
-  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"] + reactFabricViewPlatformSources // [macOS]
+  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "observers/intersection", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"]
 )
 
 let reactFabricInputAccessory = RNTarget(
@@ -602,7 +603,11 @@ let reactRCTBlob = RNTarget(
 let reactRCTNetwork = RNTarget(
   name: .reactRCTNetwork,
   path: "Libraries/Network",
-  dependencies: [.yoga, .jsi, .reactTurboModuleCore]
+  dependencies: [.yoga, .jsi, .reactTurboModuleCore],
+  defines: [
+    CXXSetting.define("REACT_NATIVE_DEBUGGER_ENABLED", to: "1", .when(configuration: BuildConfiguration.debug)),
+    CXXSetting.define("REACT_NATIVE_DEBUGGER_ENABLED_DEVONLY", to: "1", .when(configuration: BuildConfiguration.debug)),
+  ]
 )
 
 /// React-RCTVibration.podspec
@@ -714,6 +719,7 @@ let targets = [
   reactTurboModuleCoreMicrotasks,
   reactIdleCallbacksNativeModule,
   reactWebPerformanceNativeModule,
+  reactIntersectionObserverNativeModule,
   reactFeatureflagsNativemodule,
   reactNativeModuleDom,
   reactAppDelegate,
@@ -904,6 +910,7 @@ extension String {
   static let reactTurboModuleCoreMicrotasks = "ReactCommon/turbomodule/core/microtasks"
   static let reactIdleCallbacksNativeModule = "React-idlecallbacksnativemodule"
   static let reactWebPerformanceNativeModule = "React-webperformancenativemodule"
+  static let reactIntersectionObserverNativeModule = "React-intersectionobservernativemodule"
   static let reactFeatureflagsNativemodule = "React-featureflagsnativemodule"
   static let reactNativeModuleDom = "React-domnativemodule"
   static let reactAppDelegate = "React-RCTAppDelegate"
@@ -933,7 +940,12 @@ extension Target {
     let numOfSlash = path.count { $0 == "/" }
 
     let cxxCommonHeaderPaths: [CXXSetting] =
-      Set(searchPaths).map {
+      // [macOS] Select headers by destination, before the shared/generated paths.
+      // SwiftPM evaluates manifest #if os(...) on the host, not the destination.
+      [
+        CXXSetting.headerSearchPath(relativeSearchPath(numOfSlash + 1, "ReactCommon/react/renderer/components/view/platform/macos"), .when(platforms: [.macOS])),
+        CXXSetting.headerSearchPath(relativeSearchPath(numOfSlash + 1, "ReactCommon/react/renderer/components/view/platform/cxx"), .when(platforms: [.iOS, .visionOS, .macCatalyst])),
+      ] + Set(searchPaths).map {
         CXXSetting.headerSearchPath(relativeSearchPath(numOfSlash + 1, $0))
       } + [
         CXXSetting.headerSearchPath(relativeSearchPath(numOfSlash + 1, ".build/headers")),
@@ -946,6 +958,7 @@ extension Target {
         .define("DEBUG", .when(configuration: .debug)),
         .define("NDEBUG", .when(configuration: .release)),
         .define("USE_HERMES", to: "1"),
+        .define("RCT_REMOVE_LEGACY_ARCH", to: "1"),
       ] + defines + cxxCommonHeaderPaths
 
     return .target(

@@ -501,6 +501,7 @@ RCT_ENUM_CONVERTER(
     UIUserInterfaceStyleUnspecified,
     integerValue)
 
+#if !TARGET_OS_TV
 RCT_ENUM_CONVERTER(
     UIInterfaceOrientationMask,
     (@{
@@ -512,6 +513,7 @@ RCT_ENUM_CONVERTER(
     }),
     NSNotFound,
     unsignedIntegerValue)
+#endif
 
 RCT_ENUM_CONVERTER(
     UIModalPresentationStyle,

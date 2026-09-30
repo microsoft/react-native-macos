@@ -1,6 +1,6 @@
 {
   "name": "@react-native/core-cli-utils",
-  "version": "0.83.0-main",
+  "version": "0.84.0-main",
   "private": true,
   "description": "React Native CLI library for Frameworks to build on",
   "license": "MIT",
@@ -22,9 +22,20 @@
   ],
   "bugs": "https://github.com/facebook/react-native/issues",
   "engines": {
-    "node": ">= 20.19.4"
+    "node": ">= 22.11.0"
   },
   "files": [
     "dist"
-  ]
+  ],
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "exports": {
+      ".": "./dist/index.js",
+      "./package.json": "./package.json",
+      "./version.js": "./dist/public/version.js"
+    }
+  },
+  "scripts": {
+    "prepack": "node ../../scripts/build/prepack.js"
+  }
 }

@@ -239,6 +239,7 @@ export default class CellRenderer<ItemT> extends React.PureComponent<
 
     if (Platform.OS === 'macos') {
       // [macOS
+      // $FlowFixMe[incompatible-type] Every branch above produces a native element that accepts collapsable.
       result = React.cloneElement(result, {collapsable: false});
     } // macOS]
 

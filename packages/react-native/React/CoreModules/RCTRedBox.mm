@@ -371,6 +371,10 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
     _lastErrorMessage = [messageWithoutAnsi substringToIndex:MIN((NSUInteger)10000, messageWithoutAnsi.length)];
     _lastErrorCookie = errorCookie;
 
+#if TARGET_OS_OSX // [macOS
+    // Create the table before reloading it on the first presentation.
+    (void)self.view;
+#endif // macOS]
     [_stackTraceTableView reloadData];
 
     if (!isRootViewControllerPresented) {
@@ -394,7 +398,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   [self dismissViewControllerAnimated:YES completion:nil];
 #else // [macOS]
   if (self.presentingViewController) {
-    [[RCTKeyWindow() contentViewController] dismissViewController:self];
+    [self.presentingViewController dismissViewController:self];
   }
 #endif // macOS]
 }
@@ -597,6 +601,9 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
 
 - (CGFloat)tableView:(RCTUITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath // [macOS]
 {
+#if TARGET_OS_OSX // [macOS
+  return RCTUITableViewAutomaticDimension;
+#else // macOS]
   if (indexPath.section == 0) {
     NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
@@ -618,6 +625,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : (NSCoder *)aDecoder)
   } else {
     return 50;
   }
+#endif // [macOS]
 }
 
 - (void)tableView:(RCTUITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath // [macOS]
