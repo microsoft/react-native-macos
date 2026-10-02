@@ -154,11 +154,6 @@ export type ButtonProps = $ReadOnly<{
   accessibilityRole?: ?AccessibilityRole,
 
   /**
-   * Accessibility action handlers
-   */
-  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
-
-  /**
    * Handler to be called when the button receives key focus
    */
   onBlur?: ?(e: BlurEvent) => void,
