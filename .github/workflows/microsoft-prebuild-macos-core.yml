@@ -18,14 +18,14 @@ jobs:
       matrix:
         platform: [ios, ios-simulator, macos, visionos, visionos-simulator]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
           fetch-depth: 0
 
       - name: Restore slice cache
         id: cache-slice
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           key: v1-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
@@ -45,7 +45,7 @@ jobs:
 
       - name: Download Hermes artifacts
         if: steps.cache-slice.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: hermes-artifacts
           path: packages/react-native/.build/artifacts/hermes/destroot
@@ -70,7 +70,7 @@ jobs:
 
       - name: Save slice cache
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable') }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           key: v1-macos-core-${{ matrix.platform }}-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
@@ -78,13 +78,13 @@ jobs:
             packages/react-native/.build/headers
 
       - name: Upload headers
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: prebuild-macos-core-headers-Debug-${{ matrix.platform }}
           path: packages/react-native/.build/headers
 
       - name: Upload slice artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: prebuild-macos-core-slice-Debug-${{ matrix.platform }}
           path: packages/react-native/.build/output/spm/Debug/Build/Products
@@ -96,13 +96,13 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           filter: blob:none
 
       - name: Restore compose cache
         id: cache-xcframework
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           key: v1-macos-core-xcframework-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
@@ -122,7 +122,7 @@ jobs:
 
       - name: Download slice artifacts
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: prebuild-macos-core-slice-Debug-*
           path: packages/react-native/.build/output/spm/Debug/Build/Products
@@ -130,7 +130,7 @@ jobs:
 
       - name: Download headers
         if: steps.cache-xcframework.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: prebuild-macos-core-headers-Debug-*
           path: packages/react-native/.build/headers
@@ -163,7 +163,7 @@ jobs:
 
       - name: Save compose cache
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/') && endsWith(github.ref, '-stable') }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           key: v1-macos-core-xcframework-Debug-${{ hashFiles('packages/react-native/Package.swift', 'packages/react-native/scripts/ios-prebuild/*.js', 'packages/react-native/scripts/ios-prebuild.js', 'packages/react-native/React/**/*', 'packages/react-native/ReactApple/**/*', 'packages/react-native/ReactCommon/**/*', 'packages/react-native/Libraries/**/*') }}
           path: |
@@ -171,14 +171,14 @@ jobs:
             packages/react-native/.build/output/xcframeworks/ReactCoreDebug.framework.dSYM.tar.gz
 
       - name: Upload XCFramework
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ReactCoreDebug.xcframework.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCoreDebug.xcframework.tar.gz
           retention-days: 14
 
       - name: Upload dSYMs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ReactCoreDebug.framework.dSYM.tar.gz
           path: packages/react-native/.build/output/xcframeworks/ReactCoreDebug.framework.dSYM.tar.gz
