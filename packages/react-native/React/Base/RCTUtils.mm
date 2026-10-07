@@ -761,7 +761,6 @@ NSURL *RCTDataURL(NSString *mimeType, NSData *data)
                                                [data base64EncodedStringWithOptions:(NSDataBase64EncodingOptions)0]]];
 }
 
-BOOL RCTIsGzippedData(NSData *__nullable /*data*/); // exposed for unit testing purposes
 BOOL RCTIsGzippedData(NSData *__nullable data)
 {
   UInt8 *bytes = (UInt8 *)data.bytes;
