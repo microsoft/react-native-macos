@@ -13,6 +13,10 @@
 #import <React/RCTShadowView.h>
 #import <React/RCTTextShadowView.h>
 
+@interface RCTTextShadowView (BaselineTesting)
+- (CGFloat)lastBaselineForSize:(CGSize)size;
+@end
+
 @interface RCTShadowViewTests : XCTestCase
 @property (nonatomic, strong) RCTRootShadowView *parentView;
 @end
@@ -185,13 +189,11 @@
 - (void)testTextBaselineWithUndefinedHeight
 {
   RCTTextShadowView *textView = [self _textShadowViewWithText:@"Baseline"];
-  YGBaselineFunc baseline = YGNodeGetBaselineFunc(textView.yogaNode);
-  YGMeasureFunc measure = YGNodeGetMeasureFunc(textView.yogaNode);
-  YGSize measuredSize = measure(textView.yogaNode, 100, YGMeasureModeAtMost, YGUndefined, YGMeasureModeUndefined);
+  CGSize measuredSize = [textView sizeThatFitsMinimumSize:CGSizeZero maximumSize:CGSizeMake(100, CGFLOAT_MAX)];
   CGFloat expectedBaseline = measuredSize.height + textView.textAttributes.effectiveFont.descender;
 
   for (NSNumber *height in @[ @(YGUndefined), @(INFINITY), @(-INFINITY) ]) {
-    float actualBaseline = baseline(textView.yogaNode, 100, height.floatValue);
+    float actualBaseline = [self _textBaselineForView:textView width:100 height:height.floatValue];
     XCTAssertTrue(isfinite(actualBaseline));
     XCTAssertEqualWithAccuracy(actualBaseline, expectedBaseline, 1);
   }
@@ -200,9 +202,8 @@
 - (void)testTextBaselineWithUndefinedDimensions
 {
   RCTTextShadowView *textView = [self _textShadowViewWithText:@"Baseline"];
-  YGBaselineFunc baseline = YGNodeGetBaselineFunc(textView.yogaNode);
 
-  float actualBaseline = baseline(textView.yogaNode, YGUndefined, YGUndefined);
+  float actualBaseline = [self _textBaselineForView:textView width:YGUndefined height:YGUndefined];
   XCTAssertTrue(isfinite(actualBaseline));
   XCTAssertGreaterThan(actualBaseline, 0);
 }
@@ -210,21 +211,20 @@
 - (void)testTextBaselinePreservesExplicitHeight
 {
   RCTTextShadowView *textView = [self _textShadowViewWithText:@"Baseline"];
-  YGBaselineFunc baseline = YGNodeGetBaselineFunc(textView.yogaNode);
   CGFloat descender = textView.textAttributes.effectiveFont.descender;
 
   for (NSNumber *width in @[ @100, @(YGUndefined) ]) {
-    XCTAssertEqualWithAccuracy(baseline(textView.yogaNode, width.floatValue, 40), 40 + descender, 0.001);
-    XCTAssertEqualWithAccuracy(baseline(textView.yogaNode, width.floatValue, 0), descender, 0.001);
+    XCTAssertEqualWithAccuracy(
+        [self _textBaselineForView:textView width:width.floatValue height:40], 40 + descender, 0.001);
+    XCTAssertEqualWithAccuracy([self _textBaselineForView:textView width:width.floatValue height:0], descender, 0.001);
   }
 }
 
 - (void)testEmptyTextBaselineWithUndefinedDimensions
 {
   RCTTextShadowView *textView = [self _textShadowViewWithText:@""];
-  YGBaselineFunc baseline = YGNodeGetBaselineFunc(textView.yogaNode);
 
-  XCTAssertEqual(baseline(textView.yogaNode, YGUndefined, YGUndefined), 0);
+  XCTAssertEqual([self _textBaselineForView:textView width:YGUndefined height:YGUndefined], 0);
 }
 
 - (void)testBaselineAlignedTextInNestedFixedSizeView
@@ -275,6 +275,12 @@
   rawTextView.text = text;
   [textView insertReactSubview:rawTextView atIndex:0];
   return textView;
+}
+
+- (float)_textBaselineForView:(RCTTextShadowView *)textView width:(float)width height:(float)height
+{
+  CGSize size = CGSizeMake(RCTCoreGraphicsFloatFromYogaFloat(width), RCTCoreGraphicsFloatFromYogaFloat(height));
+  return RCTYogaFloatFromCoreGraphicsFloat([textView lastBaselineForSize:size]);
 }
 
 - (void)_withShadowViewWithStyle:(void (^)(YGNodeRef node))configBlock
