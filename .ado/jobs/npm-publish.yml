@@ -1,6 +1,8 @@
 jobs:
 - job: NPMPublish
   displayName: NPM Publish
+  # Also disable direct template consumers until ADO publication is re-enabled.
+  condition: false
   pool:
     name: cxeiss-ubuntu-20-04-large
     image: cxe-ubuntu-20-04-1es-pt
