@@ -69,6 +69,7 @@ jobs:
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-contents: write # version commits (Changesets)
           permission-pull-requests: write # version PRs (Changesets)
 
       - name: Version packages
@@ -112,7 +113,8 @@ jobs:
           permission-contents: write # for GH releases and Git tags (Changesets)
 
       - name: Publish packages
-        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
+        if: steps.configure-publish.outputs.publish_react_native_macos == '1' && steps.configure-publish.outputs.publishTag != ''
         uses: changesets/action/publish@v2
         with:
           github-token: ${{ steps.app-token.outputs.token }}
+          script: yarn changeset publish --tag ${{ steps.configure-publish.outputs.publishTag }}
