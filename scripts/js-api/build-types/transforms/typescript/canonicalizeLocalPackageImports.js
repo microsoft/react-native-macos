@@ -8,6 +8,8 @@
  * @format
  */
 
+// [macOS]
+
 import type {PluginObj} from '@babel/core';
 import type {NodePath} from '@babel/traverse';
 import type {

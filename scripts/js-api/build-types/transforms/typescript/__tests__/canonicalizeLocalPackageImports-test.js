@@ -8,6 +8,8 @@
  * @format
  */
 
+// [macOS]
+
 const canonicalizeLocalPackageImports = require('../canonicalizeLocalPackageImports');
 const babel = require('@babel/core');
 

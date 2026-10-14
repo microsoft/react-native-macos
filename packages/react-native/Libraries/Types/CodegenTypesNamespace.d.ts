@@ -7,7 +7,7 @@
  * @format
  */
 
-import type {EventSubscription, NativeSyntheticEvent} from 'react-native';
+import type {EventSubscription, NativeSyntheticEvent} from 'react-native'; // [macOS]
 
 // Event types
 // We're not using the PaperName, it is only used to codegen view config settings
