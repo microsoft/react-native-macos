@@ -7,9 +7,15 @@
 
 #import <XCTest/XCTest.h>
 
+#import <React/RCTRawTextShadowView.h>
 #import <React/RCTRootShadowView.h>
 #import <React/RCTShadowView+Layout.h>
 #import <React/RCTShadowView.h>
+#import <React/RCTTextShadowView.h>
+
+@interface RCTTextShadowView (BaselineTesting)
+- (CGFloat)lastBaselineForSize:(CGSize)size;
+@end
 
 @interface RCTShadowViewTests : XCTestCase
 @property (nonatomic, strong) RCTRootShadowView *parentView;
@@ -178,6 +184,103 @@
       }
           assertRelativeLayout:CGRectMake(0, 0, parentWidth, parentHeight)
       withIntrinsicContentSize:CGSizeMake(3, 4)];
+}
+
+- (void)testTextBaselineWithUndefinedHeight
+{
+  RCTTextShadowView *textView = [self _textShadowViewWithText:@"Baseline"];
+  CGSize measuredSize = [textView sizeThatFitsMinimumSize:CGSizeZero maximumSize:CGSizeMake(100, CGFLOAT_MAX)];
+  CGFloat expectedBaseline = measuredSize.height + textView.textAttributes.effectiveFont.descender;
+
+  for (NSNumber *height in @[ @(YGUndefined), @(INFINITY), @(-INFINITY) ]) {
+    float actualBaseline = [self _textBaselineForView:textView width:100 height:height.floatValue];
+    XCTAssertTrue(isfinite(actualBaseline));
+    XCTAssertEqualWithAccuracy(actualBaseline, expectedBaseline, 1);
+  }
+}
+
+- (void)testTextBaselineWithUndefinedDimensions
+{
+  RCTTextShadowView *textView = [self _textShadowViewWithText:@"Baseline"];
+
+  float actualBaseline = [self _textBaselineForView:textView width:YGUndefined height:YGUndefined];
+  XCTAssertTrue(isfinite(actualBaseline));
+  XCTAssertGreaterThan(actualBaseline, 0);
+}
+
+- (void)testTextBaselinePreservesExplicitHeight
+{
+  RCTTextShadowView *textView = [self _textShadowViewWithText:@"Baseline"];
+  CGFloat descender = textView.textAttributes.effectiveFont.descender;
+
+  for (NSNumber *width in @[ @100, @(YGUndefined) ]) {
+    XCTAssertEqualWithAccuracy(
+        [self _textBaselineForView:textView width:width.floatValue height:40], 40 + descender, 0.001);
+    XCTAssertEqualWithAccuracy([self _textBaselineForView:textView width:width.floatValue height:0], descender, 0.001);
+  }
+}
+
+- (void)testEmptyTextBaselineWithUndefinedDimensions
+{
+  RCTTextShadowView *textView = [self _textShadowViewWithText:@""];
+
+  XCTAssertEqual([self _textBaselineForView:textView width:YGUndefined height:YGUndefined], 0);
+}
+
+- (void)testBaselineAlignedTextInNestedFixedSizeView
+{
+  RCTShadowView *group = [RCTShadowView new];
+  RCTShadowView *row = [self _shadowViewWithConfig:^(YGNodeRef node) {
+    YGNodeStyleSetWidth(node, 360);
+    YGNodeStyleSetMinHeight(node, 44);
+    YGNodeStyleSetPadding(node, YGEdgeAll, 8);
+    YGNodeStyleSetFlexDirection(node, YGFlexDirectionRow);
+    YGNodeStyleSetAlignItems(node, YGAlignBaseline);
+  }];
+  RCTShadowView *edge = [self _shadowViewWithConfig:^(YGNodeRef node) {
+    YGNodeStyleSetAlignItems(node, YGAlignCenter);
+  }];
+  RCTShadowView *box = [self _shadowViewWithConfig:^(YGNodeRef node) {
+    YGNodeStyleSetWidth(node, 28);
+    YGNodeStyleSetHeight(node, 28);
+    YGNodeStyleSetAlignItems(node, YGAlignCenter);
+    YGNodeStyleSetJustifyContent(node, YGJustifyCenter);
+  }];
+  RCTTextShadowView *textView = [self _textShadowViewWithText:@"A"];
+
+  [box insertReactSubview:textView atIndex:0];
+  [edge insertReactSubview:box atIndex:0];
+  [row insertReactSubview:edge atIndex:0];
+  [group insertReactSubview:row atIndex:0];
+  [self.parentView insertReactSubview:group atIndex:0];
+
+  for (NSUInteger pass = 0; pass < 2; pass++) {
+    [textView dirtyLayout];
+    [self.parentView layoutWithAffectedShadowViews:[NSPointerArray weakObjectsPointerArray]];
+
+    CGRect textFrame = [textView measureLayoutRelativeToAncestor:self.parentView];
+    XCTAssertTrue(isfinite(textFrame.origin.x));
+    XCTAssertTrue(isfinite(textFrame.origin.y));
+    XCTAssertGreaterThan(textFrame.size.width, 0);
+    XCTAssertGreaterThan(textFrame.size.height, 0);
+    XCTAssertEqual(YGNodeLayoutGetWidth(box.yogaNode), 28);
+    XCTAssertEqual(YGNodeLayoutGetHeight(box.yogaNode), 28);
+  }
+}
+
+- (RCTTextShadowView *)_textShadowViewWithText:(NSString *)text
+{
+  RCTTextShadowView *textView = [[RCTTextShadowView alloc] initWithBridge:nil];
+  RCTRawTextShadowView *rawTextView = [RCTRawTextShadowView new];
+  rawTextView.text = text;
+  [textView insertReactSubview:rawTextView atIndex:0];
+  return textView;
+}
+
+- (float)_textBaselineForView:(RCTTextShadowView *)textView width:(float)width height:(float)height
+{
+  CGSize size = CGSizeMake(RCTCoreGraphicsFloatFromYogaFloat(width), RCTCoreGraphicsFloatFromYogaFloat(height));
+  return RCTYogaFloatFromCoreGraphicsFloat([textView lastBaselineForSize:size]);
 }
 
 - (void)_withShadowViewWithStyle:(void (^)(YGNodeRef node))configBlock

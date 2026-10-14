@@ -400,7 +400,15 @@
 
 - (CGFloat)lastBaselineForSize:(CGSize)size
 {
-  NSAttributedString *attributedText = [self textStorageAndLayoutManagerThatFitsSize:size exclusiveOwnership:NO];
+  NSTextStorage *attributedText = [self textStorageAndLayoutManagerThatFitsSize:size exclusiveOwnership:NO];
+
+  // Yoga can request a descendant's baseline before measuring it during a measure-only pass.
+  if (size.height == CGFLOAT_MAX) {
+    NSLayoutManager *layoutManager = attributedText.layoutManagers.firstObject;
+    NSTextContainer *textContainer = layoutManager.textContainers.firstObject;
+    [layoutManager ensureLayoutForTextContainer:textContainer];
+    size.height = [layoutManager usedRectForTextContainer:textContainer].size.height;
+  }
 
   __block CGFloat maximumDescender = 0.0;
 
