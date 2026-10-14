@@ -1,72 +1,118 @@
-name: Publish to npm
+name: Changesets
 
 on:
   push:
     branches:
       - "*-stable"
+  workflow_dispatch:
 
+# recommended: reset permissions and explicitly specify for each job
+permissions: {}
+
+# recommended: avoid concurrent runs for the same branch
 concurrency:
-  # Serialize release lines because they share the latest and next tags.
-  group: npm-publish
-  # GitHub.com supports up to 100 pending runs; do not replace a release push.
-  queue: max
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  publish:
-    name: Publish to npm
-    runs-on: ubuntu-latest
-
+  select-mode:
     if: github.repository == 'microsoft/react-native-macos'
-
-    # Matches the environment name registered as a Trusted Publisher on npmjs.com.
-    environment: npm-publish
-
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.select-mode.outputs.mode }}
+      publish-plan-artifact-id: ${{ steps.select-mode.outputs.publish-plan-artifact-id }}
     permissions:
-      contents: read
-      id-token: write
-
+      contents: read # to check out repo (actions/checkout)
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Check out repo
+        uses: actions/checkout@v7
         with:
-          filter: blob:none
-          fetch-depth: 0
+          persist-credentials: false # recommended: do not persist git credentials on disk
 
       - name: Setup toolchain
         uses: ./.github/actions/microsoft-setup-toolchain
-        with:
-          node-version: "22"
 
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Test publishing contract
-        run: node --test .github/scripts/__tests__/publishing-contract.test.mjs
+      - name: Select Changesets mode
+        id: select-mode
+        uses: changesets/action/select-mode@v2
 
-      # Changesets prepares versions in its automatic PR. This step never bumps
-      # versions and skips pushes with pending changesets or no unpublished versions.
-      - name: Check publish eligibility
+  version:
+    if: needs.select-mode.outputs.mode == 'version' && github.repository == 'microsoft/react-native-macos'
+    needs: select-mode
+    runs-on: ubuntu-latest
+    outputs:
+      version-dir-artifact-id: ${{ steps.version.outputs.version-dir-artifact-id }}
+    permissions:
+      contents: write # to check out repo (actions/checkout) and commit version changes (changesets/action/version)
+      pull-requests: write # to create pull request (changesets/action/version)
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false # recommended: do not persist git credentials on disk
+
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+
+      - name: Install dependencies
+        run: yarn install --immutable
+  
+      - name: Verify release config
         id: configure-publish
         run: node .ado/scripts/configure-publish.mts --verbose
 
-      # Build local Node tooling even when its upstream packages are private.
-      - name: Build packages
-        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
-        run: yarn build
+      - name: Generate token for version PR
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-pull-requests: write # version PRs (Changesets)
 
-      - name: Build local codegen
-        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
-        run: yarn workspace @react-native/codegen build
+      - name: Version packages
+        id: version
+        uses: changesets/action/version@v2
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: yarn changeset:version
 
-      # --validate still generates types_generated, but never rewrites the API snapshot.
-      - name: Build and validate generated types
-        if: steps.configure-publish.outputs.publish_react_native_macos == '1'
-        run: yarn build-types --validate
+  publish:
+    if: needs.select-mode.outputs.mode == 'publish'
+    needs: select-mode
+    runs-on: ubuntu-latest
+    # Matches the environment name registered as a Trusted Publisher on npmjs.com.
+    environment: npm-publish
+    permissions:
+      contents: write # to check out repo (actions/checkout) and to create releases (changesets/action/publish)
+      id-token: write # for trusted publishing (changesets/action/publish)
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false # recommended: do not persist git credentials on disk
 
-      - name: Publish prepared packages
+      - name: Setup toolchain
+        uses: ./.github/actions/microsoft-setup-toolchain
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Verify release config
+        id: configure-publish
+        run: node .ado/scripts/configure-publish.mts --verbose
+  
+      - name: Generate token for version PR
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          permission-contents: write # for GH releases and Git tags (Changesets)
+
+      - name: Publish packages
         if: steps.configure-publish.outputs.publish_react_native_macos == '1'
-        run: node .ado/scripts/configure-publish.mts --publish --verbose
-        env:
-          YARN_NPM_PUBLISH_ACCESS: public
-          YARN_NPM_PUBLISH_REGISTRY: https://registry.npmjs.org
+        uses: changesets/action/publish@v2
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}

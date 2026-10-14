@@ -54,7 +54,7 @@ jobs:
       - name: Configure react-native-test-app dependencies
         working-directory: react-native-test-app/packages/example-macos
         run: |
-          node ../app/scripts/internal/set-react-version.mts ${{ steps.versions.outputs.react_native_version }} --overrides '{ "react-native-macos": "file:${{ runner.temp }}/react-native-macos.tgz" }'
+          node ../app/scripts/internal/set-react-version.mts ${{ steps.versions.outputs.react_native_version }} --overrides '{ "react-native-macos": "file:${{ runner.temp }}/react-native-macos.tgz", "@react-native-macos/virtualized-lists": "file:${{ runner.temp }}/virtualized-lists.tgz" }'
 
       - name: Pin dependencies to avoid resolution conflicts
         working-directory: react-native-test-app
