@@ -1505,6 +1505,18 @@ RCT_SET_AND_PRESERVE_OFFSET(setZoomScale, zoomScale, CGFloat);
   _scrollView.contentInsetAdjustmentBehavior = behavior;
   _scrollView.contentOffset = contentOffset;
 }
+#else // [macOS] No-op setters, so setting these props from JS doesn't crash
+- (void)setScrollIndicatorInsets:(__unused UIEdgeInsets)value
+{
+}
+
+- (void)setVerticalScrollIndicatorInsets:(__unused UIEdgeInsets)value
+{
+}
+
+- (void)setAutomaticallyAdjustsScrollIndicatorInsets:(__unused BOOL)automaticallyAdjusts
+{
+}
 #endif // [macOS]
 #pragma clang diagnostic pop // [macOS]
 
