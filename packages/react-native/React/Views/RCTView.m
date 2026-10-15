@@ -143,6 +143,7 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
   NSTrackingArea *_trackingArea;
   BOOL _hasMouseOver;
   BOOL _mouseDownCanMoveWindow;
+  NSColor *_innerShadowColor;
 #endif // macOS]
   NSMutableDictionary<NSString *, NSDictionary *> *accessibilityActionsNameMap;
   NSMutableDictionary<NSString *, NSDictionary *> *accessibilityActionsLabelMap;
@@ -731,11 +732,8 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 #if TARGET_OS_OSX // [macOS
 - (void)setShadowColor:(CGColorRef)shadowColor
 {
-    if (_shadowColor != shadowColor)
-    {
-        _shadowColor = shadowColor;
-        [self didUpdateShadow];
-    }
+  _innerShadowColor = shadowColor != NULL ? [NSColor colorWithCGColor:shadowColor] : nil;
+  [self didUpdateShadow];
 }
 
 - (void)setShadowOffset:(CGSize)shadowOffset
@@ -768,11 +766,7 @@ RCT_NOT_IMPLEMENTED(-(instancetype)initWithCoder : unused)
 -(void)didUpdateShadow
 {
     NSShadow *shadow = [NSShadow new];
-    NSColor *baseShadowColor = nil;
-    if (_shadowColor != NULL) {
-      baseShadowColor = [NSColor colorWithCGColor:_shadowColor];
-    }
-    shadow.shadowColor = [baseShadowColor colorWithAlphaComponent:[self shadowOpacity]];
+    shadow.shadowColor = [_innerShadowColor colorWithAlphaComponent:[self shadowOpacity]];
     shadow.shadowOffset = [self shadowOffset];
     shadow.shadowBlurRadius = [self shadowRadius];
     [self setShadow:shadow];
