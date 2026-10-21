@@ -1689,7 +1689,7 @@ RCT_ENUM_CONVERTER(
     return useAriaMappings ? [RCTConvert accessibilityRoleFromAriaRole:json] : [RCTConvert accessibilityRoleFromTrait:json];
   } else if ([json isKindOfClass:[NSArray class]]) {
     for (NSString *trait in json) {
-      NSString *accessibilityRole = useAriaMappings ? [RCTConvert accessibilityRoleFromAriaRole:json] : [RCTConvert accessibilityRoleFromTrait:trait];
+      NSString *accessibilityRole = useAriaMappings ? [RCTConvert accessibilityRoleFromAriaRole:trait] : [RCTConvert accessibilityRoleFromTrait:trait];
       if (![accessibilityRole isEqualToString:NSAccessibilityUnknownRole]) {
         return accessibilityRole;
       }
