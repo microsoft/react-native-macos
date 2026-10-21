@@ -353,6 +353,10 @@ RCT_CUSTOM_VIEW_PROPERTY(accessibilityState, NSDictionary, RCTView)
   NSMutableDictionary<NSString *, id> *newState = [NSMutableDictionary<NSString *, id> new];
 
   if (!state) {
+#if TARGET_OS_OSX // [macOS
+    // Removing the prop must clear the previous state, e.g. so a TextInput is re-enabled once `disabled` goes away.
+    view.reactAccessibilityElement.accessibilityState = nil;
+#endif // macOS]
     return;
   }
 

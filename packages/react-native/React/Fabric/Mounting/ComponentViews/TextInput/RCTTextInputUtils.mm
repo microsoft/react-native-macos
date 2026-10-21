@@ -35,6 +35,7 @@ void RCTCopyBackedTextInput(
   toTextInput.accessibilityLabel = fromTextInput.accessibilityLabel;
   toTextInput.accessibilityRole = fromTextInput.accessibilityRole;
   toTextInput.autoresizingMask = fromTextInput.autoresizingMask;
+  toTextInput.enabled = fromTextInput.enabled;
 #endif // macOS]
 #if TARGET_OS_IOS // [macOS] [visionOS]
   toTextInput.inputAccessoryView = fromTextInput.inputAccessoryView;

@@ -305,6 +305,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
     _backedTextInputView.editable = newTextInputProps.traits.editable;
   }
 
+#if TARGET_OS_OSX // [macOS
+  // `accessibilityState.disabled` disables the backed text input; `editable={false}` only makes it read-only.
+  if (newTextInputProps.accessibilityState != oldTextInputProps.accessibilityState) {
+    _backedTextInputView.enabled = !newTextInputProps.accessibilityState.value_or(AccessibilityState{}).disabled;
+  }
+#endif // macOS]
+
 #if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.multiline &&
       newTextInputProps.traits.dataDetectorTypes != oldTextInputProps.traits.dataDetectorTypes) {

@@ -123,6 +123,16 @@
   return [_forwardingTextView resignFirstResponder];
 }
 
+- (BOOL)isEnabled
+{
+  return _forwardingTextView.isEnabled;
+}
+
+- (void)setEnabled:(BOOL)enabled
+{
+  _forwardingTextView.enabled = enabled;
+}
+
 #pragma mark -
 #pragma mark Text Input delegate forwarding
 

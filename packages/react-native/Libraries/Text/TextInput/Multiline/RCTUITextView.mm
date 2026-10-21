@@ -27,6 +27,7 @@
   NSArray<NSString *> *_acceptDragAndDropTypes;
 #if TARGET_OS_OSX // [macOS
   BOOL _enableFocusRing;
+  BOOL _enabled;
   NSArray<NSPasteboardType> *_readablePasteboardTypes;
 #endif // macOS]
 }
@@ -66,6 +67,7 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
     self.canDrawSubviewsIntoLayer = YES;
     self.allowsUndo = YES;
     _enableFocusRing = YES;
+    _enabled = YES;
 #endif // macOS]
 
     _textInputDelegateAdapter = [[RCTBackedTextViewDelegateAdapter alloc] initWithTextView:self];
@@ -279,6 +281,39 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
 - (BOOL)enableFocusRing
 {
   return _enableFocusRing;
+}
+
+- (BOOL)isEnabled
+{
+  return _enabled;
+}
+
+- (void)setEnabled:(BOOL)enabled
+{
+  if (_enabled == enabled) {
+    return;
+  }
+  _enabled = enabled;
+
+  // NSTextView has no enabled state. Behave like a disabled NSTextField: report AXEnabled = NO, refuse first responder
+  // (see -acceptsFirstResponder) and end editing if the view is focused.
+  self.accessibilityEnabled = enabled;
+  if (!enabled && self.window.firstResponder == self) {
+    [self.window makeFirstResponder:nil];
+  }
+}
+
+- (BOOL)acceptsFirstResponder
+{
+  return _enabled && [super acceptsFirstResponder];
+}
+
+- (void)setAccessibilityState:(NSDictionary<NSString *, id> *)accessibilityState
+{
+  // Paper routes `accessibilityState` to the backed text view through -[RCTBaseTextInputView reactAccessibilityElement].
+  [super setAccessibilityState:accessibilityState];
+  id disabled = accessibilityState[@"disabled"];
+  self.enabled = !([disabled isKindOfClass:[NSNumber class]] && [disabled boolValue]);
 }
 #endif // macOS]
 

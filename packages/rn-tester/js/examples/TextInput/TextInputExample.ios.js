@@ -384,6 +384,41 @@ function SpellingAndGrammarEvents(): React.Node {
     </>
   );
 }
+
+function ReadOnlyAndDisabledExample(): React.Node {
+  const [disabled, setDisabled] = React.useState(true);
+  // Removing the prop entirely, rather than passing `{disabled: false}`, must also re-enable the inputs.
+  return (
+    <View>
+      <ExampleTextInput
+        testID="macos-textinput-readonly"
+        editable={false}
+        defaultValue="editable={false}: focusable and selectable, not editable"
+      />
+      <ExampleTextInput
+        testID="macos-textinput-disabled"
+        accessibilityState={disabled ? {disabled: true} : undefined}
+        defaultValue="accessibilityState.disabled: skipped by Tab"
+      />
+      <ExampleTextInput
+        testID="macos-textinput-disabled-multiline"
+        multiline={true}
+        accessibilityState={disabled ? {disabled: true} : undefined}
+        defaultValue="Multiline with accessibilityState.disabled"
+        style={styles.multiline}
+      />
+      <Button
+        testID="macos-textinput-toggle-disabled"
+        title={
+          disabled
+            ? 'Remove accessibilityState'
+            : 'Set accessibilityState={{disabled: true}}'
+        }
+        onPress={() => setDisabled(!disabled)}
+      />
+    </View>
+  );
+}
 // macOS]
 
 const textInputExamples: Array<RNTesterModuleExample> = [
@@ -1203,6 +1238,13 @@ if (Platform.OS === 'macos') {
             />
           </View>
         );
+      },
+    },
+    {
+      title: 'Read-only and disabled',
+      name: 'macos-readonly-disabled',
+      render: function (): React.Node {
+        return <ReadOnlyAndDisabledExample />;
       },
     },
   );
