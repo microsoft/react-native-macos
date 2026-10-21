@@ -2272,6 +2272,49 @@ function MacOSAccessibilityRoleExample(): React.Node {
     </View>
   );
 }
+
+function MacOSAccessibilityStateExample(): React.Node {
+  const [disabled, setDisabled] = useState(false);
+  const [selected, setSelected] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <View style={styles.sectionContainer}>
+      <View
+        accessible={true}
+        role="button"
+        accessibilityState={{disabled, selected, expanded}}
+        testID="macos-state-target">
+        <RNTesterText>
+          {`AXEnabled=${String(!disabled)} AXSelected=${String(selected)} AXExpanded=${String(expanded)}`}
+        </RNTesterText>
+      </View>
+      <View
+        accessible={true}
+        role="button"
+        accessibilityState={{selected: false}}
+        testID="macos-state-without-expanded">
+        <RNTesterText>
+          accessibilityState without expanded (no AXExpanded)
+        </RNTesterText>
+      </View>
+      <Button
+        testID="macos-state-toggle-disabled"
+        title="Toggle disabled"
+        onPress={() => setDisabled(!disabled)}
+      />
+      <Button
+        testID="macos-state-toggle-selected"
+        title="Toggle selected"
+        onPress={() => setSelected(!selected)}
+      />
+      <Button
+        testID="macos-state-toggle-expanded"
+        title="Toggle expanded"
+        onPress={() => setExpanded(!expanded)}
+      />
+    </View>
+  );
+}
 // macOS]
 
 exports.title = 'Accessibility';
@@ -2402,6 +2445,14 @@ exports.examples = [
     platform: 'macos',
     render(): React.MixedElement {
       return <MacOSAccessibilityRoleExample />;
+    },
+  },
+  {
+    title: 'Disabled, selected and expanded state',
+    name: 'macos-state',
+    platform: 'macos',
+    render(): React.MixedElement {
+      return <MacOSAccessibilityStateExample />;
     },
   },
   // macOS]
