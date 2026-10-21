@@ -1247,6 +1247,21 @@ if (Platform.OS === 'macos') {
         return <ReadOnlyAndDisabledExample />;
       },
     },
+    {
+      title: 'Tab stops',
+      name: 'macos-tab-stops',
+      description:
+        ('Each TextInput is a single Tab stop: three presses of Tab or Shift+Tab move across the row.': string),
+      render: function (): React.Node {
+        return (
+          <View style={{flexDirection: 'row', columnGap: 8}}>
+            <ExampleTextInput testID="macos-tab-stop-1" placeholder="First" />
+            <ExampleTextInput testID="macos-tab-stop-2" placeholder="Second" />
+            <ExampleTextInput testID="macos-tab-stop-3" placeholder="Third" />
+          </View>
+        );
+      },
+    },
   );
 }
 // macOS]

@@ -255,6 +255,21 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 #pragma mark - RCTViewComponentView overrides
 
+#if TARGET_OS_OSX // [macOS
+// The backed text input owns focus, editing and the accessibility element; this view only hosts it. Keep it out of the
+// key view loop and the responder chain so each TextInput is a single Tab stop. TextInput defaults `focusable` to true,
+// which would otherwise make -[RCTViewComponentView acceptsFirstResponder] return YES. `focus()` targets the backed view.
+- (BOOL)canBecomeKeyView
+{
+  return NO;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+  return NO;
+}
+#endif // macOS]
+
 - (NSObject *)accessibilityElement
 {
   return _backedTextInputView;

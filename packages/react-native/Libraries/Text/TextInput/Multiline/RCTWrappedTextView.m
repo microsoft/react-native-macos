@@ -108,6 +108,12 @@
   return _forwardingTextView;
 }
 
+- (BOOL)canBecomeKeyView
+{
+  // The forwarding text view is the Tab stop; this wrapper would otherwise add a second one.
+  return NO;
+}
+
 - (BOOL)acceptsFirstResponder
 {
   return _forwardingTextView.acceptsFirstResponder;
