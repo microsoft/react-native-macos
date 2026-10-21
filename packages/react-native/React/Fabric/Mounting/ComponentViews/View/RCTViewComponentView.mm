@@ -36,6 +36,7 @@
 #endif
 
 #if TARGET_OS_OSX // [macOS
+#import <React/RCTConvert.h>
 #import <React/RCTCursor.h>
 #import <React/RCTViewKeyboardEvent.h>
 #import <React/RCTUtils.h>
@@ -44,6 +45,40 @@
 using namespace facebook::react;
 
 const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
+
+#if TARGET_OS_OSX // [macOS
+// The role an accessibility element reports when React Native does not override it. NSControl subclasses, such as the
+// NSTextField behind a single-line TextInput, report their role through their cell; the control's own
+// `accessibilityRole` getter returns NSAccessibilityUnknownRole until a role is set explicitly.
+static NSAccessibilityRole RCTDefaultAccessibilityRoleForElement(NSView *element)
+{
+  if ([element isKindOfClass:[NSControl class]]) {
+    NSAccessibilityRole cellRole = ((NSControl *)element).cell.accessibilityRole;
+    if (cellRole != nil) {
+      return cellRole;
+    }
+  }
+  return NSAccessibilityUnknownRole;
+}
+
+// Matches Paper (`-[RCTViewManager updateAccessibilityRole:withDefaultView:]`): `role` takes precedence over
+// `accessibilityRole`, and the element's default role is used when neither is set.
+static NSAccessibilityRole RCTAccessibilityRoleFromViewProps(const ViewProps &props, NSView *element)
+{
+  if (props.role != Role::None) {
+    return [RCTConvert accessibilityRoleFromTraits:RCTNSStringFromString(toString(props.role)) useAriaMappings:YES];
+  }
+  if (!props.accessibilityRole.empty()) {
+    return [RCTConvert accessibilityRoleFromTraits:RCTNSStringFromString(props.accessibilityRole) useAriaMappings:NO];
+  }
+  NSAccessibilityRole traitsRole =
+      RCTAccessibilityRoleFromTraits(RCTUIAccessibilityTraitsFromAccessibilityTraits(props.accessibilityTraits));
+  if (![traitsRole isEqualToString:NSAccessibilityUnknownRole]) {
+    return traitsRole;
+  }
+  return RCTDefaultAccessibilityRoleForElement(element);
+}
+#endif // macOS]
 
 @implementation RCTViewComponentView {
   RCTPlatformColor *_backgroundColor; // [macOS]
@@ -487,19 +522,27 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     }
   }
 
+#if !TARGET_OS_OSX // [macOS]
   // `accessibilityTraits`
   if (oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
-#if !TARGET_OS_OSX // [macOS]
     self.accessibilityElement.accessibilityTraits =
         RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
-#else // [macOS
-    // On macOS, accessibilityElement returns self (NSView*) which doesn't have accessibilityTraits.
-    // Set role directly on self based on traits.
-    RCTUIAccessibilityTraits traits = RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
-    self.accessibilityRole = RCTAccessibilityRoleFromTraits(traits);
-    self.accessibilityEnabled = (traits & RCTUIAccessibilityTraitNotEnabled) == 0;
-#endif // macOS]
   }
+#else // [macOS
+  // `role`, `accessibilityRole` and `accessibilityTraits`
+  // NSAccessibility has no traits, so all three resolve to a single role on the accessibility element.
+  if (oldViewProps.role != newViewProps.role || oldViewProps.accessibilityRole != newViewProps.accessibilityRole ||
+      oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
+    self.accessibilityElement.accessibilityRole =
+        RCTAccessibilityRoleFromViewProps(newViewProps, self.accessibilityElement);
+  }
+
+  // `accessibilityTraits`
+  if (oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
+    RCTUIAccessibilityTraits traits = RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
+    self.accessibilityEnabled = (traits & RCTUIAccessibilityTraitNotEnabled) == 0;
+  }
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
   // `accessibilityState`
