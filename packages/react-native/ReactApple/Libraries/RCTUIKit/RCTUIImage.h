@@ -114,8 +114,16 @@ NS_INLINE NSImage *UIImageWithData(NSData *imageData)
 // MARK: - Image encoding (macOS only)
 
 #if TARGET_OS_OSX
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 NSData *UIImagePNGRepresentation(NSImage *image);
 NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality);
+
+#ifdef __cplusplus
+}
+#endif
 #endif
 
 NS_ASSUME_NONNULL_END
