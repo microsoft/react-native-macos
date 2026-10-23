@@ -962,9 +962,11 @@ class VirtualizedList extends StateSafePureComponent<
     const {ListEmptyComponent, ListFooterComponent, ListHeaderComponent} =
       this.props;
     const {data, horizontal} = this.props;
-    // macOS natively supports inverted lists, thus not needing an inversion style
+    // macOS's old architecture inverts a ScrollView natively, so needs no inversion style. On the
+    // new architecture its ScrollView takes the style as iOS does, and inverts natively from it.
     const inversionStyle =
-      this.props.inverted && Platform.OS !== 'macos' // [macOS]
+      this.props.inverted &&
+      (Platform.OS !== 'macos' || global.nativeFabricUIManager != null) // [macOS]
         ? horizontalOrDefault(this.props.horizontal)
           ? styles.horizontallyInverted
           : styles.verticallyInverted
