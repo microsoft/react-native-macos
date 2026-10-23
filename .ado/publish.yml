@@ -51,5 +51,8 @@ extends:
     stages:
       - stage: NPM
         dependsOn: []
+        # GitHub Trusted Publishing owns releases. Retain the ADO publication
+        # path for explicit re-enablement after its contract/auth are reviewed.
+        condition: false
         jobs:
          - template: /.ado/jobs/npm-publish.yml@self

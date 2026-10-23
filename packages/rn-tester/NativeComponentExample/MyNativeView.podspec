@@ -19,7 +19,6 @@ Pod::Spec.new do |s|
   s.author          = "Meta Platforms, Inc. and its affiliates"
   s.source          = { :git => "https://github.com/facebook/my-native-view.git", :tag => "#{s.version}" }
   s.pod_target_xcconfig    = {
-    "HEADER_SEARCH_PATHS" => "\"${PODS_CONFIGURATION_BUILD_DIR}/ReactCodegen/ReactCodegen.framework/Headers\"",
     "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard()
   }
 
@@ -27,4 +26,5 @@ Pod::Spec.new do |s|
   s.requires_arc    = true
 
   install_modules_dependencies(s)
+  add_dependency(s, "ReactCodegen")
 end

@@ -6,6 +6,10 @@ on:
       - "*-stable"
   workflow_dispatch:
 
+concurrency:
+  group: changesets-version-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   version:
     name: Create Version Bump PR
@@ -28,6 +32,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Test publishing contract
+        run: node --test .github/scripts/__tests__/publishing-contract.test.mjs
+
       - name: Generate token for version PR
         uses: actions/create-github-app-token@v2
         id: app-token
@@ -37,7 +44,12 @@ jobs:
           permission-contents: write # for GH releases and Git tags (Changesets)
           permission-pull-requests: write # version PRs (Changesets)
 
+      - name: Check stable branch head
+        id: current-head
+        run: node .github/scripts/check-version-head.mjs
+
       - name: Create Version Bump PR
+        if: steps.current-head.outputs.current == 'true'
         uses: changesets/action@v1
         with:
           version: yarn changeset:version

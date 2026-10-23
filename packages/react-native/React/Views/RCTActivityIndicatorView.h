@@ -10,7 +10,7 @@
 #ifndef RCT_REMOVE_LEGACY_ARCH
 
 __attribute__((deprecated("This API will be removed along with the legacy architecture.")))
-@interface RCTActivityIndicatorView : UIActivityIndicatorView
+@interface RCTActivityIndicatorView : RCTUIActivityIndicatorView // [macOS]
 
 #if TARGET_OS_OSX // [macOS
 @property (nonatomic, assign) UIActivityIndicatorViewStyle activityIndicatorViewStyle;

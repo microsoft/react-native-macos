@@ -20,7 +20,7 @@ using namespace facebook::react;
 @end
 
 @implementation RCTSampleTurboModule {
-  NSDictionary *_constants;
+  facebook::react::ModuleConstants<JS::NativeSampleTurboModule::Constants> _constants;
 }
 
 // Backward-compatible export
@@ -46,11 +46,11 @@ RCT_EXPORT_MODULE()
     CGSize screenSize = mainScreen.frame.size;
 #endif // macOS]
 
-  _constants = @{
-    @"const1" : @YES,
-    @"const2" : @(screenSize.width),
-    @"const3" : @"something",
-  };
+  _constants = facebook::react::typedConstants<JS::NativeSampleTurboModule::Constants>({
+      .const1 = YES,
+      .const2 = screenSize.width,
+      .const3 = @"something",
+  });
 }
 
 - (dispatch_queue_t)methodQueue
@@ -71,15 +71,19 @@ RCT_EXPORT_MODULE()
   NSLog(@"Invalidating RCTSampleTurboModule...");
 }
 
-- (NSDictionary *)getConstants
+- (facebook::react::ModuleConstants<JS::NativeSampleTurboModule::Constants>)constantsToExport
 {
   return _constants;
 }
 
-// TODO: Remove once fully migrated to TurboModule.
-- (NSDictionary *)constantsToExport
+- (facebook::react::ModuleConstants<JS::NativeSampleTurboModule::Constants>)getConstants
 {
-  return [self getConstants];
+  return _constants;
+}
+
+- (void)getImageUrl:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject
+{
+  reject(@"Exception", @"Not implemented", nil);
 }
 
 #pragma mark - RCTTurboModuleWithJSIBindings
@@ -177,7 +181,7 @@ RCT_EXPORT_METHOD(
 
 RCT_EXPORT_METHOD(voidFuncThrows)
 {
-  NSException *myException = [NSException exceptionWithName:@"Excepption"
+  NSException *myException = [NSException exceptionWithName:@"Exception"
                                                      reason:@"Intentional exception from ObjC voidFuncThrows"
                                                    userInfo:nil];
   @throw myException;
@@ -185,7 +189,7 @@ RCT_EXPORT_METHOD(voidFuncThrows)
 
 RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSDictionary *, getObjectThrows : (NSDictionary *)arg)
 {
-  NSException *myException = [NSException exceptionWithName:@"Excepption"
+  NSException *myException = [NSException exceptionWithName:@"Exception"
                                                      reason:@"Intentional exception from ObjC getObjectThrows"
                                                    userInfo:nil];
   @throw myException;
@@ -193,7 +197,7 @@ RCT_EXPORT_SYNCHRONOUS_TYPED_METHOD(NSDictionary *, getObjectThrows : (NSDiction
 
 RCT_EXPORT_METHOD(promiseThrows : (RCTPromiseResolveBlock)resolve reject : (RCTPromiseRejectBlock)reject)
 {
-  NSException *myException = [NSException exceptionWithName:@"Excepption"
+  NSException *myException = [NSException exceptionWithName:@"Exception"
                                                      reason:@"Intentional exception from ObjC promiseThrows"
                                                    userInfo:nil];
   @throw myException;

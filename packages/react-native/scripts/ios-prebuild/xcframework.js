@@ -15,11 +15,10 @@ const {
 } = require('../codegen/generate-artifacts-executor/generateFBReactNativeSpecIOS');
 const headers = require('./headers');
 const utils = require('./utils');
-const childProcess = require('child_process');
+const {execFileSync} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const {execSync} = childProcess;
 const {getHeaderFilesFromPodspecs} = headers;
 const {createFolderIfNotExists, createLogger} = utils;
 
@@ -74,17 +73,15 @@ function buildXCFrameworks(
   }
 
   // Build the XCFrameworks by using each framework folder as input
-  const frameworks = frameworkFolders
-    .map(frameworkFolder => {
-      return `-framework "${frameworkFolder}"`;
-    })
-    .join(' ');
+  const buildArguments = ['-create-xcframework'];
+  frameworkFolders.forEach(frameworkFolder => {
+    buildArguments.push('-framework', frameworkFolder);
+  });
+  buildArguments.push('-output', outputPath, '-allow-internal-distribution');
 
-  const buildCommand = `xcodebuild -create-xcframework ${frameworks} -output ${outputPath} -allow-internal-distribution`;
-
-  frameworkLog(buildCommand);
+  frameworkLog(`xcodebuild ${buildArguments.join(' ')}`);
   try {
-    execSync(buildCommand, {
+    execFileSync('xcodebuild', buildArguments, {
       cwd: rootFolder,
       stdio: 'inherit',
     });
@@ -242,7 +239,11 @@ function copySymbols(
         `  ${path.relative(outputPath, sourceSymbolPath)} → ${path.basename(targetFolder)}`,
       );
       fs.mkdirSync(targetSymbolPath, {recursive: true});
-      execSync(`cp -r ${sourceSymbolPath} ${targetSymbolPath}`);
+      fs.cpSync(
+        sourceSymbolPath,
+        path.join(targetSymbolPath, path.basename(sourceSymbolPath)),
+        {recursive: true},
+      );
     }
   });
 }
@@ -365,9 +366,10 @@ function createModuleMapFile(outputPath /*: string */) {
 
 function getArchsFromFramework(frameworkPath /*:string*/) {
   try {
-    return execSync(`vtool -show-build ${frameworkPath}|grep platform`)
+    return execFileSync('vtool', ['-show-build', frameworkPath])
       .toString()
       .split('\n')
+      .filter(line => line.includes('platform'))
       .map(p => p.trim().split(' ')[1])
       .sort((a, b) => a.localeCompare(b))
       .join(' ');
@@ -381,8 +383,11 @@ function signXCFramework(
   xcframeworkPath /*: string */,
 ) {
   frameworkLog('Signing XCFramework...');
-  const command = `codesign --timestamp --sign "${identity}" ${xcframeworkPath}`;
-  execSync(command, {stdio: 'inherit'});
+  execFileSync(
+    'codesign',
+    ['--timestamp', '--sign', identity, xcframeworkPath],
+    {stdio: 'inherit'},
+  );
 }
 
 module.exports = {

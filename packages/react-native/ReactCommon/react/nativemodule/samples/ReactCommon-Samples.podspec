@@ -37,6 +37,7 @@ Pod::Spec.new do |s|
                                "USE_HEADERMAP" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                "GCC_WARN_PEDANTIC" => "YES" }
+  s.frameworks = "CoreGraphics"
   # [macOS Restrict UIKit to iOS and visionOS
   s.ios.framework = "UIKit" 
   s.visionos.framework = "UIKit" 
@@ -57,6 +58,7 @@ Pod::Spec.new do |s|
   s.dependency "React-Core"
   s.dependency "React-cxxreact"
   s.dependency "React-jsi"
+  s.dependency "RCTTypeSafety"
   add_dependency(s, "React-RCTFBReactNativeSpec")
   add_dependency(s, "ReactCommon", :subspec => "turbomodule/core", :additional_framework_paths => ["react/nativemodule/core"])
   add_dependency(s, "React-NativeModulesApple")

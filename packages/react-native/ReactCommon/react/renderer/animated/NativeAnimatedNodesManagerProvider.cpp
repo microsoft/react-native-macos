@@ -14,6 +14,9 @@
 #ifdef RN_USE_ANIMATION_BACKEND
 #include <react/renderer/animationbackend/AnimationBackend.h>
 #endif
+#include <react/renderer/animated/internal/primitives.h>
+#include <react/renderer/components/view/conversions.h>
+#include <react/renderer/scheduler/Scheduler.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
 
 namespace facebook::react {
@@ -47,28 +50,41 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
   if (nativeAnimatedNodesManager_ == nullptr) {
     auto* uiManager = &UIManagerBinding::getBinding(runtime)->getUIManager();
 
+    mergedValueDispatcher_ = std::make_unique<MergedValueDispatcher>(
+        [jsInvoker](std::function<void()>&& func) {
+          jsInvoker->invokeAsync(std::move(func));
+        },
+        [uiManager](std::unordered_map<Tag, folly::dynamic>&& tagToProps) {
+          uiManager->updateShadowTree(std::move(tagToProps));
+        });
+
     NativeAnimatedNodesManager::FabricCommitCallback fabricCommitCallback =
-        nullptr;
-
-    if (!ReactNativeFeatureFlags::disableFabricCommitInCXXAnimated()) {
-      mergedValueDispatcher_ = std::make_unique<MergedValueDispatcher>(
-          [jsInvoker](std::function<void()>&& func) {
-            jsInvoker->invokeAsync(std::move(func));
-          },
-          [uiManager](std::unordered_map<Tag, folly::dynamic>&& tagToProps) {
-            uiManager->updateShadowTree(std::move(tagToProps));
-          });
-
-      fabricCommitCallback =
-          [this](std::unordered_map<Tag, folly::dynamic>& tagToProps) {
-            mergedValueDispatcher_->dispatch(tagToProps);
-          };
-    }
+        [this](std::unordered_map<Tag, folly::dynamic>& tagToProps) {
+          mergedValueDispatcher_->dispatch(tagToProps);
+        };
 
     auto directManipulationCallback =
         [uiManager](Tag viewTag, const folly::dynamic& props) {
           uiManager->synchronouslyUpdateViewOnUIThread(viewTag, props);
         };
+
+    // TODO: remove force casting.
+    auto* scheduler = (Scheduler*)uiManager->getDelegate();
+    auto resolvePlatformColor = [scheduler, uiManager](
+                                    SurfaceId surfaceId,
+                                    const RawValue& value,
+                                    SharedColor& result) {
+      if (uiManager) {
+        if (surfaceId != animated::undefinedAnimatedNodeIdentifier) {
+          PropsParserContext propsParserContext{
+              surfaceId, *scheduler->getContextContainer()};
+          fromRawValue(propsParserContext, value, result);
+        } else {
+          LOG(ERROR)
+              << "Cannot resolve platformColor because surfaceId is unavailable.";
+        }
+      }
+    };
 
     if (ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
 #ifdef RN_USE_ANIMATION_BACKEND
@@ -80,19 +96,29 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
           std::move(directManipulationCallback),
           std::move(fabricCommitCallback),
           uiManager);
-#endif
 
       nativeAnimatedNodesManager_ =
           std::make_shared<NativeAnimatedNodesManager>(animationBackend_);
 
+      nativeAnimatedDelegate_ =
+          std::make_shared<UIManagerNativeAnimatedDelegateBackendImpl>(
+              animationBackend_);
+
       uiManager->unstable_setAnimationBackend(animationBackend_);
+#endif
     } else {
       nativeAnimatedNodesManager_ =
           std::make_shared<NativeAnimatedNodesManager>(
               std::move(directManipulationCallback),
               std::move(fabricCommitCallback),
+              std::move(resolvePlatformColor),
               std::move(startOnRenderCallback_),
-              std::move(stopOnRenderCallback_));
+              std::move(stopOnRenderCallback_),
+              std::move(frameRateListenerCallback_));
+
+      nativeAnimatedDelegate_ =
+          std::make_shared<UIManagerNativeAnimatedDelegateImpl>(
+              nativeAnimatedNodesManager_);
     }
 
     addEventEmitterListener(
@@ -117,36 +143,32 @@ NativeAnimatedNodesManagerProvider::getOrCreate(
               return false;
             }));
 
-    nativeAnimatedDelegate_ =
-        std::make_shared<UIManagerNativeAnimatedDelegateImpl>(
-            nativeAnimatedNodesManager_);
-
     uiManager->setNativeAnimatedDelegate(nativeAnimatedDelegate_);
 
-    // TODO: remove force casting.
-    auto* scheduler = (Scheduler*)uiManager->getDelegate();
-    animatedMountingOverrideDelegate_ =
-        std::make_shared<AnimatedMountingOverrideDelegate>(
-            *nativeAnimatedNodesManager_, *scheduler);
+    if (!ReactNativeFeatureFlags::useSharedAnimatedBackend()) {
+      animatedMountingOverrideDelegate_ =
+          std::make_shared<AnimatedMountingOverrideDelegate>(
+              *nativeAnimatedNodesManager_, *scheduler);
 
-    // Register on existing surfaces
-    uiManager->getShadowTreeRegistry().enumerate(
-        [animatedMountingOverrideDelegate =
-             std::weak_ptr<const AnimatedMountingOverrideDelegate>(
-                 animatedMountingOverrideDelegate_)](
-            const ShadowTree& shadowTree, bool& /*stop*/) {
-          shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
-              animatedMountingOverrideDelegate);
-        });
-    // Register on surfaces started in the future
-    uiManager->setOnSurfaceStartCallback(
-        [animatedMountingOverrideDelegate =
-             std::weak_ptr<const AnimatedMountingOverrideDelegate>(
-                 animatedMountingOverrideDelegate_)](
-            const ShadowTree& shadowTree) {
-          shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
-              animatedMountingOverrideDelegate);
-        });
+      // Register on existing surfaces
+      uiManager->getShadowTreeRegistry().enumerate(
+          [animatedMountingOverrideDelegate =
+               std::weak_ptr<const AnimatedMountingOverrideDelegate>(
+                   animatedMountingOverrideDelegate_)](
+              const ShadowTree& shadowTree, bool& /*stop*/) {
+            shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
+                animatedMountingOverrideDelegate);
+          });
+      // Register on surfaces started in the future
+      uiManager->setOnSurfaceStartCallback(
+          [animatedMountingOverrideDelegate =
+               std::weak_ptr<const AnimatedMountingOverrideDelegate>(
+                   animatedMountingOverrideDelegate_)](
+              const ShadowTree& shadowTree) {
+            shadowTree.getMountingCoordinator()->setMountingOverrideDelegate(
+                animatedMountingOverrideDelegate);
+          });
+    }
   }
   return nativeAnimatedNodesManager_;
 }

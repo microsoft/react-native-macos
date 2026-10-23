@@ -8,6 +8,7 @@
  * @format
  */
 
+import type {NativeColorValue} from '../StyleSheet/StyleSheetTypes';
 import type AnimatedAddition from './nodes/AnimatedAddition';
 import type AnimatedDiffClamp from './nodes/AnimatedDiffClamp';
 import type AnimatedDivision from './nodes/AnimatedDivision';
@@ -28,7 +29,7 @@ import {useMemo} from 'react';
 
 type Nullable = void | null;
 type Primitive = string | number | boolean | symbol | void;
-type Builtin = (...$ReadOnlyArray<empty>) => mixed | Date | Error | RegExp;
+type Builtin = (...$ReadOnlyArray<empty>) => unknown | Date | Error | RegExp;
 
 export type WithAnimatedValue<+T> = T extends Builtin | Nullable
   ? T
@@ -46,6 +47,7 @@ export type WithAnimatedValue<+T> = T extends Builtin | Nullable
         | AnimatedInterpolation<number | string>
         | AnimatedInterpolation<number>
         | AnimatedInterpolation<string>
+        | AnimatedInterpolation<NativeColorValue>
     : T extends $ReadOnlyArray<infer P>
       ? $ReadOnlyArray<WithAnimatedValue<P>>
       : T extends {...}
@@ -87,10 +89,10 @@ export type AnimatedBaseProps<Props: {...}> = LooseOmit<
   'ref',
 >;
 
-export type AnimatedComponentType<Props: {...}, +Instance = mixed> = component(
-  ref?: React.RefSetter<Instance>,
-  ...AnimatedProps<Props>
-);
+export type AnimatedComponentType<
+  Props: {...},
+  +Instance = unknown,
+> = component(ref?: React.RefSetter<Instance>, ...AnimatedProps<Props>);
 
 export default function createAnimatedComponent<
   TInstance: React.ComponentType<any>,
@@ -125,6 +127,7 @@ export function unstable_createAnimatedComponentWithAllowlist<
     const [reducedProps, callbackRef] = useAnimatedProps<
       TProps,
       React.ElementRef<TInstance>,
+      // $FlowFixMe[incompatible-type]
     >(props);
     const ref = useMergeRefs<React.ElementRef<TInstance>>(
       callbackRef,

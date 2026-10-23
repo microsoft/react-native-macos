@@ -2,8 +2,14 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
   "access": "public",
   "baseBranch": "origin/main",
+  "bumpVersionsWithWorkspaceProtocolOnly": true,
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "ignore": [],
+  "fixed": [["react-native-macos", "@react-native-macos/virtualized-lists"]],
+  "ignore": ["react-native-macos", "@react-native/tester"],
+  "privatePackages": {
+    "version": false,
+    "tag": false
+  },
   "linked": []
 }

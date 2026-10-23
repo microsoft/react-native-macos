@@ -198,7 +198,7 @@ export default class InspectorProxy implements InspectorProxyQueries {
   processRequest(
     request: IncomingMessage,
     response: ServerResponse,
-    next: (?Error) => mixed,
+    next: (?Error) => unknown,
   ) {
     const pathname = url.parse(request.url).pathname;
     if (

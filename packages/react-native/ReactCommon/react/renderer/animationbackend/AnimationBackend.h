@@ -15,16 +15,33 @@
 #include <vector>
 #include "AnimatedProps.h"
 #include "AnimatedPropsBuilder.h"
+#include "AnimatedPropsRegistry.h"
+#include "AnimationBackendCommitHook.h"
 
 namespace facebook::react {
 
-struct AnimationMutation {
-  Tag tag;
-  const ShadowNodeFamily *family;
-  AnimatedProps props;
+class AnimationBackend;
+
+class UIManagerNativeAnimatedDelegateBackendImpl : public UIManagerNativeAnimatedDelegate {
+ public:
+  explicit UIManagerNativeAnimatedDelegateBackendImpl(std::weak_ptr<UIManagerAnimationBackend> animationBackend);
+
+  void runAnimationFrame() override;
+
+ private:
+  std::weak_ptr<UIManagerAnimationBackend> animationBackend_;
 };
 
-using AnimationMutations = std::vector<AnimationMutation>;
+struct AnimationMutation {
+  Tag tag;
+  std::shared_ptr<const ShadowNodeFamily> family;
+  AnimatedProps props;
+  bool hasLayoutUpdates{false};
+};
+
+struct AnimationMutations {
+  std::vector<AnimationMutation> batch;
+};
 
 class AnimationBackend : public UIManagerAnimationBackend {
  public:
@@ -39,7 +56,9 @@ class AnimationBackend : public UIManagerAnimationBackend {
   const StopOnRenderCallback stopOnRenderCallback_;
   const DirectManipulationCallback directManipulationCallback_;
   const FabricCommitCallback fabricCommitCallback_;
+  std::shared_ptr<AnimatedPropsRegistry> animatedPropsRegistry_;
   UIManager *uiManager_;
+  AnimationBackendCommitHook commitHook_;
 
   AnimationBackend(
       StartOnRenderCallback &&startOnRenderCallback,
@@ -47,10 +66,9 @@ class AnimationBackend : public UIManagerAnimationBackend {
       DirectManipulationCallback &&directManipulationCallback,
       FabricCommitCallback &&fabricCommitCallback,
       UIManager *uiManager);
-  void commitUpdatesWithFamilies(
-      const std::unordered_set<const ShadowNodeFamily *> &families,
-      std::unordered_map<Tag, AnimatedProps> &updates);
+  void commitUpdates(SurfaceId surfaceId, SurfaceUpdates &surfaceUpdates);
   void synchronouslyUpdateProps(const std::unordered_map<Tag, AnimatedProps> &updates);
+  void clearRegistry(SurfaceId surfaceId) override;
 
   void onAnimationFrame(double timestamp) override;
   void start(const Callback &callback, bool isAsync);

@@ -16,6 +16,8 @@ import type {
   BlurEvent,
   FocusEvent,
   GestureResponderEvent,
+  KeyDownEvent,
+  KeyUpEvent,
   LayoutChangeEvent,
   LayoutRectangle,
   MouseEvent,
@@ -25,7 +27,6 @@ import type {
 import type {
   DragEvent,
   HandledKeyEvent,
-  KeyEvent,
   ScrollEvent,
 } from '../../Types/CoreEventTypes';
 // macOS]
@@ -46,7 +47,7 @@ type DirectEventProps = $ReadOnly<{
    * when the user performs an accessibility custom action.
    *
    */
-  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
+  onAccessibilityAction?: ?(event: AccessibilityActionEvent) => unknown,
 
   /**
    * When `accessible` is true, the system will try to invoke this function
@@ -54,7 +55,7 @@ type DirectEventProps = $ReadOnly<{
    *
    * See https://reactnative.dev/docs/view#onaccessibilitytap
    */
-  onAccessibilityTap?: ?() => mixed,
+  onAccessibilityTap?: ?() => unknown,
 
   // [macOS
   /**
@@ -81,7 +82,7 @@ type DirectEventProps = $ReadOnly<{
    *
    * See https://reactnative.dev/docs/view#onlayout
    */
-  onLayout?: ?(event: LayoutChangeEvent) => mixed,
+  onLayout?: ?(event: LayoutChangeEvent) => unknown,
 
   /**
    * When `accessible` is `true`, the system will invoke this function when the
@@ -89,7 +90,7 @@ type DirectEventProps = $ReadOnly<{
    *
    * See https://reactnative.dev/docs/view#onmagictap
    */
-  onMagicTap?: ?() => mixed,
+  onMagicTap?: ?() => unknown,
 
   /**
    * When `accessible` is `true`, the system will invoke this function when the
@@ -97,19 +98,19 @@ type DirectEventProps = $ReadOnly<{
    *
    * See https://reactnative.dev/docs/view#onaccessibilityescape
    */
-  onAccessibilityEscape?: ?() => mixed,
+  onAccessibilityEscape?: ?() => unknown,
 }>;
 
 export type KeyboardEventProps = $ReadOnly<{|
   /**
    * Called after a key down event is detected.
    */
-  onKeyDown?: ?(event: KeyEvent) => void,
+  onKeyDown?: ?(event: KeyDownEvent) => void,
 
   /**
    * Called after a key up event is detected.
    */
-  onKeyUp?: ?(event: KeyEvent) => void,
+  onKeyUp?: ?(event: KeyUpEvent) => void,
 
   /**
    * Array of keys to receive key down events for. These events have their default native behavior prevented.
@@ -124,6 +125,9 @@ export type KeyboardEventProps = $ReadOnly<{|
    * @platform macos
    */
   keyUpEvents?: ?Array<HandledKeyEvent>,
+  validKeysDown?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  validKeysUp?: ?$ReadOnlyArray<string | HandledKeyEvent>,
+  passthroughAllKeyEvents?: ?boolean,
 |}>;
 // macOS]
 
@@ -166,6 +170,13 @@ type FocusEventProps = $ReadOnly<{
   onBlurCapture?: ?(event: BlurEvent) => void,
   onFocus?: ?(event: FocusEvent) => void,
   onFocusCapture?: ?(event: FocusEvent) => void,
+}>;
+
+type KeyEventProps = $ReadOnly<{
+  onKeyDown?: ?(event: KeyDownEvent) => void,
+  onKeyDownCapture?: ?(event: KeyDownEvent) => void,
+  onKeyUp?: ?(event: KeyUpEvent) => void,
+  onKeyUpCapture?: ?(event: KeyUpEvent) => void,
 }>;
 
 type TouchEventProps = $ReadOnly<{
@@ -397,7 +408,7 @@ export type ViewPropsAndroid = $ReadOnly<{
    *
    * @platform android
    */
-  onClick?: ?(event: GestureResponderEvent) => mixed,
+  onClick?: ?(event: GestureResponderEvent) => unknown,
 }>;
 
 export type TVViewPropsIOS = $ReadOnly<{
@@ -641,6 +652,7 @@ export type ViewProps = $ReadOnly<{
   ...MouseEventProps,
   ...PointerEventProps,
   ...FocusEventProps,
+  ...KeyEventProps,
   ...TouchEventProps,
   ...KeyboardEventProps, // [macOS]
   ...ViewPropsAndroid,

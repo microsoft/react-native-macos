@@ -14,6 +14,9 @@
   <a href="https://github.com/microsoft/react-native-macos/blob/master/CONTRIBUTING.md">
     <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs are welcome!" />
   </a>
+  <a href="https://bsky.app/profile/reactnative.dev">
+    <img src="https://img.shields.io/badge/Bluesky-0285FF?logo=bluesky&logoColor=fff" alt="Follow @reactnative.dev on Bluesky" />
+  </a>
 </p>
 
 > See the official [React Native website](https://reactnative.dev/) for an introduction to React Native.
