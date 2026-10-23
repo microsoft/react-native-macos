@@ -15,7 +15,10 @@ function shouldUseTurboAnimatedModule(): boolean {
   if (ReactNativeFeatureFlags.cxxNativeAnimatedEnabled()) {
     return false;
   } else {
-    return Platform.OS === 'ios' && global.RN$Bridgeless === true;
+    return (
+      (Platform.OS === 'ios' || Platform.OS === 'macos') && // [macOS]
+      global.RN$Bridgeless === true
+    );
   }
 }
 
