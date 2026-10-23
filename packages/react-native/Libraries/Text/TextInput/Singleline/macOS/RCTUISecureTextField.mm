@@ -85,6 +85,24 @@
   return RCTUISecureTextFieldCell.class;
 }
 
+// AppKit's secure field editor (NSSecureTextView) requires its delegate to be an NSSecureTextField,
+// and throws as the field takes focus when it is not ("NSSecureTextFieldCell is not secure because
+// the secure field editor's delegate must be an NSSecureTextField!"). This class subclasses
+// RCTUITextField to share its behaviour, but its cell is an NSSecureTextFieldCell, which masks the
+// text and turns on secure keyboard input, so it answers as an NSSecureTextField.
+- (BOOL)isKindOfClass:(Class)aClass
+{
+  return aClass == [NSSecureTextField class] || [super isKindOfClass:aClass];
+}
+
+// Taken for an NSSecureTextField, the field is also asked this by NSSecureTextView as it draws, and
+// an unanswered message throws there. NSSecureTextField answers from a flag that is off unless its
+// private setter turns it on, so this answers NO, as an NSSecureTextField does by default.
+- (BOOL)_shouldShowIndicators
+{
+  return NO;
+}
+
 @end
 
 #endif // TARGET_OS_OSX
