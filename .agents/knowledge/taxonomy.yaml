@@ -1,7 +1,7 @@
 # @format
 # Machine-readable vocabulary, budgets, and routes for react-native-macos agent
 # knowledge. knowledge.mts reads this file. Prose conventions live in
-# .claude/skills/rnmacos-organize-knowledge/references/conventions.md.
+# .agents/skills/rnmacos-organize-knowledge/references/conventions.md.
 
 version: 1
 audited: 2026-10-28
@@ -19,7 +19,9 @@ domains:
   evals: Knowledge checks and behavior scenarios
 
 skills:
-  root: .claude/skills
+  root: .agents/skills
+  # Host-specific folders that hold only a relative symlink to each skill.
+  links: [.claude/skills]
   prefix: rnmacos-
   frontmatter:
     [
@@ -74,7 +76,7 @@ homes:
   - .github/copilot-instructions.md
   - .github/instructions
   - .agents/knowledge
-  - .claude/skills
+  - .agents/skills
   - .ai
   - docsite/docs
 
@@ -89,4 +91,4 @@ yarn_allow: []
 
 # KC-05 accepts these paths, which knowledge files mention on purpose even though they don't exist,
 # such as discovery folders the fork chose not to create.
-absent_paths: [.github/skills, .agents/skills, .claude/rules]
+absent_paths: [.github/skills, .claude/rules]
