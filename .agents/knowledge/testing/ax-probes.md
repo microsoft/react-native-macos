@@ -9,8 +9,8 @@ sources:
   - packages/rn-tester/js/components/RNTesterNavbar.js#apis-tab
   - packages/rn-tester/js/components/RNTesterModuleList.js#explorer_search
   - packages/rn-tester/js/components/RNTesterModuleContainer.js#example_search
-  - .ado/scripts/xcodebuild.sh#derivedDataPath
-verified: 2026-10-28
+  - https://github.com/microsoft/react-native-macos/pull/2824#discussion_r2905251918
+verified: 2026-10-29
 rules: [baseline-first, unique-testids]
 requires: [testing.rntester-macos]
 related: [a11y.appkit, a11y.keyboard]
@@ -99,12 +99,13 @@ keys 'key code 48'                     # Tab; add "using shift down" for Shift-T
 /tmp/ax $PID focused
 ```
 
+For a focus change, also test the JavaScript ref path independently. Use RNTester controls or a temporary test control that calls the affected component's `ref.current.focus()` and `ref.current.blur()`. After each call, run `/tmp/ax $PID focused` and record the `AXFocusedUIElement`; then test Tab and Shift-Tab separately. A working keyboard path does not prove that the JS ref path works, or vice versa.
+
 ## Facts
 
 - `absent` means AppKit doesn't advertise the attribute; `nil` means it's advertised with no value.
 - RNTester-macOS ignores deep links, so navigate with the tabs and the search fields.
 - Fabric views have no `AXPress`, so `click` posts a real mouse click at the element. The window must be frontmost and unobscured.
-- The wrapper's `-derivedDataPath` puts the app under `packages/rn-tester/Build/Products`.
 
 ## Pitfalls
 
