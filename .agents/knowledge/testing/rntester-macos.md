@@ -8,6 +8,8 @@ sources:
   - .github/workflows/microsoft-build-rntester.yml
   - packages/rn-tester/Podfile:6-28
   - packages/rn-tester/js/utils/RNTesterList.macos.js
+  - .yarnrc.yml#nodeLinker
+  - packages/community-cli-plugin/src/commands/start/middleware.js#cli-server-api
 verified: 2026-11-10
 rules: [build-like-ci, open-workspace]
 related: [tooling.commands]
@@ -35,7 +37,12 @@ bundle install
 RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
 ```
 
-Start Metro in a second terminal before launching the app.
+From the repository root, start Metro in a second terminal before launching the app:
+
+```sh
+cd packages/rn-tester
+NODE_PATH="$PWD/node_modules" node ../react-native/cli.js start
+```
 
 ## Facts
 
@@ -46,8 +53,9 @@ Start Metro in a second terminal before launching the app.
 ## Pitfalls
 
 - When building with CocoaPods, run `pod install` again after changing native dependencies or switching branches.
+- `yarn start` fails under the repository's `nodeLinker: pnpm`: Yarn resolves the `react-native-macos` binary under `.yarn/__virtual__`, which the pnpm linker never creates. Running `cli.js` without `NODE_PATH` starts Metro without `/status`, and the app then reports "No script URL provided".
 - A green macOS build doesn't prove iOS or visionOS still compile. When you change shared Apple code, build the `RNTester` scheme with `iphonesimulator` too.
 
 ## Verify
 
-The build succeeds, and the app launches with Metro running.
+The build succeeds, `curl localhost:8081/status` prints `packager-status:running`, and the app launches with Metro running.

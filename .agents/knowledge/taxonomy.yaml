@@ -90,5 +90,9 @@ retired_ids: []
 yarn_allow: []
 
 # KC-05 accepts these paths, which knowledge files mention on purpose even though they don't exist,
-# such as discovery folders the fork chose not to create.
-absent_paths: [.github/skills, .claude/rules]
+# such as discovery folders the fork chose not to create, build output, and paths a tool expects but never creates.
+absent_paths:
+  - .github/skills
+  - .claude/rules
+  - packages/rn-tester/Build/Products
+  - .yarn/__virtual__
