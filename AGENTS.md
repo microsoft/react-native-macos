@@ -38,6 +38,7 @@ This is Microsoft's macOS fork of React Native. Keep changes merge-friendly, and
 | Changing a file that upstream also has | [fork.diff-tags](.agents/knowledge/fork/diff-tags.md), [fork.ownership](.agents/knowledge/fork/ownership.md) |
 | Running builds, tests, linters, or formatters | [tooling.commands](.agents/knowledge/tooling/commands.md), [tooling.format-lint](.agents/knowledge/tooling/format-lint.md) |
 | Building or running RNTester-macOS | [testing.rntester-macos](.agents/knowledge/testing/rntester-macos.md) |
+| Changing macOS accessibility, focus, or Tab order | [a11y.appkit](.agents/knowledge/a11y/appkit.md), then the matching `a11y` topic in the [index](.agents/knowledge/index.md) |
 | Writing a PR, Changeset, or backport | [process.pull-requests](.agents/knowledge/process/pull-requests.md) |
 | Doing anything else | [Knowledge index](.agents/knowledge/index.md) |
 
