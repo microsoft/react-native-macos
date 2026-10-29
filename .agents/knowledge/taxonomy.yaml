@@ -1,0 +1,92 @@
+# @format
+# Machine-readable vocabulary, budgets, and routes for react-native-macos agent
+# knowledge. knowledge.mts reads this file. Prose conventions live in
+# .claude/skills/rnmacos-organize-knowledge/references/conventions.md.
+
+version: 1
+audited: 2026-10-28
+
+kinds: [rules, reference, procedure, decision, eval]
+statuses: [draft, active, deprecated]
+
+domains:
+  fork: Fork model, diff tags, path ownership, and upstream merges
+  apple: macOS divergences from the React Native iOS implementation
+  a11y: macOS accessibility rules, divergences, and exceptions
+  tooling: Yarn, formatting, linting, and CI
+  testing: What to run, native test targets, and RNTester-macOS
+  process: Pull requests, Changesets, backports, and releases
+  evals: Knowledge checks and behavior scenarios
+
+skills:
+  root: .claude/skills
+  prefix: rnmacos-
+  frontmatter:
+    [
+      name,
+      description,
+      license,
+      metadata,
+      allowed-tools,
+      argument-hint,
+      disable-model-invocation,
+    ]
+
+budgets:
+  warn_ratio: 0.8
+  agents_fork_block: {lines: 60, bytes: 4096}
+  agents_total: {lines: 150, bytes: 12288}
+  tier0: {bytes: 16384}
+  copilot_pointer: {lines: 8}
+  instructions_pointer: {lines: 12, bytes: 1024}
+  index: {lines: 100}
+  topic: {lines: 150, bytes: 8192}
+  skill: {lines: 150, bytes: 6144}
+  reference: {lines: 200, bytes: 10240}
+  skill_description: {warn: 400, max: 1024}
+
+skill_budgets:
+  rnmacos-organize-knowledge: {lines: 80}
+
+# Severity overrides. KC-05 and KC-06 warn during burn-in (10 PRs, including
+# one *-merge PR); KC-14 becomes an error in phase 3.
+checks:
+  KC-05: warning
+  KC-06: warning
+  KC-14: warning
+
+freshness:
+  verified_days: 180
+  draft_days: 30
+  audit_days: 45
+
+ownership:
+  upstream_owned:
+    - '**/__docs__/**'
+    - .markdownlint-cli2.mjs
+    - .prettierrc.js
+    - .expo-code-review/**
+    - packages/react-native-compatibility-check/AGENTS.md
+
+# Places `find` searches. .ai/ holds legacy commands until they move to skills.
+homes:
+  - AGENTS.md
+  - .github/copilot-instructions.md
+  - .github/instructions
+  - .agents/knowledge
+  - .claude/skills
+  - .ai
+  - docsite/docs
+
+# Path routes generate .github/instructions/rnmacos-<name>.instructions.md.
+routes: []
+
+redirects: {}
+retired_ids: []
+
+# KC-06 accepts these `yarn <name>` commands even though they aren't root scripts or binaries.
+yarn_allow: []
+
+# KC-05 accepts these paths, which knowledge files mention on purpose even though they don't exist,
+# such as discovery folders the fork chose not to create.
+absent_paths: [.github/skills, .agents/skills, .claude/rules]
