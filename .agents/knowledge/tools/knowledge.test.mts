@@ -23,11 +23,11 @@ audited: 2026-10-28
 kinds: [rules, reference, procedure, decision, eval]
 statuses: [draft, active, deprecated]
 domains: {fork: Fork model, tooling: Tooling}
-skills: {root: .claude/skills, prefix: rnmacos-, frontmatter: [name, description, license]}
+skills: {root: .agents/skills, links: [.claude/skills], prefix: rnmacos-, frontmatter: [name, description, license]}
 budgets: {warn_ratio: 0.8, topic: {lines: 150, bytes: 8192}}
 freshness: {verified_days: 180, draft_days: 30, audit_days: 45}
 ownership: {upstream_owned: ['**/__docs__/**']}
-homes: [AGENTS.md, .agents/knowledge, .claude/skills]
+homes: [AGENTS.md, .agents/knowledge, .agents/skills]
 routes: []
 redirects: {}
 retired_ids: []
@@ -43,7 +43,7 @@ const AGENTS = `# React Native
 
 Start at the [index](.agents/knowledge/index.md).
 
-- [\`rnmacos-do-thing\`](.claude/skills/rnmacos-do-thing/SKILL.md): does a thing.
+- [\`rnmacos-do-thing\`](.agents/skills/rnmacos-do-thing/SKILL.md): does a thing.
 
 <!-- macOS] -->
 `;
@@ -128,10 +128,16 @@ function baseFiles(): Files {
     '.agents/knowledge/fork/alpha.md': topic('fork.alpha'),
     'AGENTS.md': AGENTS,
     '.github/copilot-instructions.md': POINTER,
-    '.claude/skills/rnmacos-do-thing/SKILL.md': SKILL,
-    '.claude/skills/rnmacos-do-thing/references/ref.md': REF,
+    '.agents/skills/rnmacos-do-thing/SKILL.md': SKILL,
+    '.agents/skills/rnmacos-do-thing/references/ref.md': REF,
   };
 }
+
+const CLAUDE_LINK = '.claude/skills/rnmacos-do-thing';
+const linkTo = (root: string, link: string, name: string) => {
+  fs.mkdirSync(path.dirname(path.join(root, link)), {recursive: true});
+  fs.symlinkSync(`../../.agents/skills/${name}`, path.join(root, link));
+};
 
 function write(root: string, files: Files) {
   for (const [file, text] of Object.entries(files)) {
@@ -151,6 +157,7 @@ function fixture(
   t.after(() => fs.rmSync(root, {recursive: true, force: true}));
   const files = baseFiles();
   write(root, files);
+  linkTo(root, CLAUDE_LINK, 'rnmacos-do-thing');
   git(root, 'init', '-q');
   writeGenerated(loadRepo(root));
   git(root, 'add', '-A');
@@ -297,7 +304,7 @@ const failures: [string, string, (f: Files) => void, string?][] = [
     'duplicate bullet',
     'KC-11a',
     f => {
-      f['.claude/skills/rnmacos-do-thing/references/ref.md'] =
+      f['.agents/skills/rnmacos-do-thing/references/ref.md'] =
         `${REF}\n- ${DUPLICATE}\n`;
     },
   ],
@@ -332,7 +339,7 @@ const failures: [string, string, (f: Files) => void, string?][] = [
     'skill missing from AGENTS.md',
     'KC-08',
     f => {
-      f['.claude/skills/rnmacos-other-thing/SKILL.md'] = SKILL.replace(
+      f['.agents/skills/rnmacos-other-thing/SKILL.md'] = SKILL.replace(
         /do-thing/g,
         'other-thing',
       );
@@ -363,6 +370,37 @@ for (const [name, check, mutate, text] of failures) {
   test(`fails on ${name} (${check})`, t => {
     const issues = runChecks(loadRepo(fixture(t, mutate), {ci: true}));
     assert.ok(has(issues, check, text), JSON.stringify(issues, null, 2));
+  });
+}
+
+const linkFailures: [string, (root: string) => void, string][] = [
+  [
+    'a missing Claude skill link',
+    root => fs.rmSync(path.join(root, CLAUDE_LINK)),
+    'needs a symlink',
+  ],
+  [
+    'a skill copied into the Claude folder',
+    root => {
+      fs.rmSync(path.join(root, CLAUDE_LINK));
+      write(root, {[`${CLAUDE_LINK}/SKILL.md`]: SKILL});
+    },
+    'holds only symlinks',
+  ],
+  [
+    'a Claude link to a missing skill',
+    root => linkTo(root, '.claude/skills/rnmacos-gone', 'rnmacos-gone'),
+    'does not point to a skill',
+  ],
+];
+
+for (const [name, mutate, text] of linkFailures) {
+  test(`fails on ${name} (KC-08)`, t => {
+    const root = fixture(t);
+    mutate(root);
+    git(root, 'add', '-A');
+    const issues = runChecks(loadRepo(root, {ci: true}));
+    assert.ok(has(issues, 'KC-08', text), JSON.stringify(issues, null, 2));
   });
 }
 

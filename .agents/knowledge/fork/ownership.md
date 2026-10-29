@@ -8,7 +8,7 @@ sources:
   - .agents/knowledge/taxonomy.yaml#upstream_owned
   - docsite/docs/contributing/diffs-with-upstream.md
   - https://github.com/react/react-native/blob/main/AGENTS.md
-verified: 2026-10-28
+verified: 2026-10-29
 rules:
   [check-upstream-first, never-edit-upstream-owned, prefer-fork-owned-paths]
 related: [fork.diff-tags]
@@ -29,7 +29,7 @@ Use when: you add a file, move fork content, or edit a file that upstream also s
 ## Facts
 
 - Upstream is `react/react-native`, formerly `facebook/react-native`.
-- **Fork-owned** paths don't exist upstream: `docsite/`, `.ado/`, `.github/workflows/microsoft-*.yml`, `packages/react-native-macos-init/`, `packages/react-native/ReactApple/Libraries/RCTUIKit/`, `*.macos.js` files, `.agents/`, and `.claude/skills/rnmacos-*`.
+- **Fork-owned** paths don't exist upstream: `docsite/`, `.ado/`, `.github/workflows/microsoft-*.yml`, `packages/react-native-macos-init/`, `packages/react-native/ReactApple/Libraries/RCTUIKit/`, `*.macos.js` files, `.agents/`, and the `.claude/skills/rnmacos-*` symlinks.
 - **Shared** paths exist in both repositories, including most of `packages/react-native/React/` and `packages/react-native/Libraries/`. Edit them with [diff tags](diff-tags.md).
 - **Upstream-owned** paths are shared paths the fork never changes: `__docs__/` architecture notes and the shared lint and format configs.
 - Upstream ships a root `AGENTS.md`. The fork's copy keeps upstream's `# React Native` first line and adds a single `[macOS` block, so the 0.88 merge touches as little as possible.

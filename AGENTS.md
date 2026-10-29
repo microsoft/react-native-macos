@@ -43,6 +43,6 @@ This is Microsoft's macOS fork of React Native. Keep changes merge-friendly, and
 
 ### Skills
 
-- [`rnmacos-organize-knowledge`](.claude/skills/rnmacos-organize-knowledge/SKILL.md): record, fix, move, or retire agent instructions and knowledge.
+- [`rnmacos-organize-knowledge`](.agents/skills/rnmacos-organize-knowledge/SKILL.md): record, fix, move, or retire agent instructions and knowledge.
 
 <!-- macOS] -->

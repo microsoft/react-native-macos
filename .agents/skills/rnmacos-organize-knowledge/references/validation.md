@@ -10,7 +10,7 @@ Load this before you report any knowledge change. Run every command from the rep
 node .agents/knowledge/tools/knowledge.mts index --write
 node .agents/knowledge/tools/knowledge.mts check
 node --test .agents/knowledge/tools/knowledge.test.mts
-yarn markdownlint-cli2 --no-globs AGENTS.md ".agents/knowledge/**/*.md" ".claude/skills/rnmacos-*/**/*.md" .github/copilot-instructions.md
+yarn markdownlint-cli2 --no-globs AGENTS.md ".agents/knowledge/**/*.md" ".agents/skills/rnmacos-*/**/*.md" .github/copilot-instructions.md
 yarn exec prettier --check path/to/changed/files
 ```
 

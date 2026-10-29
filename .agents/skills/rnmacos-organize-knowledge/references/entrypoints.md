@@ -6,15 +6,22 @@ Load this when you change `AGENTS.md`, `.github/copilot-instructions.md`, path r
 
 ## Which host reads what
 
-Last verified 2026-10-28.
+Last verified 2026-10-29.
 
 | Host                            | Always loads                                                                                                                               | Discovers skills in                                  |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
 | Copilot CLI                     | `AGENTS.md`, `.github/copilot-instructions.md`, matching `.github/instructions/**/*.instructions.md`, `CLAUDE.md`, `.claude/rules/**/*.md` | `.github/skills`, `.claude/skills`, `.agents/skills` |
 | Copilot cloud agent and VS Code | `AGENTS.md`, `.github/copilot-instructions.md`, matching `*.instructions.md`                                                               | `.github/skills`, `.claude/skills`, `.agents/skills` |
-| Claude Code 2.1.277 or later    | `AGENTS.md`                                                                                                                                | `.claude/skills`                                     |
+| Claude Code 2.1.277 or later    | `AGENTS.md`                                                                                                                                | `.claude/skills`, following per-skill symlinks       |
+| Codex                           | `AGENTS.md`                                                                                                                                | `.agents/skills`, following symlinks                 |
 
 Copilot CLI lists its sources under `/instructions` and `/env`. A local `CLAUDE.local.md`, or a Claude Code version older than 2.1.277, can keep Claude from loading `AGENTS.md`.
+
+## Skill folders
+
+- Skills live in `.agents/skills`, the only folder that Copilot and Codex both read. Each `.claude/skills/<name>` entry is a relative symlink to it, for Claude Code.
+- Copilot CLI 1.0.105 finds a linked skill through both folders but lists it once, at its `.agents/skills` path (`copilot skill list --json`). Claude Code also loads it once.
+- On Windows, a checkout without `core.symlinks` turns each link into a text file, so Claude Code there doesn't see the skill. Copilot and Codex are unaffected.
 
 ## AGENTS.md
 
@@ -35,7 +42,6 @@ Copilot CLI lists its sources under `/instructions` and `/env`. A local `CLAUDE.
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | `CLAUDE.md`        | Claude Code 2.1.277 reads `AGENTS.md` directly. Upstream's 0.88 branch adds a one-line `@AGENTS.md`; delete it at that merge. |
 | `.claude/rules/`   | Would duplicate path pointers. Deferred until a spike shows Copilot doesn't load both.                                        |
-| `.agents/skills/`  | Codex-only discovery, deferred. Codex reads the `AGENTS.md` skills table instead.                                             |
 | Nested `AGENTS.md` | Some hosts prefer the nearest file and would skip the root rules.                                                             |
 
 ## Legacy files
