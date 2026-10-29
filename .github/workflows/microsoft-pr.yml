@@ -140,7 +140,7 @@ jobs:
         run: node --test .agents/knowledge/tools/knowledge.test.mts
 
       - name: Lint agent knowledge Markdown
-        run: yarn markdownlint-cli2 --no-globs AGENTS.md ".agents/knowledge/**/*.md" ".claude/skills/rnmacos-*/**/*.md" .github/copilot-instructions.md
+        run: yarn markdownlint-cli2 --no-globs AGENTS.md ".agents/knowledge/**/*.md" ".agents/skills/rnmacos-*/**/*.md" .github/copilot-instructions.md
 
   build-rntester:
     name: "Build RNTester"

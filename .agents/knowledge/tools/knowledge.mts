@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Validates and generates the react-native-macos agent knowledge system.
- * Conventions: .claude/skills/rnmacos-organize-knowledge/references/conventions.md
+ * Conventions: .agents/skills/rnmacos-organize-knowledge/references/conventions.md
  *
  * Usage: node .agents/knowledge/tools/knowledge.mts <command> [options]
  *   find <terms...>                 Search knowledge homes, including dot folders.
@@ -83,7 +83,12 @@ export type Taxonomy = {
   kinds: string[];
   statuses: string[];
   domains: Record<string, string>;
-  skills: {root: string; prefix: string; frontmatter: string[]};
+  skills: {
+    root: string;
+    links?: string[];
+    prefix: string;
+    frontmatter: string[];
+  };
   budgets: Record<string, any>;
   skill_budgets?: Record<string, Budget>;
   checks?: Record<string, Severity>;
@@ -141,8 +146,9 @@ export function listFiles(root: string, ci: boolean): string[] {
     ? ['ls-files', '-z']
     : ['ls-files', '-z', '--cached', '--others', '--exclude-standard'];
   const files = git(root, args).split('\0').filter(Boolean);
+  // lstat keeps dangling symlinks so the skill link check can report them.
   return [...new Set(files)]
-    .filter(f => fs.existsSync(path.join(root, f)))
+    .filter(f => fs.lstatSync(path.join(root, f), {throwIfNoEntry: false}))
     .sort();
 }
 
@@ -973,6 +979,35 @@ export function runChecks(repo: Repo): Issue[] {
     }
     if (!agentsText.includes(`(${s.file})`))
       add('KC-08', s.file, `skill is not listed in ${PATHS.agents}`);
+    for (const dir of tax.skills.links ?? []) {
+      const link = `${dir}/${name}`;
+      const target = path.posix.relative(dir, path.posix.dirname(s.file));
+      let actual: string | null = null;
+      try {
+        actual = fs.readlinkSync(path.join(repo.root, link));
+      } catch {}
+      if (!repo.fileSet.has(link) || actual !== target)
+        add('KC-08', s.file, `needs a symlink ${link} -> ${target}`);
+    }
+  }
+  const skillNames = new Set(skillsOf(repo).map(skillName));
+  for (const dir of tax.skills.links ?? []) {
+    for (const f of repo.files) {
+      if (!f.startsWith(`${dir}/${tax.skills.prefix}`)) continue;
+      const rest = f.slice(dir.length + 1);
+      if (rest.includes('/'))
+        add(
+          'KC-08',
+          f,
+          `${dir} holds only symlinks; put skill files in ${tax.skills.root}`,
+        );
+      else if (!skillNames.has(rest))
+        add(
+          'KC-08',
+          f,
+          `symlink does not point to a skill in ${tax.skills.root}`,
+        );
+    }
   }
 
   // KC-09 pointers

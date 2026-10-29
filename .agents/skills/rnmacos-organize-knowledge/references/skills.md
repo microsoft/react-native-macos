@@ -6,7 +6,9 @@ Load this when you create, change, or migrate a skill.
 
 ## Location and names
 
-- Skills live in `.claude/skills/<name>/SKILL.md`. Copilot CLI, the Copilot cloud agent, VS Code, and Claude Code all discover that folder.
+- Skills live in `.agents/skills/<name>/SKILL.md`, the shared location that Copilot and Codex read directly. See [entry points](entrypoints.md#which-host-reads-what).
+- Claude Code reads only `.claude/skills`, so give each skill a relative symlink there and put nothing else in it: `ln -s ../../.agents/skills/<name> .claude/skills/<name>`. KC-08 enforces this.
+- Write a skill's links relative to the repository root, such as `../../../.agents/knowledge/index.md`, so they resolve from both folders.
 - Names follow `rnmacos-<verb>-<object>`, in lowercase kebab-case, at most 64 characters. The folder name must equal `name`. The prefix keeps fork skills from colliding with skills upstream React Native adds.
 - Every skill is listed in the `AGENTS.md` skills table with a link to its `SKILL.md`. Hosts without skill discovery use that table.
 

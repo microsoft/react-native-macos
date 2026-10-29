@@ -8,7 +8,7 @@ sources:
   - .agents/knowledge/tools/knowledge.mts#runChecks
   - .agents/knowledge/taxonomy.yaml#checks
   - .github/workflows/microsoft-pr.yml#javascript-tests
-verified: 2026-10-28
+verified: 2026-10-29
 rules: [fix-not-suppress]
 related: [tooling.format-lint]
 ---
@@ -17,7 +17,7 @@ related: [tooling.format-lint]
 
 # Knowledge checks
 
-Use when: `knowledge.mts check` reports a failure, or you change a check. Not for: writing conventions; see the organize skill's [conventions](../../../.claude/skills/rnmacos-organize-knowledge/references/conventions.md).
+Use when: `knowledge.mts check` reports a failure, or you change a check. Not for: writing conventions; see the organize skill's [conventions](../../skills/rnmacos-organize-knowledge/references/conventions.md).
 
 ## Rules
 
@@ -36,7 +36,7 @@ Checks are errors unless `checks` in [taxonomy.yaml](../taxonomy.yaml) lowers th
 | KC-05  | Cited sources and backticked repository paths exist (warning)                                                                                 | Update the citation                                                 |
 | KC-06  | `yarn <name>` in code is a root script, root binary, or Yarn built-in, and doesn't pass arguments to a script that shadows a binary (warning) | Use a real command, `yarn exec <binary>`, or add it to `yarn_allow` |
 | KC-07  | Size budgets; 80% warns                                                                                                                       | Split, or move detail to a reference                                |
-| KC-08  | Skill name, prefix, description, frontmatter allowlist, reference depth, and listing in `AGENTS.md`                                           | Follow the skill template                                           |
+| KC-08  | Skill name, prefix, description, frontmatter allowlist, reference depth, listing in `AGENTS.md`, and one `.claude/skills` symlink per skill   | Follow the skill template                                           |
 | KC-09  | Copilot pointer links only to `AGENTS.md`; path pointers have valid `applyTo` globs                                                           | Regenerate pointers                                                 |
 | KC-10  | No `@path` imports                                                                                                                            | Use a Markdown link                                                 |
 | KC-11a | No exact duplicate bullets across knowledge files                                                                                             | Keep one copy and link to it                                        |
