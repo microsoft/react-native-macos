@@ -1664,6 +1664,7 @@ RCT_ENUM_CONVERTER(
       @"tab": NSAccessibilityButtonRole, // no exact match on macOS
       @"tablist": NSAccessibilityTabGroupRole,
       @"text": NSAccessibilityStaticTextRole, // also a legacy iOS accessibilityTraits
+      @"textbox": NSAccessibilityTextFieldRole,
       @"timer": NSAccessibilityStaticTextRole, // no exact match on macOS
       @"toolbar": NSAccessibilityToolbarRole,
       // Roles/traits that are macOS specific and are used by some of the core components (Lists):
@@ -1689,7 +1690,7 @@ RCT_ENUM_CONVERTER(
     return useAriaMappings ? [RCTConvert accessibilityRoleFromAriaRole:json] : [RCTConvert accessibilityRoleFromTrait:json];
   } else if ([json isKindOfClass:[NSArray class]]) {
     for (NSString *trait in json) {
-      NSString *accessibilityRole = useAriaMappings ? [RCTConvert accessibilityRoleFromAriaRole:json] : [RCTConvert accessibilityRoleFromTrait:trait];
+      NSString *accessibilityRole = useAriaMappings ? [RCTConvert accessibilityRoleFromAriaRole:trait] : [RCTConvert accessibilityRoleFromTrait:trait];
       if (![accessibilityRole isEqualToString:NSAccessibilityUnknownRole]) {
         return accessibilityRole;
       }
