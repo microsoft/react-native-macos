@@ -17,6 +17,7 @@
 // OSS-compatibility layer
 
 #import <Foundation/Foundation.h>
+#import <TargetConditionals.h> // [macOS]
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type-c-linkage"
@@ -52,6 +53,9 @@ Class RCTStatusBarManagerCls(void) __attribute__((used));
 Class RCTTimingCls(void) __attribute__((used));
 Class RCTWebSocketModuleCls(void) __attribute__((used));
 Class RCTBlobManagerCls(void) __attribute__((used));
+#if TARGET_OS_OSX // [macOS]
+Class RCTWindowManagerCls(void) __attribute__((used));
+#endif // [macOS]
 
 #ifdef __cplusplus
 }

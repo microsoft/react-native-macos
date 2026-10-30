@@ -46,6 +46,9 @@ Class RCTCoreModulesClassProvider(const char *name) {
     {"Timing", RCTTimingCls},
     {"WebSocketModule", RCTWebSocketModuleCls},
     {"BlobModule", RCTBlobManagerCls},
+#if TARGET_OS_OSX // [macOS]
+    {"WindowManagerMacOS", RCTWindowManagerCls},
+#endif // [macOS]
   };
 
   auto p = sCoreModuleClassMap->find(name);
