@@ -13,13 +13,16 @@
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 import type {
   HandledKeyEvent,
-  KeyEvent,
+  KeyDownEvent,
+  KeyUpEvent,
 } from 'react-native/Libraries/Types/CoreEventTypes';
 
 import * as React from 'react';
 import {Pressable, StyleSheet, Text, TextInput, View} from 'react-native';
 
-function formatKeyEvent(event: KeyEvent) {
+type KeyboardEvent = KeyDownEvent | KeyUpEvent;
+
+function formatKeyEvent(event: KeyboardEvent) {
   const modifiers = [];
   if (event.nativeEvent.ctrlKey) {
     modifiers.push('Ctrl');
@@ -38,7 +41,10 @@ function formatKeyEvent(event: KeyEvent) {
   return `${modifierPrefix}${event.nativeEvent.key}`;
 }
 
-function isKeyBlocked(event: KeyEvent, keyEvents: Array<HandledKeyEvent>) {
+function isKeyBlocked(
+  event: KeyboardEvent,
+  keyEvents: $ReadOnlyArray<HandledKeyEvent>,
+) {
   return keyEvents.some(
     ({key, metaKey, ctrlKey, altKey, shiftKey}) =>
       event.nativeEvent.key === key &&
@@ -201,8 +207,8 @@ function KeyboardEventExample(): React.Node {
     });
   }
 
-  const handleSingleLineKeyDown = React.useCallback((event: KeyEvent) => {
-    const keyDownEvents = [
+  const handleSingleLineKeyDown = React.useCallback((event: KeyDownEvent) => {
+    const keyDownEvents: Array<HandledKeyEvent> = [
       {key: 'g'},
       {key: 'Escape'},
       {key: 'Enter'},
@@ -214,16 +220,16 @@ function KeyboardEventExample(): React.Node {
     appendEvent(`keyDown: ${keyDisplay}${suffix}`, 'Single-line TextInput');
   }, []);
 
-  const handleSingleLineKeyUp = React.useCallback((event: KeyEvent) => {
-    const keyUpEvents = [{key: 'c'}, {key: 'd'}] as Array<HandledKeyEvent>;
+  const handleSingleLineKeyUp = React.useCallback((event: KeyUpEvent) => {
+    const keyUpEvents: Array<HandledKeyEvent> = [{key: 'c'}, {key: 'd'}];
     const isBlocked = isKeyBlocked(event, keyUpEvents);
     const suffix = isBlocked ? ' (blocked)' : '';
     const keyDisplay = formatKeyEvent(event);
     appendEvent(`keyUp: ${keyDisplay}${suffix}`, 'Single-line TextInput');
   }, []);
 
-  const handleMultiLineKeyDown = React.useCallback((event: KeyEvent) => {
-    const keyDownEvents = [
+  const handleMultiLineKeyDown = React.useCallback((event: KeyDownEvent) => {
+    const keyDownEvents: Array<HandledKeyEvent> = [
       {key: 'ArrowRight'},
       {key: 'ArrowDown'},
       {key: 'Enter', metaKey: true},
@@ -234,11 +240,11 @@ function KeyboardEventExample(): React.Node {
     appendEvent(`keyDown: ${keyDisplay}${suffix}`, 'Multi-line TextInput');
   }, []);
 
-  const handleMultiLineKeyUp = React.useCallback((event: KeyEvent) => {
-    const keyUpEvents = [
+  const handleMultiLineKeyUp = React.useCallback((event: KeyUpEvent) => {
+    const keyUpEvents: Array<HandledKeyEvent> = [
       {key: 'Escape'},
       {key: 'Enter'},
-    ] as Array<HandledKeyEvent>;
+    ];
     const isBlocked = isKeyBlocked(event, keyUpEvents);
     const suffix = isBlocked ? ' (blocked)' : '';
     const keyDisplay = formatKeyEvent(event);
@@ -334,7 +340,7 @@ function LegacyValidKeysExample(): React.Node {
           style={styles.focusablePressable}
           validKeysDown={['a', 'b', 'Enter']}
           onPress={() => ref1.current?.focus()}
-          onKeyDown={(event: KeyEvent) => {
+          onKeyDown={(event: KeyDownEvent) => {
             appendEvent(`keyDown: ${formatKeyEvent(event)}`, 'String keys');
           }}>
           <Text style={styles.pressableText}>
@@ -357,7 +363,7 @@ function LegacyValidKeysExample(): React.Node {
             {key: 'z', ctrlKey: true},
           ]}
           onPress={() => ref2.current?.focus()}
-          onKeyDown={(event: KeyEvent) => {
+          onKeyDown={(event: KeyDownEvent) => {
             appendEvent(`keyDown: ${formatKeyEvent(event)}`, 'Modifier keys');
           }}>
           <Text style={styles.pressableText}>
@@ -378,7 +384,7 @@ function LegacyValidKeysExample(): React.Node {
           validKeysDown={['Enter']}
           passthroughAllKeyEvents={true}
           onPress={() => ref3.current?.focus()}
-          onKeyDown={(event: KeyEvent) => {
+          onKeyDown={(event: KeyDownEvent) => {
             appendEvent(`keyDown: ${formatKeyEvent(event)}`, 'Passthrough');
           }}>
           <Text style={styles.pressableText}>
@@ -554,7 +560,7 @@ const styles = StyleSheet.create({
 
 exports.title = 'Keyboard Events';
 exports.description = 'Examples that show how Key events can be used.';
-exports.examples = [
+exports.examples = ([
   {
     title: 'Bubbling Example',
     render: function (): React.Node {
@@ -573,4 +579,4 @@ exports.examples = [
       return <LegacyValidKeysExample />;
     },
   },
-] as Array<RNTesterModuleExample>;
+]: Array<RNTesterModuleExample>);

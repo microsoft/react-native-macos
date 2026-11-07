@@ -95,7 +95,7 @@ export type TouchableWithoutFeedbackProps = $ReadOnly<
       | 'no-hide-descendants'
     ),
     nativeID?: ?string,
-    onAccessibilityAction?: ?(event: AccessibilityActionEvent) => mixed,
+    onAccessibilityAction?: ?(event: AccessibilityActionEvent) => unknown,
     /**
      * When `accessible` is true (which is the default) this may be called when
      * the OS-specific concept of "blur" occurs, meaning the element lost focus.
@@ -112,15 +112,15 @@ export type TouchableWithoutFeedbackProps = $ReadOnly<
      * Invoked on mount and layout changes with
      * {nativeEvent: {layout: {x, y, width, height}}}
      */
-    onLayout?: ?(event: LayoutChangeEvent) => mixed,
-    onLongPress?: ?(event: GestureResponderEvent) => mixed,
+    onLayout?: ?(event: LayoutChangeEvent) => unknown,
+    onLongPress?: ?(event: GestureResponderEvent) => unknown,
     /**
      * Called when the touch is released,
      * but not if cancelled (e.g. by a scroll that steals the responder lock).
      */
-    onPress?: ?(event: GestureResponderEvent) => mixed,
-    onPressIn?: ?(event: GestureResponderEvent) => mixed,
-    onPressOut?: ?(event: GestureResponderEvent) => mixed,
+    onPress?: ?(event: GestureResponderEvent) => unknown,
+    onPressIn?: ?(event: GestureResponderEvent) => unknown,
+    onPressOut?: ?(event: GestureResponderEvent) => unknown,
     /**
      * When the scroll view is disabled, this defines how far your
      * touch may move off of the button, before deactivating the button.
@@ -275,7 +275,7 @@ export default function TouchableWithoutFeedback(
   // adopting `Pressability`, so preserve that behavior.
   const {onBlur, onFocus, ...eventHandlersWithoutBlurAndFocus} = eventHandlers;
 
-  const elementProps: {[string]: mixed, ...} = {
+  const elementProps: {[string]: unknown, ...} = {
     ...eventHandlersWithoutBlurAndFocus,
     accessible: props.accessible !== false,
     accessibilityState:

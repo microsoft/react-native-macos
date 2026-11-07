@@ -238,4 +238,13 @@ describe('parseHermesStack', () => {
       }
     `);
   });
+
+  test('treats a long malformed frame as message text', () => {
+    const malformedFrame = `    at ${'functionName ('.repeat(10_000)}`;
+
+    expect(parseHermesStack(malformedFrame)).toEqual({
+      entries: [],
+      message: '',
+    });
+  });
 });

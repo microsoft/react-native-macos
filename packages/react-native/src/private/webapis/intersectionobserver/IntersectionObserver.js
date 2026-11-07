@@ -20,7 +20,7 @@ import * as IntersectionObserverManager from './internals/IntersectionObserverMa
 export type IntersectionObserverCallback = (
   entries: Array<IntersectionObserverEntry>,
   observer: IntersectionObserver,
-) => mixed;
+) => unknown;
 
 export interface IntersectionObserverInit {
   root?: ?ReactNativeElement;
@@ -94,6 +94,24 @@ export default class IntersectionObserver {
       );
     }
 
+    if (options != null && 'delay' in options) {
+      throw new Error(
+        "Failed to construct 'IntersectionObserver': The 'delay' option is not supported.",
+      );
+    }
+
+    if (options != null && 'scrollMargin' in options) {
+      throw new Error(
+        "Failed to construct 'IntersectionObserver': The 'scrollMargin' option is not supported.",
+      );
+    }
+
+    if (options != null && 'trackVisibility' in options) {
+      throw new Error(
+        "Failed to construct 'IntersectionObserver': The 'trackVisibility' option is not supported.",
+      );
+    }
+
     this._callback = callback;
 
     this._rootThresholds = normalizeRootThreshold(options?.rnRootThreshold);
@@ -150,6 +168,36 @@ export default class IntersectionObserver {
    */
   get rnRootThresholds(): $ReadOnlyArray<number> | null {
     return this._rootThresholds;
+  }
+
+  /**
+   * The `delay` option is not supported.
+   * @throws {Error} Always throws an error indicating this property is not supported.
+   */
+  get delay(): number {
+    throw new Error(
+      "Failed to read the 'delay' property from 'IntersectionObserver': This property is not supported.",
+    );
+  }
+
+  /**
+   * The `scrollMargin` option is not supported.
+   * @throws {Error} Always throws an error indicating this property is not supported.
+   */
+  get scrollMargin(): string {
+    throw new Error(
+      "Failed to read the 'scrollMargin' property from 'IntersectionObserver': This property is not supported.",
+    );
+  }
+
+  /**
+   * The `trackVisibility` option is not supported.
+   * @throws {Error} Always throws an error indicating this property is not supported.
+   */
+  get trackVisibility(): boolean {
+    throw new Error(
+      "Failed to read the 'trackVisibility' property from 'IntersectionObserver': This property is not supported.",
+    );
   }
 
   /**
@@ -267,7 +315,7 @@ setPlatformObject(IntersectionObserver);
  * normalizeThresholds([], true);           // → []
  */
 function normalizeThreshold(
-  threshold: mixed,
+  threshold: unknown,
   defaultEmpty: boolean = false,
 ): $ReadOnlyArray<number> {
   if (Array.isArray(threshold)) {
@@ -305,7 +353,7 @@ function normalizeThreshold(
  * normalizeRootThresholds([null, null]);       // → null
  */
 function normalizeRootThreshold(
-  rootThreshold: mixed,
+  rootThreshold: unknown,
 ): null | $ReadOnlyArray<number> {
   if (Array.isArray(rootThreshold)) {
     const normalizedArr = rootThreshold
@@ -320,7 +368,7 @@ function normalizeRootThreshold(
 }
 
 function normalizeThresholdValue(
-  threshold: mixed,
+  threshold: unknown,
   property: string,
 ): null | number {
   if (threshold == null) {
@@ -351,7 +399,7 @@ function normalizeThresholdValue(
  * Per W3C spec, rootMargin must be specified in pixels or percent.
  * This implementation validates the basic format.
  */
-function normalizeRootMargin(rootMargin: mixed): string {
+function normalizeRootMargin(rootMargin: unknown): string {
   if (rootMargin == null || rootMargin === '') {
     return '0px 0px 0px 0px';
   }

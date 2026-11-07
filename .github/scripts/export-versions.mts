@@ -7,6 +7,7 @@
  *   react_native_version  – the coerced major.minor React Native version (e.g. "0.79")
  */
 import * as fs from "node:fs";
+import codegenManifest from "../../packages/react-native-codegen/package.json" with { type: "json" };
 import manifest from "../../packages/react-native/package.json" with { type: "json" };
 
 function coerce(version: string): string {
@@ -24,7 +25,12 @@ function exportValue(name: string, value: string): void {
   }
 }
 
-const { dependencies, peerDependencies } = manifest;
+const { peerDependencies } = manifest;
 
 exportValue("react_version", peerDependencies["react"]);
-exportValue("react_native_version", coerce(dependencies["@react-native/codegen"]));
+// Stable branches declare upstream compatibility explicitly. Fork-point branches
+// retain it in the codegen workspace version, not the "workspace:*" dependency.
+const reactNativeVersion =
+  (peerDependencies as Record<string, string>)["react-native"] ??
+  codegenManifest.version;
+exportValue("react_native_version", coerce(reactNativeVersion));

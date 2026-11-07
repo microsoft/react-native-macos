@@ -8,6 +8,10 @@ runs:
       run: |
         cd packages/react-native/scripts
         sh run_ruby_tests.sh
+    - name: Run Hermes Ruby Tests
+      shell: bash
+      # The CocoaPods suite replaces Open3 with a class; isolate the real helper.
+      run: ruby packages/react-native/sdks/hermes-engine/__tests__/hermes-utils-test.rb
     - name: Boot iPhone Simulator
       shell: bash
       run: source scripts/.tests.env && xcrun simctl boot "$IOS_DEVICE" || true

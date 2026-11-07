@@ -385,7 +385,7 @@ UIFont *RCTFontWithFontProperties(RCTFontProperties fontProperties)
 #else // [macOS
         fontNames = RCTFontNamesForFamilyName(font.familyName);
 #endif // macOS]
-        fontWeight = (fontWeight != 0.0) ?: RCTGetFontWeight(font);
+        fontWeight = (fontWeight != 0.0) ? fontWeight : RCTGetFontWeight(font);
       } else {
         // Failback to system font.
         font = RCTDefaultFontWithFontProperties(fontProperties);
