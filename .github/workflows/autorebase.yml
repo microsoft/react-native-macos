@@ -17,12 +17,12 @@ jobs:
     if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/rebase')
     steps:
       - name: Checkout the latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0 # otherwise, you will fail to push refs to dest repo
       - name: Automatic Rebase
-        uses: cirrus-actions/rebase@1.8
+        uses: cirrus-actions/rebase@b87d48154a87a85666003575337e27b8cd65f691 # 1.8
         env:
           GITHUB_TOKEN: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
     continue-on-error: true  # [macOS]
