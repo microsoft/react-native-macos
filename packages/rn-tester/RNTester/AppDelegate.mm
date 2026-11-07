@@ -76,6 +76,8 @@ NSString *kBundlePath = @"js/RNTesterApp.macos";
                                               backing:NSBackingStoreBuffered
                                                 defer:NO];
   self.window.title = @"RNTesterApp";
+  // Match RCTAppDelegate so Tab and Shift+Tab move between React Native views.
+  self.window.autorecalculatesKeyViewLoop = YES;
   NSDictionary *launchOptions = [notification userInfo];
 #endif // macOS]
 

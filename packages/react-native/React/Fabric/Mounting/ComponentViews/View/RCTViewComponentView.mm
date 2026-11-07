@@ -36,6 +36,7 @@
 #endif
 
 #if TARGET_OS_OSX // [macOS
+#import <React/RCTConvert.h>
 #import <React/RCTCursor.h>
 #import <React/RCTViewKeyboardEvent.h>
 #import <React/RCTUtils.h>
@@ -44,6 +45,60 @@
 using namespace facebook::react;
 
 const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
+
+#if TARGET_OS_OSX // [macOS
+// The role an accessibility element reports when React Native does not override it. NSControl subclasses, such as the
+// NSTextField behind a single-line TextInput, report their role through their cell; the control's own
+// `accessibilityRole` getter returns NSAccessibilityUnknownRole until a role is set explicitly.
+static NSAccessibilityRole RCTDefaultAccessibilityRoleForElement(NSView *element)
+{
+  if ([element isKindOfClass:[NSControl class]]) {
+    NSAccessibilityRole cellRole = ((NSControl *)element).cell.accessibilityRole;
+    if (cellRole != nil) {
+      return cellRole;
+    }
+  }
+  return NSAccessibilityUnknownRole;
+}
+
+// Matches Paper (`-[RCTViewManager updateAccessibilityRole:withDefaultView:]`): `role` takes precedence over
+// `accessibilityRole`, and the element's default role is used when neither is set.
+static NSAccessibilityRole RCTAccessibilityRoleFromViewProps(const ViewProps &props, NSView *element)
+{
+  if (props.role != Role::None) {
+    return [RCTConvert accessibilityRoleFromTraits:RCTNSStringFromString(toString(props.role)) useAriaMappings:YES];
+  }
+  if (!props.accessibilityRole.empty()) {
+    return [RCTConvert accessibilityRoleFromTraits:RCTNSStringFromString(props.accessibilityRole) useAriaMappings:NO];
+  }
+  NSAccessibilityRole traitsRole =
+      RCTAccessibilityRoleFromTraits(RCTUIAccessibilityTraitsFromAccessibilityTraits(props.accessibilityTraits));
+  if (![traitsRole isEqualToString:NSAccessibilityUnknownRole]) {
+    return traitsRole;
+  }
+  return RCTDefaultAccessibilityRoleForElement(element);
+}
+
+// Setting an NSAccessibility state property makes AppKit advertise that attribute, so like Paper
+// (`-[RCTView isAccessibilitySelectorAllowed:]`) only expose a state when JS provides it. `disabled` and `selected` are
+// plain bools in `AccessibilityState`, so they count as provided whenever `accessibilityState` is set.
+static BOOL RCTViewPropsProvideAccessibilityEnabled(const ViewProps &props)
+{
+  const auto traits = RCTUIAccessibilityTraitsFromAccessibilityTraits(props.accessibilityTraits);
+  return props.accessibilityState.has_value() || (traits & RCTUIAccessibilityTraitNotEnabled) != 0;
+}
+
+static BOOL RCTViewPropsProvideAccessibilitySelected(const ViewProps &props)
+{
+  const auto traits = RCTUIAccessibilityTraitsFromAccessibilityTraits(props.accessibilityTraits);
+  return props.accessibilityState.has_value() || (traits & RCTUIAccessibilityTraitSelected) != 0;
+}
+
+static BOOL RCTViewPropsProvideAccessibilityExpanded(const ViewProps &props)
+{
+  return props.accessibilityState.has_value() && props.accessibilityState->expanded.has_value();
+}
+#endif // macOS]
 
 @implementation RCTViewComponentView {
   RCTPlatformColor *_backgroundColor; // [macOS]
@@ -487,19 +542,44 @@ const CGFloat BACKGROUND_COLOR_ZPOSITION = -1024.0f;
     }
   }
 
+#if !TARGET_OS_OSX // [macOS]
   // `accessibilityTraits`
   if (oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
-#if !TARGET_OS_OSX // [macOS]
     self.accessibilityElement.accessibilityTraits =
         RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
-#else // [macOS
-    // On macOS, accessibilityElement returns self (NSView*) which doesn't have accessibilityTraits.
-    // Set role directly on self based on traits.
-    RCTUIAccessibilityTraits traits = RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
-    self.accessibilityRole = RCTAccessibilityRoleFromTraits(traits);
-    self.accessibilityEnabled = (traits & RCTUIAccessibilityTraitNotEnabled) == 0;
-#endif // macOS]
   }
+#else // [macOS
+  // `role`, `accessibilityRole` and `accessibilityTraits`
+  // NSAccessibility has no traits, so all three resolve to a single role on the accessibility element.
+  if (oldViewProps.role != newViewProps.role || oldViewProps.accessibilityRole != newViewProps.accessibilityRole ||
+      oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
+    self.accessibilityElement.accessibilityRole =
+        RCTAccessibilityRoleFromViewProps(newViewProps, self.accessibilityElement);
+  }
+
+  // `accessibilityState`
+  // `disabled` and `selected` can also come from the NotEnabled and Selected traits. Only update a state that is, or
+  // was, provided so that elements without it do not start advertising it.
+  if (oldViewProps.accessibilityState != newViewProps.accessibilityState ||
+      oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
+    const auto accessibilityState = newViewProps.accessibilityState.value_or(AccessibilityState{});
+    const auto traits = RCTUIAccessibilityTraitsFromAccessibilityTraits(newViewProps.accessibilityTraits);
+    if (RCTViewPropsProvideAccessibilityEnabled(newViewProps) ||
+        RCTViewPropsProvideAccessibilityEnabled(oldViewProps)) {
+      self.accessibilityElement.accessibilityEnabled =
+          !accessibilityState.disabled && (traits & RCTUIAccessibilityTraitNotEnabled) == 0;
+    }
+    if (RCTViewPropsProvideAccessibilitySelected(newViewProps) ||
+        RCTViewPropsProvideAccessibilitySelected(oldViewProps)) {
+      self.accessibilityElement.accessibilitySelected =
+          accessibilityState.selected || (traits & RCTUIAccessibilityTraitSelected) != 0;
+    }
+    if (RCTViewPropsProvideAccessibilityExpanded(newViewProps) ||
+        RCTViewPropsProvideAccessibilityExpanded(oldViewProps)) {
+      self.accessibilityElement.accessibilityExpanded = accessibilityState.expanded.value_or(false);
+    }
+  }
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
   // `accessibilityState`
@@ -1684,6 +1764,23 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
 
   return [super isAccessibilityElement];
 }
+
+#if TARGET_OS_OSX // [macOS
+- (BOOL)isAccessibilitySelectorAllowed:(SEL)selector
+{
+  const auto &props = static_cast<const ViewProps &>(*_props);
+  if (selector == @selector(isAccessibilityEnabled)) {
+    return RCTViewPropsProvideAccessibilityEnabled(props);
+  }
+  if (selector == @selector(isAccessibilitySelected)) {
+    return RCTViewPropsProvideAccessibilitySelected(props);
+  }
+  if (selector == @selector(isAccessibilityExpanded)) {
+    return RCTViewPropsProvideAccessibilityExpanded(props);
+  }
+  return [super isAccessibilitySelectorAllowed:selector];
+}
+#endif // macOS]
 
 - (NSString *)accessibilityValue
 {

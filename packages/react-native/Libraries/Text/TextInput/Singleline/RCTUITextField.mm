@@ -398,17 +398,41 @@
 
 - (BOOL)isEditable
 {
+#if !TARGET_OS_OSX // [macOS]
   return self.isEnabled;
+#else // [macOS
+  return [super isEditable];
+#endif // macOS]
 }
 
 - (void)setEditable:(BOOL)editable
 {
-#if TARGET_OS_OSX // [macOS
-  // on macos the super must be called otherwise its NSTextFieldCell editable property doesn't get set.
-  [super setEditable:editable];
-#endif // macOS]
+#if !TARGET_OS_OSX // [macOS]
   self.enabled = editable;
+#else // [macOS
+  // On macOS `editable={false}` makes the field read-only, not disabled: it stays enabled, focusable and selectable.
+  // `accessibilityState.disabled` disables it instead. The super call is required for NSTextFieldCell's editable state.
+  [super setEditable:editable];
+  self.selectable = YES;
+#endif // macOS]
 }
+
+#if TARGET_OS_OSX // [macOS
+- (BOOL)acceptsFirstResponder
+{
+  // NSTextField refuses first responder when it is not editable, which would make read-only fields unreachable with
+  // Tab. Accept it while the field is enabled and selectable; disabled fields are skipped.
+  return self.isEnabled && self.isSelectable;
+}
+
+- (void)setAccessibilityState:(NSDictionary<NSString *, id> *)accessibilityState
+{
+  // Paper routes `accessibilityState` to the backed text field through -[RCTBaseTextInputView reactAccessibilityElement].
+  [super setAccessibilityState:accessibilityState];
+  id disabled = accessibilityState[@"disabled"];
+  self.enabled = !([disabled isKindOfClass:[NSNumber class]] && [disabled boolValue]);
+}
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
 - (void)setSecureTextEntry:(BOOL)secureTextEntry

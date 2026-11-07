@@ -255,6 +255,21 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 
 #pragma mark - RCTViewComponentView overrides
 
+#if TARGET_OS_OSX // [macOS
+// The backed text input owns focus, editing and the accessibility element; this view only hosts it. Keep it out of the
+// key view loop and the responder chain so each TextInput is a single Tab stop. TextInput defaults `focusable` to true,
+// which would otherwise make -[RCTViewComponentView acceptsFirstResponder] return YES. `focus()` targets the backed view.
+- (BOOL)canBecomeKeyView
+{
+  return NO;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+  return NO;
+}
+#endif // macOS]
+
 - (NSObject *)accessibilityElement
 {
   return _backedTextInputView;
@@ -304,6 +319,13 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   if (newTextInputProps.traits.editable != oldTextInputProps.traits.editable) {
     _backedTextInputView.editable = newTextInputProps.traits.editable;
   }
+
+#if TARGET_OS_OSX // [macOS
+  // `accessibilityState.disabled` disables the backed text input; `editable={false}` only makes it read-only.
+  if (newTextInputProps.accessibilityState != oldTextInputProps.accessibilityState) {
+    _backedTextInputView.enabled = !newTextInputProps.accessibilityState.value_or(AccessibilityState{}).disabled;
+  }
+#endif // macOS]
 
 #if !TARGET_OS_OSX // [macOS]
   if (newTextInputProps.multiline &&

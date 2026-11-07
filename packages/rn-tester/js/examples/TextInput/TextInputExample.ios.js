@@ -384,6 +384,41 @@ function SpellingAndGrammarEvents(): React.Node {
     </>
   );
 }
+
+function ReadOnlyAndDisabledExample(): React.Node {
+  const [disabled, setDisabled] = React.useState(true);
+  // Removing the prop entirely, rather than passing `{disabled: false}`, must also re-enable the inputs.
+  return (
+    <View>
+      <ExampleTextInput
+        testID="macos-textinput-readonly"
+        editable={false}
+        defaultValue="editable={false}: focusable and selectable, not editable"
+      />
+      <ExampleTextInput
+        testID="macos-textinput-disabled"
+        accessibilityState={disabled ? {disabled: true} : undefined}
+        defaultValue="accessibilityState.disabled: skipped by Tab"
+      />
+      <ExampleTextInput
+        testID="macos-textinput-disabled-multiline"
+        multiline={true}
+        accessibilityState={disabled ? {disabled: true} : undefined}
+        defaultValue="Multiline with accessibilityState.disabled"
+        style={styles.multiline}
+      />
+      <Button
+        testID="macos-textinput-toggle-disabled"
+        title={
+          disabled
+            ? 'Remove accessibilityState'
+            : 'Set accessibilityState={{disabled: true}}'
+        }
+        onPress={() => setDisabled(!disabled)}
+      />
+    </View>
+  );
+}
 // macOS]
 
 const textInputExamples: Array<RNTesterModuleExample> = [
@@ -1201,6 +1236,28 @@ if (Platform.OS === 'macos') {
               placeholderTextColor="grey"
               style={{backgroundColor: 'black', color: 'white'}}
             />
+          </View>
+        );
+      },
+    },
+    {
+      title: 'Read-only and disabled',
+      name: 'macos-readonly-disabled',
+      render: function (): React.Node {
+        return <ReadOnlyAndDisabledExample />;
+      },
+    },
+    {
+      title: 'Tab stops',
+      name: 'macos-tab-stops',
+      description:
+        ('Each TextInput is a single Tab stop: three presses of Tab or Shift+Tab move across the row.': string),
+      render: function (): React.Node {
+        return (
+          <View style={{flexDirection: 'row', columnGap: 8}}>
+            <ExampleTextInput testID="macos-tab-stop-1" placeholder="First" />
+            <ExampleTextInput testID="macos-tab-stop-2" placeholder="Second" />
+            <ExampleTextInput testID="macos-tab-stop-3" placeholder="Third" />
           </View>
         );
       },
