@@ -97,6 +97,12 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_OSX // [macOS
 - (BOOL)handleKeyboardEvent:(NSEvent *)event;
 - (facebook::react::DataTransfer)dataTransferForPasteboard:(NSPasteboard *)pasteboard;
+
+/*
+ * Lays the subviews out from the bottom, for an inverted ScrollView's content. A subview's own
+ * scaleY(-1), which an inverted list gives each cell, is then left off.
+ */
+@property (nonatomic, assign) BOOL invertsSubviewsVertically;
 #endif // macOS]
 
 /*

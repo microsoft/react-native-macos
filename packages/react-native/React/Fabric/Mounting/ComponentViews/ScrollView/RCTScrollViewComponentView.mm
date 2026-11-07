@@ -88,6 +88,39 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
                                                     userInfo:userInfo];
 }
 
+#if TARGET_OS_OSX // [macOS
+// AppKit works out where a view's layer goes, flipped or not, when the view's frame is set.
+static void RCTRelayoutLayer(RCTPlatformView *view)
+{
+  NSPoint origin = view.frame.origin;
+  [view setFrameOrigin:NSMakePoint(origin.x + 1, origin.y)];
+  [view setFrameOrigin:origin];
+}
+
+// The document view, which counts from the bottom while the list is inverted.
+@interface RCTScrollViewContainerView : RCTUIView
+@property (nonatomic, assign) BOOL inverted;
+@end
+
+@implementation RCTScrollViewContainerView
+
+- (BOOL)isFlipped
+{
+  return !_inverted;
+}
+
+- (void)setInverted:(BOOL)inverted
+{
+  _inverted = inverted;
+  RCTRelayoutLayer(self);
+  for (RCTPlatformView *subview in self.subviews) {
+    RCTRelayoutLayer(subview);
+  }
+}
+
+@end
+#endif // macOS]
+
 @interface RCTScrollViewComponentView () <
 #if !TARGET_OS_OSX // [macOS]
     UIScrollViewDelegate,
@@ -108,6 +141,9 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
 @end
 
 @implementation RCTScrollViewComponentView {
+#if TARGET_OS_OSX // [macOS
+  BOOL _isInverted;
+#endif // macOS]
   ScrollViewShadowNode::ConcreteState::Shared _state;
   CGSize _contentSize;
   NSTimeInterval _lastScrollEventDispatchTime;
@@ -167,10 +203,11 @@ RCTSendScrollEventForNativeAnimations_DEPRECATED(RCTUIScrollView *scrollView, NS
     _isAccessibilityAPIUsed = NO;
     [self addSubview:_scrollView];
 
-    _containerView = [[RCTUIView alloc] initWithFrame:CGRectZero]; // [macOS]
 #if !TARGET_OS_OSX // [macOS]
+    _containerView = [[RCTUIView alloc] initWithFrame:CGRectZero];
     [_scrollView addSubview:_containerView];
 #else // [macOS
+    _containerView = [[RCTScrollViewContainerView alloc] initWithFrame:CGRectZero];
     // Force overlay scrollbar style to avoid layout issues with legacy scrollbars.
     _scrollView.scrollerStyle = NSScrollerStyleOverlay;
     // Don't set autoresizingMask — AppKit corrupts the documentView frame during tile/resize.
@@ -368,6 +405,40 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
 #endif // [macOS]
   }
 }
+
+#if TARGET_OS_OSX // [macOS
+// An inverted list gives its ScrollView scaleY(-1), as on iOS. Here the document view and the
+// content count from the bottom instead (see RCTViewComponentView's invertsSubviewsVertically),
+// so AppKit's scrolling, hit-testing and pointer tracking match what is drawn, and a content
+// offset still counts from the list's first item.
+- (void)setTransform3D:(CATransform3D)transform3D
+{
+  BOOL isInverted = CATransform3DEqualToTransform(transform3D, CATransform3DMakeScale(1, -1, 1));
+  [super setTransform3D:isInverted ? CATransform3DIdentity : transform3D];
+  [self applyInversion:isInverted];
+}
+
+- (void)applyInversion:(BOOL)isInverted
+{
+  if (_isInverted == isInverted) {
+    return;
+  }
+  _isInverted = isInverted;
+
+  CGPoint contentOffset = _scrollView.contentOffset;
+  ((RCTScrollViewContainerView *)_containerView).inverted = isInverted;
+  if ([_contentView isKindOfClass:[RCTViewComponentView class]]) {
+    ((RCTViewComponentView *)_contentView).invertsSubviewsVertically = isInverted;
+  }
+  // The clip view takes in its document's flippedness when the document is set. Scroll events
+  // sent while it is swapped carry offsets from part-way through, so send the settled one after.
+  _scrollView.documentView = nil;
+  _scrollView.documentView = _containerView;
+  _scrollView.contentOffset = contentOffset;
+  [self _forceDispatchNextScrollEvent];
+  [self scrollViewDidScroll:_scrollView];
+}
+#endif // macOS]
 
 - (bool)isInverted
 {
@@ -629,11 +700,21 @@ static inline UIViewAnimationOptions animationOptionsWithCurve(UIViewAnimationCu
   [_containerView insertSubview:childComponentView atIndex:index];
   if (![childComponentView conformsToProtocol:@protocol(RCTCustomPullToRefreshViewProtocol)]) {
     _contentView = childComponentView;
+#if TARGET_OS_OSX // [macOS
+    if ([childComponentView isKindOfClass:[RCTViewComponentView class]]) {
+      ((RCTViewComponentView *)childComponentView).invertsSubviewsVertically = _isInverted;
+    }
+#endif // macOS]
   }
 }
 
 - (void)unmountChildComponentView:(RCTUIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index // [macOS]
 {
+#if TARGET_OS_OSX // [macOS
+  if ([childComponentView isKindOfClass:[RCTViewComponentView class]]) {
+    ((RCTViewComponentView *)childComponentView).invertsSubviewsVertically = NO;
+  }
+#endif // macOS]
   [childComponentView removeFromSuperview];
   if (![childComponentView conformsToProtocol:@protocol(RCTCustomPullToRefreshViewProtocol)] &&
       _contentView == childComponentView) {
