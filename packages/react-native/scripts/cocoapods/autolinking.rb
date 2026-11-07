@@ -201,7 +201,7 @@ def link_native_modules!(config)
   }
 end
 
-$default_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
+$default_command = ['node', '-e', "process.argv=['', '', 'config-macos'];require('@react-native-community/cli').run()"]; # [macOS]
 
 # Autolink your native modules
 #
