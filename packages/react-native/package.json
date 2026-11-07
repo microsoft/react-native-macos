@@ -243,6 +243,9 @@
             },
             "StatusBarManager": {
               "unstableRequiresMainQueueSetup": true
+            },
+            "WindowManagerMacOS": {
+              "unstableRequiresMainQueueSetup": true
             }
           }
         },
