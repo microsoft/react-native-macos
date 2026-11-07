@@ -198,11 +198,8 @@ typedef NS_ENUM(NSInteger, UIViewContentMode) {
 };
 
 // UIUserInterfaceLayoutDirection
-enum : NSInteger
-{
-	UIUserInterfaceLayoutDirectionLeftToRight = NSUserInterfaceLayoutDirectionLeftToRight,
-	UIUserInterfaceLayoutDirectionRightToLeft = NSUserInterfaceLayoutDirectionRightToLeft,
-};
+#define UIUserInterfaceLayoutDirectionLeftToRight NSUserInterfaceLayoutDirectionLeftToRight
+#define UIUserInterfaceLayoutDirectionRightToLeft NSUserInterfaceLayoutDirectionRightToLeft
 
 // UIActivityIndicatorViewStyle
 typedef NS_ENUM(NSInteger, UIActivityIndicatorViewStyle) {
