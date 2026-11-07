@@ -51,17 +51,19 @@ jobs:
         working-directory: ${{ runner.temp }}
 
       - name: Pack local react-native-macos
-        working-directory: packages/react-native
         run: |
           set -eox pipefail
-          # Use a tarball instead of a direct path to avoid symlinks
-          yarn pack -o ${{ runner.temp }}/react-native-macos.tgz
+          # Use tarballs instead of direct paths to avoid symlinks. The
+          # @react-native-macos/virtualized-lists workspace dependency is not
+          # published at the 1000.0.0 dev version, so pack and install it too.
+          (cd packages/react-native && yarn pack -o ${{ runner.temp }}/react-native-macos.tgz)
+          (cd packages/virtualized-lists && yarn pack -o ${{ runner.temp }}/virtualized-lists.tgz)
 
       - name: Install local react-native-macos
         working-directory: ${{ runner.temp }}/testcli
         run: |
           set -eox pipefail
-          npm install ${{ runner.temp }}/react-native-macos.tgz
+          npm install ${{ runner.temp }}/virtualized-lists.tgz ${{ runner.temp }}/react-native-macos.tgz
 
       - name: Apply macOS template
         working-directory: ${{ runner.temp }}/testcli

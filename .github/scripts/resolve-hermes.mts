@@ -17,6 +17,10 @@ import { $, echo, fs, path } from 'zx';
 // Use createRequire to import CommonJS modules from ESM context
 const require = createRequire(import.meta.url);
 const {
+  readHermesMetadata,
+  selectHermesMetadata,
+} = require('../../packages/react-native/scripts/ios-prebuild/hermes-version.js');
+const {
   computeNightlyTarballURL,
 } = require('../../packages/react-native/scripts/ios-prebuild/utils.js');
 
@@ -31,30 +35,19 @@ function setActionOutput(key: string, value: string) {
  * Reads the Hermes artifact version from
  * packages/react-native/sdks/hermes-engine/version.properties.
  *
- * Returns HERMES_V1_VERSION_NAME when RCT_HERMES_V1_ENABLED=1, otherwise
- * HERMES_VERSION_NAME. Returns null if the file or the key is missing.
+ * Uses the same version key and validation as the local prebuild script.
+ * A missing file permits a source build; malformed metadata must fail CI.
  */
 function resolveHermesArtifactVersion(): string | null {
-  const propsPath = path.resolve(
-    import.meta.dirname!, '..', '..',
-    'packages', 'react-native', 'sdks', 'hermes-engine', 'version.properties',
-  );
   try {
-    const props: Record<string, string> = {};
-    for (const line of fs.readFileSync(propsPath, 'utf8').split('\n')) {
-      const eq = line.indexOf('=');
-      if (eq > 0) {
-        props[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
-      }
+    const {version, versionKey} = readHermesMetadata();
+    echo(`Using ${versionKey}=${version}`);
+    return version;
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      return null;
     }
-    const key =
-      process.env.RCT_HERMES_V1_ENABLED === '1'
-        ? 'HERMES_V1_VERSION_NAME'
-        : 'HERMES_VERSION_NAME';
-    const version = props[key];
-    return version != null && version.length > 0 ? version : null;
-  } catch {
-    return null;
+    throw error;
   }
 }
 
@@ -64,10 +57,9 @@ function resolveHermesArtifactVersion(): string | null {
  * facebook/hermes. Returns null if the file is missing or empty.
  */
 function resolveHermesTag(): string | null {
-  const tagFile =
-    process.env.RCT_HERMES_V1_ENABLED === '1'
-      ? '.hermesv1version'
-      : '.hermesversion';
+  const {tagFile} = selectHermesMetadata(
+    'legacy-default', process.env.RCT_HERMES_V1_ENABLED,
+  );
   const tagPath = path.resolve(
     import.meta.dirname!, '..', '..',
     'packages', 'react-native', 'sdks', tagFile,
@@ -92,7 +84,7 @@ async function downloadUpstreamHermesTarball(
 ): Promise<{ tarballPath: string; version: string } | null> {
   const version = resolveHermesArtifactVersion();
   if (version == null) {
-    echo('Could not read Hermes version from sdks/hermes-engine/version.properties');
+    echo('Hermes version.properties is missing — will build from source.');
     return null;
   }
 

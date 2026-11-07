@@ -63,7 +63,7 @@ runs:
         distribution: temurin
         java-version: ${{ inputs.java-version }}
     - name: Set up Node.js
-      uses: actions/setup-node@v4.4.0
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ inputs.node-version }}
         cache: ${{ inputs.cache-npm-dependencies }}

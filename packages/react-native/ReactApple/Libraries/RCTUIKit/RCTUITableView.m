@@ -17,6 +17,21 @@ const CGFloat RCTUITableViewAutomaticDimension = -1.0;
 static NSString *const RCTUITableViewHeaderHeightConstraintIdentifier = @"RCTUITableViewHeaderHeight";
 static char RCTUITableViewHeaderHeightConstraintKey;
 
+static void RCTUITableViewConfigureLabels(NSView *view, BOOL automaticHeight)
+{
+  if ([view isKindOfClass:[NSTextField class]]) {
+    // AppKit's column-width constraint has priority 500. Let text wrap within it.
+    [view setContentCompressionResistancePriority:NSLayoutPriorityDefaultLow
+                                  forOrientation:NSLayoutConstraintOrientationHorizontal];
+    // Automatic row fitting must include the full height of each visible label.
+    [view setContentCompressionResistancePriority:automaticHeight ? NSLayoutPriorityRequired : NSLayoutPriorityDefaultHigh
+                                  forOrientation:NSLayoutConstraintOrientationVertical];
+  }
+  for (NSView *subview in view.subviews) {
+    RCTUITableViewConfigureLabels(subview, automaticHeight);
+  }
+}
+
 typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   RCTUITableViewSlotKindHeader,
   RCTUITableViewSlotKindRow,
@@ -186,6 +201,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
 
 - (void)setFixedHeight:(NSNumber *)fixedHeight
 {
+  RCTUITableViewConfigureLabels(self.contentView, fixedHeight == nil);
   if (fixedHeight == nil) {
     _fixedHeightConstraint.active = NO;
     _fixedHeightConstraint = nil;
@@ -240,6 +256,8 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
     [_tableView addTableColumn:column];
 
     self.documentView = _tableView;
+    // The column retains its default width until it belongs to a scroll view.
+    [_tableView sizeLastColumnToFit];
     _lastContentWidth = self.contentSize.width;
     self.separatorColor = nil;
   }
@@ -276,6 +294,7 @@ typedef NS_ENUM(NSInteger, RCTUITableViewSlotKind) {
   CGFloat contentWidth = self.contentSize.width;
   if (_lastContentWidth != contentWidth) {
     _lastContentWidth = contentWidth;
+    [_tableView sizeLastColumnToFit];
     if (_automaticRows.count > 0) {
       [_tableView noteHeightOfRowsWithIndexesChanged:_automaticRows];
     }
