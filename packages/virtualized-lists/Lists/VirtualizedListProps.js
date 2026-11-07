@@ -35,7 +35,6 @@ export type Separators = {
 export type ListRenderItemInfo<ItemT> = {
   item: ItemT,
   index: number,
-  isSelected: ?boolean, // [macOS]
   separators: Separators,
   ...
 };
@@ -53,12 +52,6 @@ export type CellRendererProps<ItemT> = $ReadOnly<{
 export type ListRenderItem<ItemT> = (
   info: ListRenderItemInfo<ItemT>,
 ) => React.Node;
-
-// [macOS
-export type SelectedRowIndexPathType = {
-  sectionIndex: number,
-  rowIndex: number,
-}; // macOS]
 
 type RequiredVirtualizedListProps = {
   /**
@@ -290,56 +283,11 @@ type OptionalVirtualizedListProps = {
    */
   windowSize?: ?number,
 };
-// [macOS
-type VirtualizedListMacOSProps = {
-  /**
-   * Allows you to 'select' a row using arrow keys. The selected row will have the prop `isSelected`
-   * passed in as true to it's renderItem / ListItemComponent. You can also imperatively select a row
-   * using the `selectRowAtIndex` method. You can set the initially selected row using the
-   * `initialSelectedIndex` prop.
-   * Keyboard Behavior:
-   * - ArrowUp: Select row above current selected row
-   * - ArrowDown: Select row below current selected row
-   * - Option+ArrowUp: Select the first row
-   * - Opton+ArrowDown: Select the last 'realized' row
-   * - Home: Scroll to top of list
-   * - End: Scroll to end of list
-   *
-   * @platform macos
-   */
-  enableSelectionOnKeyPress?: ?boolean,
-  /**
-   * The initially selected row, if `enableSelectionOnKeyPress` is set.
-   */
-  initialSelectedIndex?: ?number,
-  /**
-   * If provided, will be invoked whenever the selection on the list changes. Make sure to set
-   * the property enableSelectionOnKeyPress to true to change selection via keyboard (macOS).
-   *
-   * @platform macos
-   */
-  onSelectionChanged?: ?(info: {
-    previousSelection: number,
-    newSelection: number,
-    item: ?Item,
-  }) => void,
-  /**
-   * If provided, called when 'Enter' key is pressed on an item.
-   *
-   * @platform macos
-   */
-  onSelectionEntered?: ?(item: ?Item) => void,
-
-  sectionIndex?: number,
-  rowIndex?: number,
-};
-// macOS]
 
 export type VirtualizedListProps = {
   ...ScrollViewProps,
   ...RequiredVirtualizedListProps,
   ...OptionalVirtualizedListProps,
-  ...VirtualizedListMacOSProps, // [macOS]
 };
 
 /**

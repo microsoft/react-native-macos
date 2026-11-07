@@ -97,7 +97,6 @@ const RNTesterModuleList: React.ComponentType<any> = memo(
               renderItem={renderListItem}
               keyboardShouldPersistTaps="handled"
               focusable={true} // [macOS]
-              enableSelectionOnKeyPress={true} // [macOS]
               automaticallyAdjustContentInsets={false}
               keyboardDismissMode="on-drag"
               renderSectionHeader={renderSectionHeader}
