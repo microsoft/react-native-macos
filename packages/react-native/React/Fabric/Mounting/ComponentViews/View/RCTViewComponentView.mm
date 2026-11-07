@@ -2323,6 +2323,14 @@ enum MouseEventType {
   [self emitMouseEvent:MouseLeave];
 }
 
+- (void)mouseDown:(NSEvent *)event
+{
+  // Accept mouseDown: the surface's touch handler, a gesture recognizer, has already taken the
+  // press. NSView's default passes it on to an overlapping sibling view beneath the point, and a
+  // text field there starts a tracking loop that consumes the mouseUp, so a button drawn over a
+  // TextInput would never be pressed.
+}
+
 - (void)mouseUp:(NSEvent *)event
 {
   BOOL hasDoubleClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::DoubleClick];
