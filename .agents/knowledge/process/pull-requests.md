@@ -10,7 +10,7 @@ sources:
   - .github/workflows/microsoft-pr.yml#check-changesets
   - docsite/docs/contributing/backporting.md
   - docsite/docs/contributing/versioning.md
-verified: 2026-10-28
+verified: 2026-11-10
 rules: [conventional-title, fill-template, changesets-for-stable]
 related: [tooling.commands]
 ---
@@ -23,7 +23,7 @@ Use when: you write a PR title or body, add a Changeset, or backport a change. N
 
 ## Rules
 
-- **process.pull-requests.conventional-title:** Write PR titles as Conventional Commits, such as `fix(textinput): handle focus correctly`. CI lints the title with `@rnx-kit/commitlint-lite`.
+- **process.pull-requests.conventional-title:** Write PR titles as Conventional Commits, such as `fix(textinput): handle focus correctly`. When adding a scope, prefer a component or feature; `macos` is redundant in this fork. CI lints the title with `@rnx-kit/commitlint-lite`.
 - **process.pull-requests.fill-template:** Fill in the template's `## Summary:` and `## Test Plan:` sections. The Test Plan lists each exact command you ran with its result, plus screenshots for UI changes.
 - **process.pull-requests.changesets-for-stable:** Add a Changeset with `yarn change` only when the PR targets a `*-stable` branch. PRs into `main` don't need one.
 
