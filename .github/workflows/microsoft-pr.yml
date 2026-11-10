@@ -133,6 +133,15 @@ jobs:
       - name: Run Prettier format check
         run: yarn format-check
 
+      - name: Check agent knowledge
+        run: node .agents/knowledge/tools/knowledge.mts check --ci
+
+      - name: Test agent knowledge tools
+        run: node --test .agents/knowledge/tools/knowledge.test.mts
+
+      - name: Lint agent knowledge Markdown
+        run: yarn markdownlint-cli2 --no-globs AGENTS.md ".agents/knowledge/**/*.md" ".agents/skills/rnmacos-*/**/*.md" .github/copilot-instructions.md
+
   build-rntester:
     name: "Build RNTester"
     permissions: {}
