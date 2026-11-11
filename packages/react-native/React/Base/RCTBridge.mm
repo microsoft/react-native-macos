@@ -292,17 +292,6 @@ void RCTSetTurboModuleInteropBridgeProxyLogLevel(RCTBridgeProxyLoggingLevel logL
   bridgeProxyLoggingLevel = logLevel;
 }
 
-// Turn on TurboModule sync execution of void methods
-static BOOL gTurboModuleEnableSyncVoidMethods = NO;
-BOOL RCTTurboModuleSyncVoidMethodsEnabled(void)
-{
-  return gTurboModuleEnableSyncVoidMethods;
-}
-void RCTEnableTurboModuleSyncVoidMethods(BOOL enabled)
-{
-  gTurboModuleEnableSyncVoidMethods = enabled;
-}
-
 BOOL kDispatchAccessibilityManagerInitOntoMain = NO;
 BOOL RCTUIManagerDispatchAccessibilityManagerInitOntoMain(void)
 {
@@ -430,7 +419,7 @@ static RCTBridge *RCTCurrentBridgeInstance = nil;
                   moduleProvider:(RCTBridgeModuleListProvider)block
                    launchOptions:(NSDictionary *)launchOptions
 {
-  // Only enabld this assertion in OSS
+  // Only enable this assertion in OSS
 #if COCOAPODS
   [RCTBridge throwIfOnLegacyArch];
 #endif

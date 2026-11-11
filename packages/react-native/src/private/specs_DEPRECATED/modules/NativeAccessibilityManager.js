@@ -69,7 +69,7 @@ export interface Spec extends TurboModule {
   +announceForAccessibility: (announcement: string) => void;
   +announceForAccessibilityWithOptions?: (
     announcement: string,
-    options: {queue?: boolean},
+    options: {queue?: boolean, priority?: 'low' | 'default' | 'high'},
   ) => void;
 }
 

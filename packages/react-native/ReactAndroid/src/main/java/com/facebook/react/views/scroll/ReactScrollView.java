@@ -132,6 +132,7 @@ public class ReactScrollView extends ScrollView
   private @Nullable MaintainVisibleScrollPositionHelper mMaintainVisibleContentPositionHelper;
   private int mFadingEdgeLengthStart;
   private int mFadingEdgeLengthEnd;
+  private boolean mEmittedOverScrollSinceScrollBegin;
 
   public ReactScrollView(Context context) {
     this(context, null);
@@ -194,6 +195,7 @@ public class ReactScrollView extends ScrollView
     mMaintainVisibleContentPositionHelper = null;
     mFadingEdgeLengthStart = 0;
     mFadingEdgeLengthEnd = 0;
+    mEmittedOverScrollSinceScrollBegin = false;
   }
 
   /* package */ void recycleView() {
@@ -621,6 +623,7 @@ public class ReactScrollView extends ScrollView
     }
     ReactScrollViewHelper.emitScrollBeginDragEvent(this);
     mDragging = true;
+    mEmittedOverScrollSinceScrollBegin = false;
     enableFpsListener();
     getFlingAnimator().cancel();
   }
@@ -688,8 +691,13 @@ public class ReactScrollView extends ScrollView
                 @Override
                 public void run() {
                   mPostTouchRunnable = null;
-                  // Trigger snap alignment now that scrolling has stopped
-                  handlePostTouchScrolling(0, 0);
+                  // +1/-1 velocity if scrolling down or up. This is to ensure that the
+                  // next/previous page is picked rather than sliding backwards to the current page
+                  int velocityY = (int) -Math.signum(vScroll);
+                  if (mDisableIntervalMomentum) {
+                    velocityY = 0;
+                  }
+                  flingAndSnap(velocityY);
                 }
               };
           postOnAnimationDelayed(mPostTouchRunnable, ReactScrollViewHelper.MOMENTUM_DELAY);
@@ -714,6 +722,10 @@ public class ReactScrollView extends ScrollView
 
   @Override
   public void setRemoveClippedSubviews(boolean removeClippedSubviews) {
+    if (ReactNativeFeatureFlags.disableSubviewClippingAndroid()) {
+      return;
+    }
+
     if (removeClippedSubviews && mClippingRect == null) {
       mClippingRect = new Rect();
     }
@@ -768,8 +780,6 @@ public class ReactScrollView extends ScrollView
     if (mPagingEnabled) {
       flingAndSnap(correctedVelocityY);
     } else if (mScroller != null) {
-      // FB SCROLLVIEW CHANGE
-
       // We provide our own version of fling that uses a different call to the standard OverScroller
       // which takes into account the possibility of adding new content while the ScrollView is
       // animating. Because we give essentially no max Y for the fling, the fling will continue as
@@ -794,8 +804,6 @@ public class ReactScrollView extends ScrollView
           );
 
       ViewCompat.postInvalidateOnAnimation(this);
-
-      // END FB SCROLLVIEW CHANGE
     } else {
       super.fling(correctedVelocityY);
     }
@@ -1254,11 +1262,8 @@ public class ReactScrollView extends ScrollView
   @Override
   protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
     if (mScroller != null && mContentView != null) {
-      // FB SCROLLVIEW CHANGE
-
       // This is part two of the reimplementation of fling to fix the bounce-back bug. See #fling()
-      // for
-      // more information.
+      // for more information.
 
       if (!mScroller.isFinished() && mScroller.getCurrY() != mScroller.getFinalY()) {
         int scrollRange = getMaxScrollY();
@@ -1267,8 +1272,13 @@ public class ReactScrollView extends ScrollView
           scrollY = scrollRange;
         }
       }
+    }
 
-      // END FB SCROLLVIEW CHANGE
+    if (ReactNativeFeatureFlags.shouldTriggerResponderTransferOnScrollAndroid()
+        && clampedY
+        && mEmittedOverScrollSinceScrollBegin == false) {
+      ReactScrollViewHelper.emitScrollEvent(this, 0f, 0f);
+      mEmittedOverScrollSinceScrollBegin = true;
     }
 
     super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);

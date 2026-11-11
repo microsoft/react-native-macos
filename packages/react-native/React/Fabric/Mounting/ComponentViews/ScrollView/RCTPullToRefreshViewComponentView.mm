@@ -119,7 +119,9 @@ using namespace facebook::react;
 
 #if !TARGET_OS_OSX // [macOS]
   if (_recycled || newConcreteProps.zIndex != oldConcreteProps.zIndex) {
+#if !TARGET_OS_OSX // [macOS]
     _refreshControl.layer.zPosition = newConcreteProps.zIndex.value_or(0);
+#endif // [macOS]
   }
 #endif // [macOS]
 
@@ -178,9 +180,11 @@ using namespace facebook::react;
   if (self.window) {
     const auto &concreteProps = static_cast<const PullToRefreshViewProps &>(*_props);
 
+#if !TARGET_OS_OSX // [macOS]
     if (concreteProps.refreshing) {
       [self beginRefreshingProgrammatically];
     }
+#endif // [macOS]
   }
 #endif // [macOS]
 }
