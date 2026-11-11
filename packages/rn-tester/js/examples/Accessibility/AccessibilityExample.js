@@ -2230,14 +2230,14 @@ function AriaHiddenExample(): React.Node {
 }
 
 // [macOS
-// 'none' clears the role, so the element falls back to its default role.
-const macOSDynamicRoles: $ReadOnlyArray<
+// Exercise macOS-specific role mappings on a View; 'none' clears the role and restores its default.
+const macOSSpecificRoles: $ReadOnlyArray<
   'menuitem' | 'option' | 'tab' | 'none',
 > = ['menuitem', 'option', 'tab', 'none'];
 
 function MacOSAccessibilityRoleExample(): React.Node {
   const [roleIndex, setRoleIndex] = useState(0);
-  const dynamicRole = macOSDynamicRoles[roleIndex];
+  const selectedRole = macOSSpecificRoles[roleIndex];
   return (
     <View style={styles.sectionContainer}>
       <View accessible={true} role="menuitem" testID="macos-role-menuitem">
@@ -2255,19 +2255,21 @@ function MacOSAccessibilityRoleExample(): React.Node {
         testID="macos-accessibilityRole-textbox">
         <RNTesterText>accessibilityRole="textbox" (AXTextField)</RNTesterText>
       </View>
-      <View accessible={true} role={dynamicRole} testID="macos-role-dynamic">
-        <RNTesterText>{`role="${dynamicRole}"`}</RNTesterText>
+      <View accessible={true} role={selectedRole} testID="macos-role-dynamic">
+        <RNTesterText>{`role="${selectedRole}"`}</RNTesterText>
       </View>
       <TextInput
         style={styles.default}
-        role={dynamicRole === 'none' ? 'none' : 'combobox'}
+        role={selectedRole === 'none' ? 'none' : 'combobox'}
         testID="macos-role-dynamic-textinput"
         defaultValue="TextInput: AXComboBox, or AXTextField when the role is none"
       />
       <Button
         testID="macos-role-change"
         title="Change role"
-        onPress={() => setRoleIndex((roleIndex + 1) % macOSDynamicRoles.length)}
+        onPress={() =>
+          setRoleIndex((roleIndex + 1) % macOSSpecificRoles.length)
+        }
       />
     </View>
   );

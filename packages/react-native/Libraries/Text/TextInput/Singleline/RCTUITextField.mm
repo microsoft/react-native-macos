@@ -410,8 +410,8 @@
 #if !TARGET_OS_OSX // [macOS]
   self.enabled = editable;
 #else // [macOS
-  // On macOS `editable={false}` makes the field read-only, not disabled: it stays enabled, focusable and selectable.
-  // `accessibilityState.disabled` disables it instead. The super call is required for NSTextFieldCell's editable state.
+  // On macOS read-only text remains selectable and focusable, matching desktop behavior rather than iOS's disabled
+  // field. `accessibilityState.disabled` disables it; the super call sets NSTextFieldCell's editable state.
   [super setEditable:editable];
   self.selectable = YES;
 #endif // macOS]

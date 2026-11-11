@@ -36,7 +36,6 @@
 #endif
 
 #if TARGET_OS_OSX // [macOS
-#import <React/RCTConvert.h>
 #import <React/RCTCursor.h>
 #import <React/RCTViewKeyboardEvent.h>
 #import <React/RCTUtils.h>
@@ -61,15 +60,144 @@ static NSAccessibilityRole RCTDefaultAccessibilityRoleForElement(NSView *element
   return NSAccessibilityUnknownRole;
 }
 
+// Fabric keeps these mappings local instead of depending on Paper's RCTConvert.
+static NSAccessibilityRole RCTAccessibilityRoleFromString(NSString *role, BOOL useAriaMappings)
+{
+  if (useAriaMappings && [role isEqualToString:@"rowgroup"]) {
+    return nil;
+  }
+
+  static NSDictionary<NSString *, NSAccessibilityRole> *ariaRoleToNSAccessibilityRole;
+  static NSDictionary<NSString *, NSAccessibilityRole> *traitOrRoleToAccessibilityRole;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    ariaRoleToNSAccessibilityRole = @{
+      @"alert" : NSAccessibilityGroupRole,
+      @"alertdialog" : NSAccessibilityGroupRole,
+      @"application" : NSAccessibilityGroupRole,
+      @"article" : NSAccessibilityGroupRole,
+      @"banner" : NSAccessibilityGroupRole,
+      @"button" : NSAccessibilityButtonRole,
+      @"cell" : NSAccessibilityCellRole,
+      @"checkbox" : NSAccessibilityCheckBoxRole,
+      @"columnheader" : NSAccessibilityCellRole,
+      @"combobox" : NSAccessibilityComboBoxRole,
+      @"complementary" : NSAccessibilityGroupRole,
+      @"contentinfo" : NSAccessibilityGroupRole,
+      @"definition" : NSAccessibilityGroupRole,
+      @"dialog" : NSAccessibilityGroupRole,
+      @"directory" : NSAccessibilityListRole,
+      @"document" : NSAccessibilityGroupRole,
+      @"feed" : NSAccessibilityGroupRole,
+      @"figure" : NSAccessibilityGroupRole,
+      @"form" : NSAccessibilityGroupRole,
+      @"grid" : NSAccessibilityTableRole,
+      @"gridcell" : NSAccessibilityCellRole,
+      @"group" : NSAccessibilityGroupRole,
+      @"heading" : NSAccessibilityStaticTextRole,
+      @"image" : NSAccessibilityImageRole,
+      @"img" : NSAccessibilityImageRole,
+      @"link" : NSAccessibilityLinkRole,
+      @"list" : NSAccessibilityListRole,
+      @"listbox" : NSAccessibilityListRole,
+      @"listitem" : NSAccessibilityGroupRole,
+      @"log" : NSAccessibilityGroupRole,
+      @"main" : NSAccessibilityGroupRole,
+      @"marquee" : NSAccessibilityGroupRole,
+      @"math" : NSAccessibilityGroupRole,
+      @"menu" : NSAccessibilityMenuRole,
+      @"menubar" : NSAccessibilityMenuBarRole,
+      @"menuitem" : NSAccessibilityMenuItemRole,
+      @"menuitemcheckbox" : NSAccessibilityMenuItemRole,
+      @"menuitemradio" : NSAccessibilityMenuItemRole,
+      @"meter" : NSAccessibilityLevelIndicatorRole,
+      @"navigation" : NSAccessibilityGroupRole,
+      @"none" : NSAccessibilityGroupRole,
+      @"note" : NSAccessibilityGroupRole,
+      @"option" : NSAccessibilityStaticTextRole,
+      @"presentation" : NSAccessibilityGroupRole,
+      @"progressbar" : NSAccessibilityProgressIndicatorRole,
+      @"radio" : NSAccessibilityRadioButtonRole,
+      @"radiogroup" : NSAccessibilityRadioGroupRole,
+      @"region" : NSAccessibilityGroupRole,
+      @"row" : NSAccessibilityRowRole,
+      @"rowheader" : NSAccessibilityCellRole,
+      @"scrollbar" : NSAccessibilityScrollBarRole,
+      @"search" : NSAccessibilityGroupRole,
+      @"searchbox" : NSAccessibilityTextFieldRole,
+      @"separator" : NSAccessibilitySplitterRole,
+      @"slider" : NSAccessibilitySliderRole,
+      @"spinbutton" : NSAccessibilityIncrementorRole,
+      @"status" : NSAccessibilityGroupRole,
+      @"switch" : NSAccessibilityCheckBoxRole,
+      @"tab" : NSAccessibilityRadioButtonRole,
+      @"table" : NSAccessibilityTableRole,
+      @"tablist" : NSAccessibilityTabGroupRole,
+      @"tabpanel" : NSAccessibilityGroupRole,
+      @"term" : NSAccessibilityGroupRole,
+      @"textbox" : NSAccessibilityTextFieldRole,
+      @"timer" : NSAccessibilityGroupRole,
+      @"toolbar" : NSAccessibilityToolbarRole,
+      @"tooltip" : NSAccessibilityGroupRole,
+      @"tree" : NSAccessibilityOutlineRole,
+      @"treegrid" : NSAccessibilityTableRole,
+      @"treeitem" : NSAccessibilityRowRole,
+    };
+    traitOrRoleToAccessibilityRole = @{
+      @"adjustable" : NSAccessibilitySliderRole,
+      @"alert" : NSAccessibilityStaticTextRole,
+      @"button" : NSAccessibilityButtonRole,
+      @"checkbox" : NSAccessibilityCheckBoxRole,
+      @"combobox" : NSAccessibilityComboBoxRole,
+      @"header" : NSAccessibilityStaticTextRole,
+      @"image" : NSAccessibilityImageRole,
+      @"imagebutton" : NSAccessibilityButtonRole,
+      @"keyboardkey" : NSAccessibilityButtonRole,
+      @"link" : NSAccessibilityLinkRole,
+      @"menu" : NSAccessibilityMenuRole,
+      @"menubar" : NSAccessibilityMenuBarRole,
+      @"menuitem" : NSAccessibilityMenuItemRole,
+      @"none" : NSAccessibilityUnknownRole,
+      @"progressbar" : NSAccessibilityProgressIndicatorRole,
+      @"radio" : NSAccessibilityRadioButtonRole,
+      @"radiogroup" : NSAccessibilityRadioGroupRole,
+      @"scrollbar" : NSAccessibilityScrollBarRole,
+      @"search" : NSAccessibilityTextFieldRole,
+      @"spinbutton" : NSAccessibilityIncrementorRole,
+      @"summary" : NSAccessibilityStaticTextRole,
+      @"switch" : NSAccessibilityCheckBoxRole,
+      @"tab" : NSAccessibilityButtonRole,
+      @"tablist" : NSAccessibilityTabGroupRole,
+      @"text" : NSAccessibilityStaticTextRole,
+      @"textbox" : NSAccessibilityTextFieldRole,
+      @"timer" : NSAccessibilityStaticTextRole,
+      @"toolbar" : NSAccessibilityToolbarRole,
+      @"disclosure" : NSAccessibilityDisclosureTriangleRole,
+      @"group" : NSAccessibilityGroupRole,
+      @"list" : NSAccessibilityListRole,
+      @"popupbutton" : NSAccessibilityPopUpButtonRole,
+      @"menubutton" : NSAccessibilityMenuButtonRole,
+      @"table" : NSAccessibilityTableRole,
+    };
+  });
+
+  NSAccessibilityRole accessibilityRole =
+      useAriaMappings ? ariaRoleToNSAccessibilityRole[role] : traitOrRoleToAccessibilityRole[role];
+  if (accessibilityRole == nil && useAriaMappings) {
+    accessibilityRole = traitOrRoleToAccessibilityRole[role];
+  }
+  return accessibilityRole ?: NSAccessibilityUnknownRole;
+}
+
 // Matches Paper (`-[RCTViewManager updateAccessibilityRole:withDefaultView:]`): `role` takes precedence over
 // `accessibilityRole`, and the element's default role is used when neither is set.
 static NSAccessibilityRole RCTAccessibilityRoleFromViewProps(const ViewProps &props, NSView *element)
 {
   if (props.role != Role::None) {
-    return [RCTConvert accessibilityRoleFromTraits:RCTNSStringFromString(toString(props.role)) useAriaMappings:YES];
+    return RCTAccessibilityRoleFromString(RCTNSStringFromString(toString(props.role)), YES);
   }
   if (!props.accessibilityRole.empty()) {
-    return [RCTConvert accessibilityRoleFromTraits:RCTNSStringFromString(props.accessibilityRole) useAriaMappings:NO];
+    return RCTAccessibilityRoleFromString(RCTNSStringFromString(props.accessibilityRole), NO);
   }
   NSAccessibilityRole traitsRole =
       RCTAccessibilityRoleFromTraits(RCTUIAccessibilityTraitsFromAccessibilityTraits(props.accessibilityTraits));
@@ -551,6 +679,7 @@ static BOOL RCTViewPropsProvideAccessibilityExpanded(const ViewProps &props)
 #else // [macOS
   // `role`, `accessibilityRole` and `accessibilityTraits`
   // NSAccessibility has no traits, so all three resolve to a single role on the accessibility element.
+  // Role props can change without accessibilityTraits changing, so check all three.
   if (oldViewProps.role != newViewProps.role || oldViewProps.accessibilityRole != newViewProps.accessibilityRole ||
       oldViewProps.accessibilityTraits != newViewProps.accessibilityTraits) {
     self.accessibilityElement.accessibilityRole =

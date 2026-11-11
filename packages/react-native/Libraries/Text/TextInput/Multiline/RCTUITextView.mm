@@ -290,16 +290,15 @@ static RCTPlatformColor *defaultPlaceholderColor(void) // [macOS]
 
 - (void)setEnabled:(BOOL)enabled
 {
-  if (_enabled == enabled) {
-    return;
-  }
-  _enabled = enabled;
+  if (_enabled != enabled) {
+    _enabled = enabled;
 
-  // NSTextView has no enabled state. Behave like a disabled NSTextField: report AXEnabled = NO, refuse first responder
-  // (see -acceptsFirstResponder) and end editing if the view is focused.
-  self.accessibilityEnabled = enabled;
-  if (!enabled && self.window.firstResponder == self) {
-    [self.window makeFirstResponder:nil];
+    // NSTextView has no enabled state. Behave like a disabled NSTextField: report AXEnabled = NO, refuse first
+    // responder (see -acceptsFirstResponder) and end editing if the view is focused.
+    self.accessibilityEnabled = enabled;
+    if (!enabled && self.window.firstResponder == self) {
+      [self.window makeFirstResponder:nil];
+    }
   }
 }
 
