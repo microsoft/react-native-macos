@@ -250,7 +250,7 @@ export interface TargetedEvent {
 
 export type BlurEvent = NativeSyntheticEvent<TargetedEvent>;
 
-export type FocusEvent = NativeSyntheticEvent<TargetedEvent>;
+export interface FocusEvent extends NativeSyntheticEvent<NativeFocusEvent> {} // [macOS] Preserve the public native payload interface.
 
 export interface PointerEvents {
   onPointerEnter?: ((event: PointerEvent) => void) | undefined;
@@ -310,8 +310,6 @@ export interface KeyEvent extends NativeSyntheticEvent<NativeKeyEvent> {}
 export interface NativeFocusEvent extends TargetedEvent {}
 
 export interface NativeBlurEvent extends TargetedEvent {}
-
-export interface FocusEvent extends NativeSyntheticEvent<NativeFocusEvent> {}
 
 export interface BlueEvent extends NativeSyntheticEvent<NativeBlurEvent> {}
 

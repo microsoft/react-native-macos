@@ -32,6 +32,7 @@ Pod::Spec.new do |s|
   s.source                 = source
   s.source_files           = podspec_sources(source_files, ["*.h", "platform/ios/**/*.h"])
   s.header_dir             = "react/renderer/graphics"
+  s.frameworks             = "CoreGraphics" # [macOS]
   # [macOS Restrict UIKit to iOS and visionOS
   s.ios.framework = "UIKit" 
   s.visionos.framework = "UIKit" 
