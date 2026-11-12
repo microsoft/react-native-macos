@@ -28,6 +28,7 @@ import TextInputState from '../../../../../Libraries/Components/TextInput/TextIn
 import {Commands as ViewCommands} from '../../../../../Libraries/Components/View/ViewNativeComponent';
 import {create as createAttributePayload} from '../../../../../Libraries/ReactNative/ReactFabricPublicInstance/ReactNativeAttributePayload';
 import warnForStyleProps from '../../../../../Libraries/ReactNative/ReactFabricPublicInstance/warnForStyleProps';
+import Platform from '../../../../../Libraries/Utilities/Platform'; // [macOS]
 import * as ReactNativeFeatureFlags from '../../../featureflags/ReactNativeFeatureFlags';
 import {
   getNativeElementReference,
@@ -144,7 +145,10 @@ class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
   blur(): void {
     if (TextInputState.isTextInput(this)) {
       TextInputState.blurTextInput(this);
-    } else if (ReactNativeFeatureFlags.enableImperativeFocus()) {
+    } else if (
+      Platform.OS === 'macos' || // [macOS]
+      ReactNativeFeatureFlags.enableImperativeFocus()
+    ) {
       ViewCommands.blur(this);
     }
   }
@@ -152,7 +156,10 @@ class ReactNativeElement extends ReadOnlyElement implements NativeMethods {
   focus() {
     if (TextInputState.isTextInput(this)) {
       TextInputState.focusTextInput(this);
-    } else if (ReactNativeFeatureFlags.enableImperativeFocus()) {
+    } else if (
+      Platform.OS === 'macos' || // [macOS]
+      ReactNativeFeatureFlags.enableImperativeFocus()
+    ) {
       ViewCommands.focus(this);
     }
   }
