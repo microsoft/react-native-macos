@@ -23,6 +23,12 @@ inline Color hostPlatformColorFromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t 
   return (a & 0xff) << 24 | (r & 0xff) << 16 | (g & 0xff) << 8 | (b & 0xff);
 }
 
+// [macOS
+inline Color hostPlatformDefaultForegroundTextColor() {
+  return hostPlatformColorFromRGBA(0, 0, 0, 255);
+}
+// macOS]
+
 inline Color hostPlatformColorFromComponents(ColorComponents components)
 {
   float ratio = 255;
