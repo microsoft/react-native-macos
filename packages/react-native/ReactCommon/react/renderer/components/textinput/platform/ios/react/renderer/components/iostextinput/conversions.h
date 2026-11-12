@@ -11,6 +11,10 @@
 #include <react/renderer/core/PropsParserContext.h>
 #include <react/renderer/core/propsConversions.h>
 
+#if TARGET_OS_OSX // [macOS
+#include <stdexcept>
+#endif // macOS]
+
 namespace facebook::react {
 
 inline void fromRawValue(const PropsParserContext &context, const RawValue &value, AutocapitalizationType &result)
@@ -213,6 +217,9 @@ inline void fromRawValue(
     const PropsParserContext &context,
     const RawValue &value,
     PastedTypesType &result) {
+  if (!value.hasType<std::string>()) {
+    throw std::invalid_argument("Expected a string for pastedTypes");
+  }
   auto string = (std::string)value;
   if (string == "fileUrl") {
     result = PastedTypesType::FileUrl;
@@ -226,7 +233,7 @@ inline void fromRawValue(
     result = PastedTypesType::String;
     return;
   }
-  abort();
+  throw std::invalid_argument("Unsupported pastedTypes value: " + string);
 }
 #endif // macOS]
 
