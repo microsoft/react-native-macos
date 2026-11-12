@@ -33,8 +33,12 @@ void RCTCopyBackedTextInput(
   toTextInput.accessibilityHelp = fromTextInput.accessibilityHelp;
   toTextInput.accessibilityIdentifier = fromTextInput.accessibilityIdentifier;
   toTextInput.accessibilityLabel = fromTextInput.accessibilityLabel;
-  toTextInput.accessibilityRole = fromTextInput.accessibilityRole;
+  // An unset role reads back as NSAccessibilityUnknownRole; copying it would hide the new view's default role.
+  if (![fromTextInput.accessibilityRole isEqualToString:NSAccessibilityUnknownRole]) {
+    toTextInput.accessibilityRole = fromTextInput.accessibilityRole;
+  }
   toTextInput.autoresizingMask = fromTextInput.autoresizingMask;
+  toTextInput.enabled = fromTextInput.enabled;
 #endif // macOS]
 #if TARGET_OS_IOS // [macOS] [visionOS]
   toTextInput.inputAccessoryView = fromTextInput.inputAccessoryView;
