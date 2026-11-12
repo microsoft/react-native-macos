@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// [macOS]
+
 #pragma once
 
 #include <react/renderer/components/view/ViewProps.h>
@@ -13,10 +15,12 @@
 namespace facebook::react::HostPlatformViewTraitsInitializer {
 
 inline bool formsStackingContext(const ViewProps& props) {
-  return props.allowsVibrancy ||
-         props.mouseDownCanMoveWindow ||
-         props.acceptsFirstMouse ||
-         props.hostPlatformEvents.bits.any();
+  // The default allows mouse-down events to pass through to superviews.
+  // Disabling window dragging needs a native boundary, not enabling it.
+  return props.allowsVibrancy || !props.mouseDownCanMoveWindow ||
+      props.acceptsFirstMouse || props.hostPlatformEvents.bits.any() ||
+      props.tooltip.has_value() || !props.draggedTypes.empty() ||
+      !props.keyDownEvents.empty() || !props.keyUpEvents.empty();
 }
 
 inline bool formsView(const ViewProps& props) {
