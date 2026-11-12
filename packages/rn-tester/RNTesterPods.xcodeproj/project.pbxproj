@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FAB526460000000000000001 /* RCTFabricNativePropsTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = FAB526460000000000000002 /* RCTFabricNativePropsTests.mm */; }; /* [macOS] */
 		08E25EBE4A584CD7B70FBB1E /* libPods-RNTester.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D74056A5352F0925816E50E0 /* libPods-RNTester.a */; };
 		0CBC915D60C701A81731A5A4 /* libPods-RNTester-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C88AE81E635231C7F0F3BA4 /* libPods-RNTester-macOS.a */; };
 		0E3E8DF4F87D07566A9489D4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AC276E71CF27E40DFA22979F /* PrivacyInfo.xcprivacy */; };
@@ -143,6 +144,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		FAB526460000000000000002 /* RCTFabricNativePropsTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTFabricNativePropsTests.mm; sourceTree = "<group>"; }; /* [macOS] */
 		07517909E4081E5D74D5DD60 /* libPods-RNTester-macOSUnitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RNTester-macOSUnitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		086F285685A842F5E52B6F9C /* Pods-RNTester-visionOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RNTester-visionOS.debug.xcconfig"; path = "Target Support Files/Pods-RNTester-visionOS/Pods-RNTester-visionOS.debug.xcconfig"; sourceTree = "<group>"; };
 		0EA618022BE537D3001875EF /* RNTesterBundle.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = RNTesterBundle.bundle; path = RNTester/RNTesterBundle.bundle; sourceTree = "<group>"; };
@@ -466,6 +468,7 @@
 			isa = PBXGroup;
 			children = (
 				24C6EA492D04BAF1008C8E31 /* RCTFrameTimingsObserverTests.mm */,
+				FAB526460000000000000002 /* RCTFabricNativePropsTests.mm */, /* [macOS] */
 			);
 			path = "RNTester-macOSUnitTests";
 			sourceTree = "<group>";
@@ -1294,6 +1297,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				24C6EA4A2D04BAF1008C8E31 /* RCTFrameTimingsObserverTests.mm in Sources */,
+				FAB526460000000000000001 /* RCTFabricNativePropsTests.mm in Sources */, /* [macOS] */
 				AC73FCEF29B1318B0003586F /* RCTAnimationUtilsTests.m in Sources */,
 				AC73FD0729B131DA0003586F /* RCTUIManagerTests.m in Sources */,
 				AC73FCF729B131A20003586F /* RCTEventDispatcherTests.m in Sources */,
