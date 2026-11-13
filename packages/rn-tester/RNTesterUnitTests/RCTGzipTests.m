@@ -9,9 +9,7 @@
 
 #import <RCTTest/RCTTestRunner.h>
 #import <React/RCTNetworking.h>
-#import <React/RCTUtils.h>
-
-extern BOOL RCTIsGzippedData(NSData *data);
+#import <React/RCTUtils.h> // [macOS]
 
 @interface RCTNetworking (Private)
 
