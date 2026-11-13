@@ -215,6 +215,18 @@ if (apple) {
     dependencyConfig: apple.getDependencyConfig(visionos),
   };
 }
+
+const configMacosCommand = {
+  name: "config-macos",
+  description: "Print CLI configuration of React Native macOS",
+  func: (_argv, ctx, _args) => {
+    const configMacos = require("./local-cli/config-macos")(ctx)
+    console.log(
+      JSON.stringify(configMacos, null, 2),
+    )
+  },
+}
+config.commands.push(configMacosCommand)
 // macOS]
 
 module.exports = config;
