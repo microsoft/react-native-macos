@@ -168,6 +168,7 @@ void UIBezierPathAppendPath(UIBezierPath *path, UIBezierPath *appendPath)
   BOOL _respondsToDisplayLayer;
   CATransform3D _transform3D;
   BOOL _hasCustomTransform3D;
+  NSEdgeInsets _lastSafeAreaInsets;
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key
@@ -202,6 +203,17 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     self->_hasCustomTransform3D = NO;
   }
   return self;
+}
+
+static void RCTUIViewUpdateSafeAreaInsets(RCTUIView *self)
+{
+  if (@available(macOS 11.0, *)) {
+    NSEdgeInsets insets = self.safeAreaInsets;
+    if (!NSEdgeInsetsEqual(insets, self->_lastSafeAreaInsets)) {
+      self->_lastSafeAreaInsets = insets;
+      [self safeAreaInsetsDidChange];
+    }
+  }
 }
 
 - (instancetype)initWithFrame:(NSRect)frameRect
@@ -243,6 +255,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (void)viewDidMoveToWindow
 {
   [self didMoveToWindow];
+  RCTUIViewUpdateSafeAreaInsets(self);
 }
 
 - (BOOL)mouseDownCanMoveWindow{
@@ -353,6 +366,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 {
   [super layout];
   if (self.window != nil) {
+    RCTUIViewUpdateSafeAreaInsets(self);
     [self layoutSubviews];
   }
 }
@@ -423,6 +437,10 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (void)layoutSubviews
 {
   [super layout];
+}
+
+- (void)safeAreaInsetsDidChange
+{
 }
 
 - (void)setNeedsDisplay
