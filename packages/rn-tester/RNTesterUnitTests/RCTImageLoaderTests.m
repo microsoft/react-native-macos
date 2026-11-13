@@ -7,6 +7,8 @@
 
 #import <XCTest/XCTest.h>
 
+#import <React/RCTUIKit.h> // [macOS]
+
 #import <React/RCTBridge.h>
 #import <React/RCTImageLoader.h>
 
@@ -35,7 +37,7 @@ RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(R
 
 - (void)testImageLoading
 {
-  UIImage *image = [UIImage new];
+  RCTPlatformImage *image = [RCTPlatformImage new]; // [macOS]
 
   id<RCTImageURLLoader> loader = [[RCTImageLoaderTestsURLLoader1 alloc] initWithPriority:1.0
       canLoadImageURLHandler:^BOOL(__unused NSURL *requestURL) {
@@ -70,7 +72,7 @@ RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(R
         XCTAssertEqual(progress, 1);
         XCTAssertEqual(total, 1);
       }
-      partialLoadBlock:^(UIImage *loadedImage) {
+      partialLoadBlock:^(RCTPlatformImage *loadedImage) { // [macOS]
       }
       completionBlock:^(NSError *loadError, id loadedImage) {
         XCTAssertEqualObjects(loadedImage, image);
@@ -80,7 +82,7 @@ RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(R
 
 - (void)testImageLoaderUsesImageURLLoaderWithHighestPriority
 {
-  UIImage *image = [UIImage new];
+  RCTPlatformImage *image = [RCTPlatformImage new]; // [macOS]
 
   id<RCTImageURLLoader> loader1 = [[RCTImageLoaderTestsURLLoader1 alloc] initWithPriority:1.0
       canLoadImageURLHandler:^BOOL(__unused NSURL *requestURL) {
@@ -130,7 +132,7 @@ RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(R
         XCTAssertEqual(progress, 1);
         XCTAssertEqual(total, 1);
       }
-      partialLoadBlock:^(UIImage *loadedImage) {
+      partialLoadBlock:^(RCTPlatformImage *loadedImage) { // [macOS]
       }
       completionBlock:^(NSError *loadError, id loadedImage) {
         XCTAssertEqualObjects(loadedImage, image);
@@ -141,7 +143,7 @@ RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(R
 - (void)testImageDecoding
 {
   NSData *data = [NSData dataWithBytesNoCopy:blackGIF length:sizeof(blackGIF) freeWhenDone:NO];
-  UIImage *image = [[UIImage alloc] initWithData:data];
+  RCTPlatformImage *image = [[RCTPlatformImage alloc] initWithData:data]; // [macOS]
 
   id<RCTImageDataDecoder> decoder = [[RCTImageLoaderTestsDecoder1 alloc] initWithPriority:1.0
       canDecodeImageDataHandler:^BOOL(__unused NSData *imageData) {
@@ -180,7 +182,7 @@ RCTDefineImageURLLoader(RCTImageLoaderTestsURLLoader1) RCTDefineImageURLLoader(R
 - (void)testImageLoaderUsesImageDecoderWithHighestPriority
 {
   NSData *data = [NSData dataWithBytesNoCopy:blackGIF length:sizeof(blackGIF) freeWhenDone:NO];
-  UIImage *image = [[UIImage alloc] initWithData:data];
+  RCTPlatformImage *image = [[RCTPlatformImage alloc] initWithData:data]; // [macOS]
 
   id<RCTImageDataDecoder> decoder1 = [[RCTImageLoaderTestsDecoder1 alloc] initWithPriority:1.0
       canDecodeImageDataHandler:^BOOL(__unused NSData *imageData) {
