@@ -28449,6 +28449,7 @@ class ShadowNodeFamily final : public jsi::NativeState {
   void setMounted() const;
   void dispatchRawState(StateUpdate&& stateUpdate) const;
   mutable std::unique_ptr<folly::dynamic> nativeProps_DEPRECATED;
+  mutable std::mutex nativePropsMutex;
   Tag getTag() const;
   jsi::Value getInstanceHandle(jsi::Runtime& runtime) const;
   InstanceHandle::Shared getInstanceHandle() const;
