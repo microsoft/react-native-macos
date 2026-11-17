@@ -7,6 +7,8 @@ const isGitHubActions = process.env['GITHUB_ACTIONS'] === 'true';
 const NPM_TAG_NEXT = 'next';
 
 export type ReleaseState = 'STABLE_IS_LATEST' | 'STABLE_IS_NEW' | 'STABLE_IS_OLD';
+export type StableBranch = `${number}.${number}-stable`;
+export type NpmTag = 'latest' | 'next' | StableBranch;
 
 export interface ReleaseStateInfo {
   state: ReleaseState;
@@ -16,7 +18,7 @@ export interface ReleaseStateInfo {
 }
 
 export interface TagInfo {
-  npmTags: string[];
+  npmTag: NpmTag;
   prerelease?: string;
 }
 
@@ -27,7 +29,28 @@ interface Options {
 }
 
 function enablePublishingOnAzurePipelines() {
-  echo(`##vso[task.setvariable variable=publish_react_native_macos]1`);
+  setAzurePipelineVariable('publish_react_native_macos', '1');
+}
+
+/**
+ * Plain task.setvariable is same-job scope, consumed by Pack npm packages via
+ * variables['publish_react_native_macos']. isOutput=true exposes the named-step
+ * output to NpmEsrpRelease via dependencies.NpmPack.outputs['config.<name>'].
+ */
+export function getAzurePipelineVariableCommands(
+  name: string,
+  value: string,
+): string[] {
+  return [
+    `##vso[task.setvariable variable=${name}]${value}`,
+    `##vso[task.setvariable variable=${name};isOutput=true]${value}`,
+  ];
+}
+
+function setAzurePipelineVariable(name: string, value: string) {
+  for (const command of getAzurePipelineVariableCommands(name, value)) {
+    echo(command);
+  }
 }
 
 function enablePublishingOnGitHubActions() {
@@ -40,7 +63,7 @@ export function isMainBranch(branch: string): boolean {
   return branch === 'main';
 }
 
-export function isStableBranch(branch: string): boolean {
+export function isStableBranch(branch: string): branch is StableBranch {
   return /^\d+\.\d+-stable$/.test(branch);
 }
 
@@ -126,7 +149,7 @@ export function getReleaseState(
 
 export function getPublishTags(
   stateInfo: ReleaseStateInfo,
-  branch: string,
+  branch: StableBranch,
   tag: string = NPM_TAG_NEXT,
 ): TagInfo {
   const { state, currentVersion, nextVersion } = stateInfo;
@@ -134,20 +157,16 @@ export function getPublishTags(
   switch (state) {
     case 'STABLE_IS_LATEST':
       // Patching the current latest version
-      return { npmTags: ['latest', branch] };
+      return { npmTag: 'latest' };
 
     case 'STABLE_IS_OLD':
       // Patching an older stable version
-      return { npmTags: [branch] };
+      return { npmTag: branch };
 
     case 'STABLE_IS_NEW': {
       if (tag === 'latest') {
         // Promoting this branch to latest
-        const npmTags = ['latest', branch];
-        if (currentVersion > nextVersion) {
-          npmTags.push(NPM_TAG_NEXT);
-        }
-        return { npmTags };
+        return { npmTag: 'latest' };
       }
 
       // Publishing a release candidate
@@ -157,27 +176,15 @@ export function getPublishTags(
         );
       }
 
-      return { npmTags: [NPM_TAG_NEXT], prerelease: 'rc' };
+      return { npmTag: NPM_TAG_NEXT, prerelease: 'rc' };
     }
   }
 }
 
 async function enablePublishing(tagInfo: TagInfo, options: Options) {
-  const [primaryTag, ...additionalTags] = tagInfo.npmTags;
-
-  // Output publishTag for subsequent pipeline steps
-  echo(`##vso[task.setvariable variable=publishTag]${primaryTag}`);
+  setAzurePipelineVariable('publishTag', tagInfo.npmTag);
   if (process.env['GITHUB_OUTPUT']) {
-    fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publishTag=${primaryTag}\n`);
-  }
-
-  // Output additional tags
-  if (additionalTags.length > 0) {
-    const tagsValue = additionalTags.join(',');
-    echo(`##vso[task.setvariable variable=additionalTags]${tagsValue}`);
-    if (process.env['GITHUB_OUTPUT']) {
-      fs.appendFileSync(process.env['GITHUB_OUTPUT'], `additionalTags=${tagsValue}\n`);
-    }
+    fs.appendFileSync(process.env['GITHUB_OUTPUT'], `publishTag=${tagInfo.npmTag}\n`);
   }
 
   // Don't enable publishing in PRs
@@ -224,7 +231,7 @@ if (isDirectRun) {
       log(`Release state: ${stateInfo.state}`);
 
       const tagInfo = getPublishTags(stateInfo, branch, options.tag);
-      log(`Expected npm tags: ${tagInfo.npmTags.join(', ')}`);
+      log(`Expected npm tag: ${tagInfo.npmTag}`);
 
       await enablePublishing(tagInfo, options);
     } else {
