@@ -10,7 +10,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9.1.0
         with:
           repo-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
           days-before-stale: 180
@@ -27,7 +27,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9.1.0
         with:
           ascending: true
           repo-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
@@ -45,7 +45,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9.1.0
         with:
           repo-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}
           any-of-labels: 'Needs: Author Feedback'
@@ -63,7 +63,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9.1.0
         with:
           ascending: true
           repo-token: ${{ secrets.REACT_NATIVE_BOT_GITHUB_TOKEN }}

@@ -15,7 +15,7 @@ jobs:
     if: github.repository == 'facebook/react-native'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Set up Node.js
         uses: ./.github/actions/setup-node
       - name: Install dependencies
@@ -28,7 +28,7 @@ jobs:
           echo "oncall1=$ONCALL1" >> $GITHUB_ENV
           echo "oncall2=$ONCALL2" >> $GITHUB_ENV
       - name: Monitor New Issues
-        uses: react-native-community/repo-monitor@v1.0.1
+        uses: react-native-community/repo-monitor@d58266a4f198b830ccaa495b853d251ad3aa8cc8 # v1.0.1
         with:
           task: "monitor-issues"
           git_secret: ${{ secrets.GITHUB_TOKEN }}
