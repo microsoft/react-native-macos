@@ -40,38 +40,6 @@ static NSInteger RCTImageBytesForImage(RCTPlatformImage *image) // [macOS]
 #endif // macOS]
 }
 
-#if TARGET_OS_OSX // [macOS
-
-/**
- * Github #1611 - We can't depend on RCTUIKit here, because this file's podspec (React-RCTImage) doesn't
- * take a dependency on RCTUIKit's pod `React-Core`. Let's just copy the methods we want to shim here
- */
-
-static NSData *NSImageDataForFileType(NSImage *image, NSBitmapImageFileType fileType, NSDictionary<NSString *, id> *properties)
-{
-  RCTAssert(image.representations.count == 1, @"Expected only a single representation since UIImage only supports one.");
-
-  NSBitmapImageRep *imageRep = (NSBitmapImageRep *)image.representations.firstObject;
-  if (![imageRep isKindOfClass:[NSBitmapImageRep class]]) {
-    RCTAssert([imageRep isKindOfClass:[NSBitmapImageRep class]], @"We need an NSBitmapImageRep to create an image.");
-    return nil;
-  }
-
-  return [imageRep representationUsingType:fileType properties:properties];
-}
-
-
-NSData *UIImagePNGRepresentation(NSImage *image) {
-  return NSImageDataForFileType(image, NSBitmapImageFileTypePNG, @{});
-}
-
-NSData *UIImageJPEGRepresentation(NSImage *image, CGFloat compressionQuality) {
-  return NSImageDataForFileType(image,
-                                NSBitmapImageFileTypeJPEG,
-                                @{NSImageCompressionFactor: @(compressionQuality)});
-}
-#endif // macOS]
-
 static auto currentRequestCount = std::atomic<uint64_t>(0);
 
 static NSError *addResponseHeadersToError(NSError *originalError, NSHTTPURLResponse *response)
