@@ -2325,10 +2325,11 @@ enum MouseEventType {
 
 - (void)mouseDown:(NSEvent *)event
 {
-  // Accept mouseDown: the surface's touch handler, a gesture recognizer, has already taken the
-  // press. NSView's default passes it on to an overlapping sibling view beneath the point, and a
-  // text field there starts a tracking loop that consumes the mouseUp, so a button drawn over a
-  // TextInput would never be pressed.
+  // Accept mouseDown on views that can't move the window, such as Pressable, so it isn't passed on
+  // to a text field beneath, whose tracking loop would consume the mouseUp the press needs.
+  if (self.mouseDownCanMoveWindow) {
+    [super mouseDown:event];
+  }
 }
 
 - (void)mouseUp:(NSEvent *)event
