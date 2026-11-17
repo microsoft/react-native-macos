@@ -2549,6 +2549,15 @@ enum MouseEventType {
   [self emitMouseEvent:MouseLeave];
 }
 
+- (void)mouseDown:(NSEvent *)event
+{
+  // Accept mouseDown on views that can't move the window, such as Pressable, so it isn't passed on
+  // to a text field beneath, whose tracking loop would consume the mouseUp the press needs.
+  if (self.mouseDownCanMoveWindow) {
+    [super mouseDown:event];
+  }
+}
+
 - (void)mouseUp:(NSEvent *)event
 {
   BOOL hasDoubleClickEventHandler = _props->hostPlatformEvents[HostPlatformViewEvents::Offset::DoubleClick];
