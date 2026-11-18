@@ -14,6 +14,13 @@
 
 namespace facebook::react {
 
+#if TARGET_OS_OSX // [macOS
+inline void fromRawValue(
+    const PropsParserContext& context,
+    const RawValue& value,
+    std::vector<SubmitKeyEvent>& result);
+#endif // macOS]
+
 static TextInputTraits convertRawProp(
     const PropsParserContext &context,
     const RawProps &rawProps,
@@ -77,6 +84,18 @@ static TextInputTraits convertRawProp(
       "pastedTypes",
       sourceTraits.pastedTypes,
       defaultTraits.pastedTypes);
+  traits.submitKeyEvents = convertRawProp(
+      context,
+      rawProps,
+      "submitKeyEvents",
+      sourceTraits.submitKeyEvents,
+      defaultTraits.submitKeyEvents);
+  traits.clearTextOnSubmit = convertRawProp(
+      context,
+      rawProps,
+      "clearTextOnSubmit",
+      sourceTraits.clearTextOnSubmit,
+      defaultTraits.clearTextOnSubmit);
 #endif // macOS]
 
   traits.dataDetectorTypes = convertRawProp(
