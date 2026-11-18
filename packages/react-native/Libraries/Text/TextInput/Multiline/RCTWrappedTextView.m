@@ -14,6 +14,59 @@
 #import <React/RCTUITextView.h>
 #import <React/RCTTextAttributes.h>
 
+// NSScrollView keeps every scroll it is sent, even one it cannot follow, so a scroll view around a
+// multiline input stopped scrolling under the pointer. This one passes on what its text cannot
+// follow, deciding once per gesture so that the rest of it, momentum too, goes the same way.
+@interface RCTWrappedTextScrollView : RCTUIScrollView
+@end
+
+@implementation RCTWrappedTextScrollView {
+  BOOL _passesScrollOn;
+}
+
+- (void)scrollWheel:(NSEvent *)event
+{
+  // A wheel's notch has no phase and stands alone; a trackpad gesture starts with MayBegin
+  // (fingers down, no direction yet) or Began.
+  BOOL startsGesture = event.phase == NSEventPhaseMayBegin || event.phase == NSEventPhaseBegan ||
+      (event.phase == NSEventPhaseNone && event.momentumPhase == NSEventPhaseNone);
+  if (startsGesture) {
+    _passesScrollOn = ![self canFollowScroll:event];
+  }
+
+  if (_passesScrollOn) {
+    [[self nextResponder] scrollWheel:event];
+  } else {
+    [super scrollWheel:event];
+  }
+}
+
+- (BOOL)canFollowScroll:(NSEvent *)event
+{
+  if (!self.isScrollEnabled) {
+    return NO;
+  }
+
+  // A positive delta shows what is above or to the left.
+  CGFloat up = self.contentView.isFlipped ? -1 : 1;
+  CGFloat deltaX = event.scrollingDeltaX;
+  CGFloat deltaY = event.scrollingDeltaY;
+  if (deltaX == 0 && deltaY == 0) {
+    return [self canScrollBy:NSMakePoint(0, up)] || [self canScrollBy:NSMakePoint(0, -up)] ||
+        [self canScrollBy:NSMakePoint(1, 0)] || [self canScrollBy:NSMakePoint(-1, 0)];
+  }
+  return [self canScrollBy:NSMakePoint(deltaX > 0 ? -1 : deltaX < 0 ? 1 : 0, deltaY > 0 ? up : deltaY < 0 ? -up : 0)];
+}
+
+- (BOOL)canScrollBy:(NSPoint)step
+{
+  NSRect bounds = self.contentView.bounds;
+  NSRect moved = [self.contentView constrainBoundsRect:NSOffsetRect(bounds, step.x, step.y)];
+  return !NSEqualPoints(moved.origin, bounds.origin);
+}
+
+@end
+
 @implementation RCTWrappedTextView {
   RCTUITextView *_forwardingTextView;
   RCTUIScrollView *_scrollView;
@@ -27,7 +80,7 @@
 
     self.hideVerticalScrollIndicator = NO;
 
-    _scrollView = [[RCTUIScrollView alloc] initWithFrame:self.bounds];
+    _scrollView = [[RCTWrappedTextScrollView alloc] initWithFrame:self.bounds];
     _scrollView.backgroundColor = [RCTPlatformColor clearColor];
     _scrollView.drawsBackground = NO;
     _scrollView.borderType = NSNoBorder;
