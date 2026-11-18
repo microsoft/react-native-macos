@@ -12,7 +12,7 @@
 
 import type {Item} from '../../components/ListExampleShared';
 import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
-import type {FlatList, ListRenderItemInfo} from 'react-native';
+import type {FlatList, FlatListRenderItemInfo} from 'react-native';
 
 import {
   FooterComponent,
@@ -392,7 +392,7 @@ class FlatListExample extends React.PureComponent<Props, State> {
       item,
       separators,
       isSelected, // [macOS]
-    }: ListRenderItemInfo<Item>) => {
+    }: FlatListRenderItemInfo<Item>) => {
       return (
         <ItemComponent
           testID={`item_${item.key}`}

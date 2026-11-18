@@ -12,6 +12,7 @@
 
 const {create, unmount, update} = require('../../../../jest/renderer');
 const Text = require('../../../Text/Text').default;
+const Platform = require('../../../Utilities/Platform').default;
 const ReactNativeTestTools = require('../../../Utilities/ReactNativeTestTools');
 const View = require('../../View/View').default;
 const ScrollView = require('../ScrollView').default;
@@ -37,6 +38,46 @@ describe('ScrollView', () => {
         jest.dontMock('../ScrollView');
       },
     );
+  });
+
+  it('preserves children for native inversion on macOS', async () => {
+    const platformOSDescriptor = Object.getOwnPropertyDescriptor(
+      Platform,
+      'OS',
+    );
+    if (platformOSDescriptor == null) {
+      throw new Error('Platform.OS descriptor was not found');
+    }
+    // $FlowFixMe[incompatible-type] Exercise the macOS-only render branch.
+    Object.defineProperty(Platform, 'OS', {
+      ...platformOSDescriptor,
+      // $FlowFixMe[incompatible-type] Platform is a platform-specific union.
+      value: 'macos',
+    });
+    try {
+      const invertedComponent = await create(
+        <ScrollView inverted={true}>
+          <View />
+        </ScrollView>,
+      );
+      const regularComponent = await create(
+        <ScrollView inverted={false}>
+          <View />
+        </ScrollView>,
+      );
+
+      expect(
+        invertedComponent.root.findByType('RCTScrollContentView').props
+          .collapsableChildren,
+      ).toBe(false);
+      expect(
+        regularComponent.root.findByType('RCTScrollContentView').props
+          .collapsableChildren,
+      ).toBe(true);
+    } finally {
+      // $FlowFixMe[incompatible-type] Restore the test platform.
+      Object.defineProperty(Platform, 'OS', platformOSDescriptor);
+    }
   });
 
   it('mocks native methods and instance methods', async () => {
