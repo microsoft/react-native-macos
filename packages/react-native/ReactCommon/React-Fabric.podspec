@@ -132,6 +132,12 @@ Pod::Spec.new do |s|
       sss.source_files         = "react/renderer/components/view/**/*.{m,mm,cpp,h}" # [macOS]
       sss.exclude_files        = "react/renderer/components/view/tests", "react/renderer/components/view/platform/android", "react/renderer/components/view/platform/windows" # [macOS]
       sss.header_dir           = "react/renderer/components/view"
+      # [macOS Keep dispatch headers separate from the platform headers they include.
+      sss.header_mappings_dir  = ENV['USE_FRAMEWORKS'] ? "./" : "react/renderer/components/view"
+      sss.osx.exclude_files    = "react/renderer/components/view/platform/cxx/**/*.h"
+      sss.ios.exclude_files    = "react/renderer/components/view/platform/macos/**/HostPlatform*.h"
+      sss.visionos.exclude_files = "react/renderer/components/view/platform/macos/**/HostPlatform*.h"
+      # macOS]
     end
 
     ss.subspec "scrollview" do |sss|

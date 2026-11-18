@@ -43,7 +43,11 @@ async function setup(
    * in the source path, it creates a link in the target path with an
    * underscore prefix.
    */
-  const link = (fromPath /*:string*/, includePath /*:?string*/) => {
+  const link = (
+    fromPath /*:string*/,
+    includePath /*:?string*/,
+    preserveStructure /*: boolean */ = false, // [macOS]
+  ) => {
     const source = path.resolve(root, fromPath);
     const target = path.resolve(linksFolder, includePath ?? fromPath);
 
@@ -98,7 +102,15 @@ async function setup(
 
     // Create links for subfolders
     subfolders.forEach(folder => {
-      link(path.join(fromPath, String(folder)), includePath);
+      // [macOS
+      link(
+        path.join(fromPath, String(folder)),
+        preserveStructure
+          ? path.join(includePath ?? fromPath, String(folder))
+          : includePath,
+        preserveStructure,
+      );
+      // macOS]
     });
   };
 
@@ -187,20 +199,23 @@ async function setup(
   link('ReactCommon/react/runtime/platform/ios', 'ReactCommon/react/runtime');
   link('ReactCommon/jsitooling/react/runtime', 'ReactCommon/react/runtime');
   link('ReactCommon/react/renderer/components/legacyviewmanagerinterop');
-  link('ReactCommon/react/renderer/components/view');
-  link(
-    'ReactCommon/react/renderer/components/view/platform/cxx',
-    'ReactCommon/react/renderer/components/view',
-  );
-  // [macOS - link macOS-specific view platform headers
-  link(
-    'ReactCommon/react/renderer/components/view/platform/macos',
-    'ReactCommon/react/renderer/components/view',
-  );
-  link(
-    'ReactCommon/react/renderer/components/view/platform/macos',
-    'react/renderer/components/view',
-  );
+  // [macOS Preserve the dispatchers' relative platform includes in both namespaces.
+  const viewPath = 'ReactCommon/react/renderer/components/view';
+  for (const includePath of [viewPath, 'react/renderer/components/view']) {
+    // Replace stale hard links from the previously flattened platform headers.
+    fs.rmSync(path.resolve(linksFolder, includePath), {
+      recursive: true,
+      force: true,
+    });
+    link(viewPath, includePath);
+    for (const platform of ['cxx', 'macos']) {
+      link(
+        `${viewPath}/platform/${platform}`,
+        `${includePath}/platform/${platform}`,
+        true,
+      );
+    }
+  }
   // macOS]
   link('ReactCommon/react/renderer/mounting');
   link('ReactCommon/react/renderer/attributedstring');
