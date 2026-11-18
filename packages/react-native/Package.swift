@@ -421,15 +421,10 @@ let reactCore = RNTarget(
 )
 
 /// React-Fabric.podspec
-// [macOS
-#if os(macOS)
-let reactFabricViewPlatformSources = ["components/view/platform/macos"]
-let reactFabricViewPlatformExcludes = ["components/view/platform/cxx"]
-#else
-let reactFabricViewPlatformSources = ["components/view/platform/cxx"]
-let reactFabricViewPlatformExcludes = ["components/view/platform/macos"]
-#endif
-// macOS]
+// [macOS] Compile the guarded macOS implementations through components/view.
+// The implementations use TargetConditionals for the build destination.
+// Do not add a platform directory to sources: RNTarget also adds it to the header
+// search paths, bypassing those dispatch headers when cross-compiling.
 let reactFabric = RNTarget(
   name: .reactFabric,
   path: "ReactCommon/react/renderer",
@@ -465,9 +460,9 @@ let reactFabric = RNTarget(
     "components/virtualview",
     "components/virtualviewexperimental",
     "components/root/tests",
-  ] + reactFabricViewPlatformExcludes, // [macOS]
+  ],
   dependencies: [.reactNativeDependencies, .reactJsiExecutor, .rctTypesafety, .reactTurboModuleCore, .jsi, .logger, .reactDebug, .reactFeatureFlags, .reactUtils, .reactRuntimeScheduler, .reactCxxReact, .reactRendererDebug, .reactGraphics, .yoga],
-  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"] + reactFabricViewPlatformSources // [macOS]
+  sources: ["animations", "attributedstring", "core", "componentregistry", "componentregistry/native", "components/root", "components/view", "components/scrollview", "components/scrollview/platform/cxx", "components/legacyviewmanagerinterop", "dom", "scheduler", "mounting", "observers/events", "telemetry", "consistency", "leakchecker", "uimanager", "uimanager/consistency"]
 )
 
 let reactFabricInputAccessory = RNTarget(
@@ -933,7 +928,12 @@ extension Target {
     let numOfSlash = path.count { $0 == "/" }
 
     let cxxCommonHeaderPaths: [CXXSetting] =
-      Set(searchPaths).map {
+      // [macOS] Select headers by destination, before the shared/generated paths.
+      // SwiftPM evaluates manifest #if os(...) on the host, not the destination.
+      [
+        CXXSetting.headerSearchPath(relativeSearchPath(numOfSlash + 1, "ReactCommon/react/renderer/components/view/platform/macos"), .when(platforms: [.macOS])),
+        CXXSetting.headerSearchPath(relativeSearchPath(numOfSlash + 1, "ReactCommon/react/renderer/components/view/platform/cxx"), .when(platforms: [.iOS, .visionOS, .macCatalyst])),
+      ] + Set(searchPaths).map {
         CXXSetting.headerSearchPath(relativeSearchPath(numOfSlash + 1, $0))
       } + [
         CXXSetting.headerSearchPath(relativeSearchPath(numOfSlash + 1, ".build/headers")),

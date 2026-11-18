@@ -37,6 +37,7 @@ Pod::Spec.new do |s|
                                "USE_HEADERMAP" => "YES",
                                "CLANG_CXX_LANGUAGE_STANDARD" => rct_cxx_language_standard(),
                                "GCC_WARN_PEDANTIC" => "YES" }
+  s.frameworks = "CoreGraphics" # [macOS]
   # [macOS Restrict UIKit to iOS and visionOS
   s.ios.framework = "UIKit" 
   s.visionos.framework = "UIKit" 

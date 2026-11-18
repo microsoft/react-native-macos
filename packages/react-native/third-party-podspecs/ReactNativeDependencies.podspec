@@ -13,8 +13,10 @@ begin
     )', __dir__]).strip
   )
 rescue => e
-  # Fallback to the parent directory if the above command fails (e.g when building locally in OOT Platform)
-  react_native_path = File.join(__dir__, "..", "..")
+  # [macOS
+  # Fallback to the package directory if the above command fails (e.g when building locally in OOT Platform)
+  react_native_path = File.join(__dir__, "..")
+  # macOS]
 end
 
 # package.json

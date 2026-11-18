@@ -25,9 +25,6 @@
 #import "RCTViewUtils.h"
 #import "UIView+React.h"
 #import "RCTViewKeyboardEvent.h"
-#if TARGET_OS_OSX // [macOS
-#import "RCTTextView.h"
-#endif // macOS]
 
 RCT_MOCK_DEF(RCTView, RCTContentInsets);
 #define RCTContentInsets RCT_MOCK_USE(RCTView, RCTContentInsets)
@@ -112,7 +109,8 @@ static NSString *RCTRecursiveAccessibilityLabel(RCTUIView *view) // [macOS]
     NSString *label = subview.accessibilityLabel;
 #else // [macOS
     NSString *label;
-    if ([subview isKindOfClass:[RCTTextView class]]) {
+    // React-RCTText depends on React-Core, so resolve its optional class without a link dependency.
+    if ([subview isKindOfClass:NSClassFromString(@"RCTTextView")]) {
       // on macOS VoiceOver a text element will always have its accessibilityValue read, but will only read it's accessibilityLabel if it's value is set.
       // the macOS RCTTextView accessibilityValue will return its accessibilityLabel if set otherwise return its text.
       label = subview.accessibilityValue;

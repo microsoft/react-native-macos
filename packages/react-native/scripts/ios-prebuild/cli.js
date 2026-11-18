@@ -100,6 +100,7 @@ async function getCLIConfiguration() /*: Promise<?{|
     console.error(
       `Invalid platform specified: ${invalidPlatforms.join(', ')}\nValid platforms are: ${platforms.join(', ')}`,
     );
+    process.exitCode = 1; // [macOS]
     return undefined;
   }
 

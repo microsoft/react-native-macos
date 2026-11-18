@@ -60,17 +60,22 @@ function getBuildPath(file, buildFolder) {
 
 async function buildFile(file, silent) {
   const destPath = getBuildPath(file, BUILD_DIR);
+  const relativeFile = path.relative(PACKAGE_DIR, file); // [macOS]
+  const ignored = micromatch.isMatch(relativeFile, IGNORE_PATTERN); // [macOS]
+  const javaScript = micromatch.isMatch(relativeFile, JS_FILES_PATTERN); // [macOS]
 
   fs.mkdirSync(path.dirname(destPath), {recursive: true});
 
-  if (micromatch.isMatch(file, IGNORE_PATTERN)) {
+  if (ignored) {
+    // [macOS]
     silent ||
       process.stdout.write(
         styleText('dim', '  \u2022 ') +
           path.relative(PACKAGE_DIR, file) +
           ' (ignore)\n',
       );
-  } else if (!micromatch.isMatch(file, JS_FILES_PATTERN)) {
+  } else if (!javaScript) {
+    // [macOS]
     fs.createReadStream(file).pipe(fs.createWriteStream(destPath));
     silent ||
       process.stdout.write(
