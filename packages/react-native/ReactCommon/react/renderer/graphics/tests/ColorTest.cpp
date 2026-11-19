@@ -9,6 +9,16 @@
 
 #include <gtest/gtest.h>
 
+// [macOS
+TEST(ColorTest, testDefaultForegroundTextColorIsDefined) {
+  using namespace facebook::react;
+  auto color = defaultForegroundTextColor();
+
+  EXPECT_TRUE(color);
+  EXPECT_NE(color, clearColor());
+}
+// macOS]
+
 TEST(ColorTest, testColorConversion) {
   using namespace facebook::react;
   {

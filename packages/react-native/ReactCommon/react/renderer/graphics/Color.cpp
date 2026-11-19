@@ -86,4 +86,11 @@ SharedColor whiteColor() {
   return color;
 }
 
+// [macOS
+// Select by graphics backend, not host OS: C++ also builds on Apple hosts.
+SharedColor defaultForegroundTextColor() {
+  return {hostPlatformDefaultForegroundTextColor()};
+}
+// macOS]
+
 } // namespace facebook::react

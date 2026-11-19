@@ -10,7 +10,6 @@
 #import <Foundation/Foundation.h>
 #import <React/RCTUIKit.h> // [macOS]
 #import <objc/runtime.h>
-#import <react/renderer/graphics/Color.h> // [macOS]
 #import <react/renderer/graphics/RCTPlatformColorUtils.h>
 #import <react/utils/ManagedObjectWrapper.h>
 #import <string>
@@ -345,10 +344,11 @@ Color Color::createSemanticColor(std::vector<std::string> &semanticItems)
 }
 
 // [macOS
-SharedColor defaultForegroundTextColor() {
-  static SharedColor color = [] {
+Color hostPlatformDefaultForegroundTextColor()
+{
+  static Color color = [] {
     std::vector<std::string> items = {"labelColor"};
-    return SharedColor(Color::createSemanticColor(items));
+    return Color::createSemanticColor(items);
   }();
   return color;
 }
