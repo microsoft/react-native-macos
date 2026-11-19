@@ -194,6 +194,70 @@ TEST_F(StackingContextTest, defaultPropsMakeEverythingFlattened) {
   });
 }
 
+#if defined(TARGET_OS_OSX) && TARGET_OS_OSX // [macOS
+TEST_F(StackingContextTest, windowDraggingBoundarySurvivesFlattening) {
+  mutateViewShadowNodeProps_(
+      nodeA_, [](ViewProps& props) { props.mouseDownCanMoveWindow = false; });
+  mutateViewShadowNodeProps_(nodeAA_, [](ViewProps& props) {
+    props.mouseDownCanMoveWindow = true;
+    props.backgroundColor = blackColor();
+  });
+
+  testViewTree_([](const StubViewTree& viewTree) {
+    EXPECT_EQ(viewTree.size(), 3);
+    auto& rootView = viewTree.getRootStubView();
+    ASSERT_EQ(rootView.children.size(), 1);
+    auto& boundaryView = *rootView.children.at(0);
+    EXPECT_EQ(boundaryView.tag, 2);
+    ASSERT_EQ(boundaryView.children.size(), 1);
+    EXPECT_EQ(boundaryView.children.at(0)->tag, 3);
+  });
+
+  mutateViewShadowNodeProps_(
+      nodeA_, [](ViewProps& props) { props.mouseDownCanMoveWindow = true; });
+
+  testViewTree_([](const StubViewTree& viewTree) {
+    EXPECT_EQ(viewTree.size(), 2);
+    auto& rootView = viewTree.getRootStubView();
+    ASSERT_EQ(rootView.children.size(), 1);
+    EXPECT_EQ(rootView.children.at(0)->tag, 3);
+  });
+}
+
+TEST_F(StackingContextTest, macOSNativeBehaviorPreventsFlattening) {
+  std::function<void(ViewProps&)> nativeProps[] = {
+      [](ViewProps& props) { props.tooltip = "Tooltip"; },
+      [](ViewProps& props) { props.draggedTypes = {"fileUrl"}; },
+      [](ViewProps& props) { props.keyDownEvents = {{.key = "Enter"}}; },
+      [](ViewProps& props) { props.keyUpEvents = {{.key = "Enter"}}; },
+      [](ViewProps& props) { props.allowsVibrancy = true; },
+      [](ViewProps& props) { props.acceptsFirstMouse = true; },
+      [](ViewProps& props) {
+        props.hostPlatformEvents[HostPlatformViewEvents::Offset::MouseEnter] =
+            true;
+      },
+      [](ViewProps& props) { props.focusable = true; },
+  };
+
+  for (size_t i = 0; i < std::size(nativeProps); i++) {
+    SCOPED_TRACE(i);
+    mutateViewShadowNodeProps_(nodeA_, nativeProps[i]);
+    testViewTree_([](const StubViewTree& viewTree) {
+      EXPECT_EQ(viewTree.size(), 2);
+      auto& rootView = viewTree.getRootStubView();
+      ASSERT_EQ(rootView.children.size(), 1);
+      EXPECT_EQ(rootView.children.at(0)->tag, 2);
+    });
+  }
+
+  mutateViewShadowNodeProps_(nodeA_, [](ViewProps&) {});
+  testViewTree_([](const StubViewTree& viewTree) {
+    EXPECT_EQ(viewTree.size(), 1);
+    EXPECT_TRUE(viewTree.getRootStubView().children.empty());
+  });
+}
+#endif // macOS]
+
 TEST_F(StackingContextTest, mostPropsDoNotForceViewsToMaterialize) {
   //  ┌────────────── (Root) ──────────────┐    ┌────────── (Root) ───────────┐
   //  │ ┏━ A (tag: 2) ━━━━━━━━━━━━━━━━━━━┓ │    │                             │
