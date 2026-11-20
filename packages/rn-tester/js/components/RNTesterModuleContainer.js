@@ -38,7 +38,14 @@ export default function RNTesterModuleContainer(props: Props): React.Node {
   const renderExample = (e: $FlowFixMe, i: $FlowFixMe) => {
     // Filter platform-specific es
     const {title, description, platform, render: ExampleComponent} = e;
-    if (platform != null && Platform.OS !== platform) {
+    // [macOS examples can target several platforms, e.g. ['ios', 'macos']
+    if (
+      platform != null &&
+      (Array.isArray(platform)
+        ? !platform.includes(Platform.OS)
+        : Platform.OS !== platform)
+    ) {
+      // macOS]
       return null;
     }
     return module.showIndividualExamples === true ? (
