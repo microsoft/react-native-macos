@@ -10,6 +10,7 @@
 
 'use strict';
 
+import type {RNTesterModuleExample} from '../../types/RNTesterTypes'; // [macOS]
 import type {EventSubscription, GestureResponderEvent} from 'react-native';
 
 import RNTesterBlock from '../../components/RNTesterBlock';
@@ -2365,4 +2366,4 @@ exports.examples = [
     },
   },
   // macOS]
-];
+] as Array<RNTesterModuleExample>; // [macOS]
