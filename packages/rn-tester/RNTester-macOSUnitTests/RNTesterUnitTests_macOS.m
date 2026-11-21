@@ -9,6 +9,7 @@
 // [macOS]
 
 #import <React/RCTUIKit.h>
+#import <React/RCTUtils.h>
 #import <XCTest/XCTest.h>
 
 @interface RCTSafeAreaObservingView : RCTUIView
@@ -27,15 +28,6 @@
 
 @end
 
-static void RCTPerformOnMainThread(dispatch_block_t block)
-{
-  if (NSThread.isMainThread) {
-    block();
-  } else {
-    dispatch_sync(dispatch_get_main_queue(), block);
-  }
-}
-
 @interface RNTesterUnitTests_macOS : XCTestCase
 
 @end
@@ -44,7 +36,7 @@ static void RCTPerformOnMainThread(dispatch_block_t block)
 
 - (void)testSafeAreaCallbackSupportsSuperclassCalls
 {
-  RCTPerformOnMainThread(^{
+  RCTUnsafeExecuteOnMainQueueSync(^{
     [NSApplication sharedApplication];
     RCTSafeAreaObservingView *view = [RCTSafeAreaObservingView new];
     XCTAssertNoThrow([view safeAreaInsetsDidChange]);
@@ -54,7 +46,7 @@ static void RCTPerformOnMainThread(dispatch_block_t block)
 
 - (void)testLayoutReportsChangedSafeAreaInsetsOnce
 {
-  RCTPerformOnMainThread(^{
+  RCTUnsafeExecuteOnMainQueueSync(^{
     [NSApplication sharedApplication];
     NSWindow *window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 400, 300)
                                                    styleMask:NSWindowStyleMaskBorderless
