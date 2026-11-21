@@ -2,12 +2,9 @@
   "configurations" : [
     {
       "id" : "59C4DFC4-597F-41C6-99FD-32D94C5488D4",
-      "name" : "Address Sanitizer",
+      "name" : "Default",
       "options" : {
-        "addressSanitizer" : {
-          "detectStackUseAfterReturn" : true,
-          "enabled" : true
-        }
+
       }
     }
   ],
@@ -24,8 +21,7 @@
       "identifier" : "ACC52F3D299ECB7A002A2B0B",
       "name" : "RNTester-macOS"
     },
-    "testRepetitionMode" : "retryOnFailure",
-    "undefinedBehaviorSanitizerEnabled" : true
+    "testRepetitionMode" : "retryOnFailure"
   },
   "testTargets" : [
     {
