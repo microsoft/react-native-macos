@@ -40,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL textWasPasted;
 @property (nonatomic, readonly) NSResponder *responder;
 @property (nonatomic, assign) BOOL enableFocusRing;
+// Driven by `accessibilityState.disabled`; `editable` only controls whether the text can be changed.
+@property (nonatomic, assign, getter=isEnabled) BOOL enabled;
 #endif // macOS]
 @property (nonatomic, assign, readonly) BOOL dictationRecognizing;
 @property (nonatomic, assign) UIEdgeInsets textContainerInset;
