@@ -61,14 +61,12 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
   return self;
 }
 
-static void RCTUIViewUpdateSafeAreaInsets(RCTUIView *self)
+- (void)rct_updateSafeAreaInsets
 {
-  if (@available(macOS 11.0, *)) {
-    NSEdgeInsets insets = self.safeAreaInsets;
-    if (!NSEdgeInsetsEqual(insets, self->_lastSafeAreaInsets)) {
-      self->_lastSafeAreaInsets = insets;
-      [self safeAreaInsetsDidChange];
-    }
+  NSEdgeInsets insets = self.safeAreaInsets;
+  if (!NSEdgeInsetsEqual(insets, _lastSafeAreaInsets)) {
+    _lastSafeAreaInsets = insets;
+    [self safeAreaInsetsDidChange];
   }
 }
 
@@ -111,7 +109,7 @@ static void RCTUIViewUpdateSafeAreaInsets(RCTUIView *self)
 - (void)viewDidMoveToWindow
 {
   [self didMoveToWindow];
-  RCTUIViewUpdateSafeAreaInsets(self);
+  [self rct_updateSafeAreaInsets];
 }
 
 - (BOOL)mouseDownCanMoveWindow{
@@ -222,7 +220,7 @@ static void RCTUIViewUpdateSafeAreaInsets(RCTUIView *self)
 {
   [super layout];
   if (self.window != nil) {
-    RCTUIViewUpdateSafeAreaInsets(self);
+    [self rct_updateSafeAreaInsets];
     [self layoutSubviews];
   }
 }
