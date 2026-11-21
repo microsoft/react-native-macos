@@ -24,6 +24,7 @@
   BOOL _respondsToDisplayLayer;
   CATransform3D _transform3D;
   BOOL _hasCustomTransform3D;
+  NSEdgeInsets _lastSafeAreaInsets;
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingValueForKey:(NSString *)key
@@ -58,6 +59,15 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
     self->_hasCustomTransform3D = NO;
   }
   return self;
+}
+
+- (void)rct_updateSafeAreaInsets
+{
+  NSEdgeInsets insets = self.safeAreaInsets;
+  if (!NSEdgeInsetsEqual(insets, _lastSafeAreaInsets)) {
+    _lastSafeAreaInsets = insets;
+    [self safeAreaInsetsDidChange];
+  }
 }
 
 - (instancetype)initWithFrame:(NSRect)frameRect
@@ -99,6 +109,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (void)viewDidMoveToWindow
 {
   [self didMoveToWindow];
+  [self rct_updateSafeAreaInsets];
 }
 
 - (BOOL)mouseDownCanMoveWindow{
@@ -209,6 +220,7 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 {
   [super layout];
   if (self.window != nil) {
+    [self rct_updateSafeAreaInsets];
     [self layoutSubviews];
   }
 }
@@ -279,6 +291,10 @@ static RCTUIView *RCTUIViewCommonInit(RCTUIView *self)
 - (void)layoutSubviews
 {
   [super layout];
+}
+
+- (void)safeAreaInsetsDidChange
+{
 }
 
 - (void)setNeedsDisplay

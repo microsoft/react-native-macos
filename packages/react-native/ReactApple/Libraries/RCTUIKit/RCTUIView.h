@@ -52,6 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)layoutSubviews;
 
+- (void)safeAreaInsetsDidChange;
+
 - (void)setNeedsDisplay;
 
 @property (nonatomic, copy) NSColor *backgroundColor;
