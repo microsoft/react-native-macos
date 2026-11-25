@@ -49,3 +49,11 @@ npx react-native build-macos [options]
 | `--scheme [string]` | Explicitly set the Xcode scheme to use | `{ProjectName}-macOS` |
 | `--project-path [string]` | Path relative to project root where the Xcode project lives | `macos` |
 | `--verbose` | Show detailed build output (disable xcpretty) | `false` |
+
+### `config-macos`
+
+Print CLI configuration of react-native-macos
+
+```bash
+npx react-native config-macos
+```
